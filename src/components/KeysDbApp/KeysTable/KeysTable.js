@@ -3,11 +3,13 @@ import { Table, Button } from 'semantic-ui-react';
 import KeyRow from "../KeyRow/KeyRow";
 import dateFns from "date-fns";
 import HeaderCell from "../HeaderCell/HeaderCell";
+import spreadsheet from '../../../google/spreadsheet';
 
 function KeysTable({ headers, games, inverted }) {
     const [rowsToDisplay, setRowsToDisplay] = React.useState(50);
     const [sortingFunction, setSortingFunction] = React.useState({ callback: sortByDate });
-    const [filters, setFilters] = React.useState([{ key: 'From', values: ['Humblebundle'] }]);
+    const [filters, setFilters] = React.useState([{ key: 'From', values: ['Humblebundle'] }, { key: 'Status', values: ['Unused'] }]);
+    const [descending, setDescending] = React.useState(true);
 
     function addUsedFilter() {
         setFilters([...filters, { key: 'Status', values: ['Used'] }])
@@ -18,13 +20,15 @@ function KeysTable({ headers, games, inverted }) {
     }
 
     function sortByDate(a, b) {
+        const value = descending ? 1 : -1;
         // return new Date(b.Added) - new Date(a.Added);
-        return new Date(a.Added) < new Date(b.Added) ? -1 : new Date(a.Added) > new Date(b.Added) ? 1 : 0;
+        return new Date(a.Added) < new Date(b.Added) ? 1 * value : new Date(a.Added) > new Date(b.Added) ? -1 * value : 0;
     }
 
     return (
         <div>
             <Button onClick={() => { setRowsToDisplay(rowsToDisplay + 25) }}>load more</Button>
+            <Button onClick={() => { spreadsheet.updateSingleCell() }}>write</Button>
             <Table celled structured inverted={inverted}>
                 <Table.Header>
                     <Table.Row>
@@ -47,10 +51,9 @@ function KeysTable({ headers, games, inverted }) {
                             .map((game, index) => {
                                 return index < rowsToDisplay && <KeyRow
                                     gameData={game}
-                                    isFirst={index === 0}
                                     headers={headers}
                                     key={game.ssLocation.row}
-                                ></KeyRow>
+                                />
                             })
                     }
                     {

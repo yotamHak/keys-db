@@ -2,8 +2,9 @@ import React from "react";
 import googleConfig from "../../google/config";
 import { gapi } from 'gapi-script';
 import KeysTable from "./KeysTable/KeysTable";
-import { Button, Loader, Segment, Dimmer } from "semantic-ui-react";
+import { Loader, Dimmer } from "semantic-ui-react";
 import GoogleAuthentication from "../../google/GoogleAuthentication";
+import Login from "./auth/Login";
 
 function MainApp() {
     const [games, setGames] = React.useState({});
@@ -59,8 +60,7 @@ function MainApp() {
                 },
                     response => {
                         callback(false, response.result.error);
-                    }
-                )
+                    })
         })
     }
 
@@ -80,8 +80,8 @@ function MainApp() {
             }
 
             return {
+                ...newGames,
                 ...object,
-                ...newGames
             }
         }, {})
 
@@ -107,6 +107,7 @@ function MainApp() {
                 <input type="hidden" name="openid.return_to" value="http://localhost:3000" />
                 <Button type="submit">Log in through Steam</Button>
             </form> */}
+            {/* {<Login></Login>} */}
             {
                 Object.keys(games).length > 0
                     ? <KeysTable inverted={inverted} headers={headers} games={games}></KeysTable>
@@ -117,5 +118,6 @@ function MainApp() {
         </div>
     );
 }
+
 
 export default MainApp;

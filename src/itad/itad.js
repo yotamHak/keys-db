@@ -60,6 +60,14 @@ class ItadApi {
     async GetPlain(gameName) {
         return await axios.get(this.getCORSLink(`https://api.isthereanydeal.com/v02/game/plain/?key=${this.apiKey}&title=${gameName}`));
     }
+
+    async FindGame(query) {
+        return await axios.get(this.getCORSLink(`https://api.isthereanydeal.com/v01/search/search/?key=${this.apiKey}&q=${query}&shops=steam`));
+    }
+
+    GetEncodedName(gameName) {
+        return _encodeName(gameName);
+    }
 }
 
 function _romanize(num) {

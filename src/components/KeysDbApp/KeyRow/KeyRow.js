@@ -15,43 +15,129 @@ import itadApi from "../../../itad";
 function KeyRow({ isFirst, headers, numberOfDuplicates, gameData }) {
     const [isRefreshing, setIsRefreshing] = React.useState(false);
     const [isSaving, setIsSaving] = React.useState(false);
-    const [originalGameData, setOriginalGameData] = React.useState(gameData);
+
+    const [game, setGame] = React.useState(null);
+    const [originalGameData, setOriginalGameData] = React.useState(null);
+
+    React.useEffect(() => {
+        setOriginalGameData({ ...gameData });
+        setGame({ ...gameData });
+    }, []);
+
+    function changeCallback(header, changedValue) {
+        console.log("Changed Value", `${header}: ${changedValue}`)
+        gameData[header] = changedValue;
+    }
 
     function selectCell(header) {
-        const rKey = `${gameData.ssLocation.row}-${header}`;
-        if (header === "Name") {
-            return <NameCell name={gameData[header]} key={rKey}></NameCell>
-            // return <Table.Cell key={header} rowSpan={numberOfDuplicates}>{gameData[header]}</Table.Cell>
-        } else if (header === "Status") {
-            return <StatusCell status={gameData[header]} key={rKey}></StatusCell>
-        } else if (header === "Key") {
-            return <KeyCell gameKey={gameData[header]} key={rKey}></KeyCell>
-        } else if (header === "From") {
-            return <FromCell from={gameData[header]} key={rKey}></FromCell>
-        } else if (header === "Own Status") {
-            return <OwnStatusCell ownStatus={gameData[header]} key={rKey}></OwnStatusCell>
-        } else if (header === "Added") {
-            return <AddedCell dateAdded={gameData[header]} key={rKey}></AddedCell>
-        } else if (header === "Note") {
-            return <NoteCell note={gameData[header]} key={rKey}></NoteCell>
-        } else if (header === "isthereanydeal URL") {
-            return <UrlCell website="itad" url={gameData[header]} key={rKey}></UrlCell>
-        } else if (header === "Steam URL") {
-            return <UrlCell website="steam" url={gameData[header]} key={rKey}></UrlCell>
-        } else if (header === "Cards") {
-            return <CardsCell cards={gameData[header]} key={rKey}></CardsCell>
-        } else if (header === "AppId") {
-            return <AppIdCell appId={gameData[header]} key={rKey}></AppIdCell>
-        } else {
-            return <Table.Cell key={header} key={rKey}>{gameData[header]}</Table.Cell>
+        const rKey = `${game.ssLocation.row}-${header}`;
+        const gameHeaderValue = game[header];
+
+        switch (header) {
+            case "Name":
+                return <NameCell
+                    onChange={changeCallback}
+                    header={header}
+                    name={gameHeaderValue}
+                    key={rKey}
+                    onChange={changeCallback}
+                />
+            case "Status":
+                return <StatusCell
+                    onChange={changeCallback}
+                    header={header}
+                    status={gameHeaderValue}
+                    key={rKey}
+                />
+            case "Key":
+                return <KeyCell
+                    onChange={changeCallback}
+                    header={header}
+                    gameKey={gameHeaderValue}
+                    key={rKey}
+                />
+            case "From":
+                return <FromCell
+                    onChange={changeCallback}
+                    header={header}
+                    from={gameHeaderValue}
+                    key={rKey}
+                />
+            case "Own Status":
+                return <OwnStatusCell
+                    onChange={changeCallback}
+                    header={header}
+                    ownStatus={gameHeaderValue}
+                    key={rKey}
+                />
+            case "Added":
+                return <AddedCell
+                    onChange={changeCallback}
+                    header={header}
+                    dateAdded={gameHeaderValue}
+                    key={rKey}
+                />
+            case "Note":
+                return <NoteCell
+                    onChange={changeCallback}
+                    header={header}
+                    note={gameHeaderValue}
+                    key={rKey}
+                />
+            case "isthereanydeal URL":
+            case "Steam URL":
+                return <UrlCell
+                    onChange={changeCallback}
+                    header={header}
+                    website={header === "Steam URL" ? "steam" : "itad"}
+                    url={gameHeaderValue}
+                    key={rKey}
+                />
+            case "Cards":
+                return <CardsCell
+                    onChange={changeCallback}
+                    header={header}
+                    cards={gameHeaderValue}
+                    key={rKey} />
+            case "AppId":
+                return <AppIdCell
+                    onChange={changeCallback}
+                    header={header}
+                    appId={gameHeaderValue}
+                    key={rKey}
+                />
+            default:
+                return <Table.Cell
+                    onChange={changeCallback}
+                    header={header}
+                    key={header}
+                    key={rKey}>
+                    {gameHeaderValue}
+                </Table.Cell>
         }
     }
 
     function refresh() {
         setIsRefreshing(true);
 
-        itadApi.GetInfoAboutGame(gameData['Name']).then(response => {
-            console.log(response);
+        // itadApi.FindGame(game['Name']).then(response => {
+        //     console.log(response)
+        // })
+
+        itadApi.GetInfoAboutGame(game['Name']).then(response => {
+            console.log(`GetInfoAboutGame: ${game['Name']}...`, response);
+            const gameData = response.data.data[itadApi.GetEncodedName(game['Name'])];
+
+            if (gameData) {
+                const gameAppId = gameData.image && gameData.image.split('/')[5]
+                
+                setGame({
+                    ...game,
+                    'Cards': gameData['trading_cards'] ? "https://steamcommunity.com/id/justLynx/gamecards/236850" : 'No',
+                    'AppId': gameAppId,
+                })
+            }
+
             setIsRefreshing(false);
         })
     }
@@ -60,8 +146,10 @@ function KeyRow({ isFirst, headers, numberOfDuplicates, gameData }) {
         if (isSaving) { return };
 
         setIsSaving(true);
-        console.log("gameData", gameData);
+        console.log("game", gameData);
         console.log("originalGameData", originalGameData)
+
+        setGame(gameData)
     }
 
     return (
@@ -78,11 +166,8 @@ function KeyRow({ isFirst, headers, numberOfDuplicates, gameData }) {
                 {/* <Button onClick={refresh} circular basic icon='refresh' size="tiny" loading={isRefreshing} />
                 <Button onClick={save} circular basic icon='save' size="tiny" loading={isSaving} /> */}
             </Table.Cell>
-
             {
-                headers.map(header => {
-                    return selectCell(header)
-                })
+                game && headers.map(header => { return selectCell(header) })
             }
         </Table.Row>
     );

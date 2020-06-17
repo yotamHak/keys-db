@@ -1,7 +1,7 @@
 import React from "react";
 import { Table, Dropdown } from "semantic-ui-react";
 
-function FromCell({ from }) {
+function FromCell({ from, onChange, header }) {
     const optionsDictionary = {
         'Humblebundle': 0,
         'Indiegala': 1,
@@ -70,6 +70,8 @@ function FromCell({ from }) {
     function handleChange(e, selected) {
         from = options.filter(option => option.value === selected.value)[0].text;
         setCurrentlySelected(options.filter(option => option.value === selected.value)[0]);
+
+        onChange(header, from)
     }
 
     return (

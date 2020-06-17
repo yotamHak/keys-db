@@ -19,7 +19,7 @@ function GoogleAuthentication({ callbackOnSignIn }) {
                 clientId: googleConfig.clientId,
                 // Your API key will be automatically added to the Discovery Document URLs.
                 discoveryDocs: googleConfig.discoveryDocs,
-                scope: "https://www.googleapis.com/auth/spreadsheets"
+                scope: "https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/spreadsheets"
             })
             .then(() => {
                 // Listen for sign-in state changes.
