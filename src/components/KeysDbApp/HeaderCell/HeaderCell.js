@@ -1,5 +1,5 @@
 import React from "react";
-import { Table, Icon, Button } from "semantic-ui-react";
+import { Table, } from "semantic-ui-react";
 
 function HeaderCell({ filters, header, values }) {
     function filter() {

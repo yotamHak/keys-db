@@ -4,7 +4,7 @@ import { gapi } from 'gapi-script';
 import KeysTable from "./KeysTable/KeysTable";
 import { Loader, Dimmer } from "semantic-ui-react";
 import GoogleAuthentication from "../../google/GoogleAuthentication";
-import Login from "./auth/Login";
+// import Login from "./auth/Login";
 
 function MainApp() {
     const [games, setGames] = React.useState({});
