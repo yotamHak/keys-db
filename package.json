@@ -2,7 +2,6 @@
   "name": "key-db",
   "version": "1.0.0",
   "description": "Key db using google sheets",
-  "main": "index.js",
   "private": true,
   "dependencies": {
     "axios": "^0.18.0",
@@ -25,10 +24,6 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/yotamHak/key-db.git"
   },
   "keywords": [
     "react",
@@ -54,6 +49,5 @@
   },
   "bugs": {
     "url": "https://github.com/yotamHak/key-db/issues"
-  },
-  "homepage": "https://github.com/yotamHak/key-db#readme"
+  }
 }

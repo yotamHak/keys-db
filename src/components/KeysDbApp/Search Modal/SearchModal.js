@@ -1,5 +1,5 @@
 import React from "react";
-import { Modal, Search, Segment, Header, Item, Icon, Container, Grid, Image } from "semantic-ui-react";
+import { Modal, Search, Segment, Header, Item, Icon, Container, Button, Input, Divider } from "semantic-ui-react";
 import itadApi from "../../../itad";
 import _ from 'lodash';
 
@@ -8,6 +8,7 @@ function SearchModal({ onSelect, initialValue, children }) {
     const [isSearching, setIsSearching] = React.useState(false)
     const [searchResults, setSearchResults] = React.useState(null)
     const [value, setValue] = React.useState(initialValue)
+    const manualInputRef = React.createRef();
 
     React.useEffect(() => { }, [])
 
@@ -95,6 +96,11 @@ function SearchModal({ onSelect, initialValue, children }) {
         </Item.Group>
     )
 
+    function handleManualSelect(e) {
+        onSelect(manualInputRef.current.value);
+        closeModal();
+    }
+
     return (
         <Modal
             closeIcon={<Icon name="close" onClick={closeModal} />}
@@ -121,6 +127,11 @@ function SearchModal({ onSelect, initialValue, children }) {
                         value={value}
                         className={'search-fluid-input'}
                     />
+                    <Divider horizontal>Or</Divider>
+                    <Input type='text' placeholder='Title...' fluid action>
+                        <input ref={manualInputRef} />
+                        <Button onClick={handleManualSelect} type='submit'>Change</Button>
+                    </Input>
                 </Modal.Description>
             </Modal.Content>
         </Modal >

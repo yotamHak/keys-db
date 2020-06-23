@@ -2,7 +2,6 @@
 
 # Ignore Firebase Config
 /src/firebase/config.js
-.firebase
 
 # Ignore Google Config
 /src/Google/config.js

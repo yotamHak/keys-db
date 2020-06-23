@@ -1,6 +1,5 @@
 import React from "react";
 import ReactDOM from "react-dom";
-// import App from "./components/App";
 import * as serviceWorker from "./serviceWorker";
 
 import 'semantic-ui-css/semantic.min.css';
@@ -13,14 +12,13 @@ import './styles/index.css'
 // import { setUser, clearUser } from './actions';
 
 
-import MainApp from "./components/KeysDbApp/Main";
+// import MainApp from "./components/KeysDbApp/Main";
+import App from "./components/App"
 
 // const store = createStore(rootReducer, composeWithDevTools());
 
 
-ReactDOM.render(
-    <MainApp />
-    , document.getElementById("root"));
+ReactDOM.render(<App />, document.getElementById("root"));
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
