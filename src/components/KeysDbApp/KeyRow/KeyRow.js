@@ -29,18 +29,20 @@ function KeyRow({ isFirst, headers, numberOfDuplicates, gameData }) {
         gameData[header] = changedValue;
     }
 
-    function selectCell(header) {
-        const rKey = `${game.ssLocation.row}-${header}`;
-        const gameHeaderValue = game[header];
+    function selectCell(header, index) {
+        const rKey = `${game[0]}-${header}-${index}`;
+        const gameHeaderValue = game[index];
 
         switch (header) {
+            case "ID":
+                return <React.Fragment key={rKey}></React.Fragment>
+            // return <Table.Cell key={rKey}></Table.Cell>
             case "Name":
                 return <NameCell
                     onChange={changeCallback}
                     header={header}
                     name={gameHeaderValue}
                     key={rKey}
-                    onChange={changeCallback}
                 />
             case "Status":
                 return <StatusCell
@@ -110,7 +112,6 @@ function KeyRow({ isFirst, headers, numberOfDuplicates, gameData }) {
                 return <Table.Cell
                     onChange={changeCallback}
                     header={header}
-                    key={header}
                     key={rKey}>
                     {gameHeaderValue}
                 </Table.Cell>
@@ -130,7 +131,7 @@ function KeyRow({ isFirst, headers, numberOfDuplicates, gameData }) {
 
             if (gameData) {
                 const gameAppId = gameData.image && gameData.image.split('/')[5]
-                
+
                 setGame({
                     ...game,
                     'Cards': gameData['trading_cards'] ? "https://steamcommunity.com/id/justLynx/gamecards/236850" : 'No',
@@ -167,7 +168,7 @@ function KeyRow({ isFirst, headers, numberOfDuplicates, gameData }) {
                 <Button onClick={save} circular basic icon='save' size="tiny" loading={isSaving} /> */}
             </Table.Cell>
             {
-                game && headers.map(header => { return selectCell(header) })
+                game && headers.map((header, index) => { return selectCell(header, index) })
             }
         </Table.Row>
     );

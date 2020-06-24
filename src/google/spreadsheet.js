@@ -2,11 +2,14 @@ import { gapi } from 'gapi-script';
 import googleConfig from './config';
 import axios from "axios";
 import _ from "lodash";
+import { isUrl, isSteamKey } from '../utils';
 
 class Spreashsheets {
     constructor() {
+        this.spreadsheetId = ''
         this._token = '';
         this._columns = {}
+        this._columnsWithOptions = {}
     }
 
     get token() {
@@ -14,6 +17,8 @@ class Spreashsheets {
 
         return this._token
     }
+
+    _get = async (url) => axios.get(url, { headers: { 'Content-Type': 'application/json; charset=UTF-8', Authorization: _.concat('Bearer ', this.token) } })
 
     _getColumn = key => this._columns[key]
 
@@ -41,15 +46,62 @@ class Spreashsheets {
         // console.log("Filter string:", allFilters)
     }
 
-    _createQueryString(filters = [], range = "*") { return encodeURIComponent(`Select ${range} ${_.isEmpty(filters) ? "" : ` where ${this._parseFilters(filters)}`}`) }
+    _createQueryString(offset = 0, limit = 50, orderBy = "A", asc = false, filters = [], range = "*") {
+        const select = `select ${range}`
+        const where = _.isEmpty(filters)
+            ? ``
+            : ` where ${this._parseFilters(filters)}`
+        const offsetAndLimit = `limit ${limit} offset ${offset}`
+        const order = orderBy
+            ? `order by ${orderBy} ${asc ? "asc" : "desc"}`
+            : ``
 
-    _get = async (url) => axios.get(url, { headers: { 'Content-Type': 'application/json; charset=UTF-8', Authorization: _.concat('Bearer ', this.token) } })
+        return encodeURIComponent(`${select} ${where} ${offsetAndLimit}`)
+    }
+
+    _parseTable(response) {
+        const table = JSON.parse(response.data.slice(response.data.indexOf("{"), response.data.length - 2)).table;
+        console.log("Table:", table);
+
+        return {
+            ...table,
+            rows: table.rows.reduce((result, row) => {
+                return _.concat(
+                    result,
+                    [row["c"].map((values, index) => {
+                        return values
+                            ? values.v
+                            : ''
+                    })]
+                )
+            }, [])
+        }
+    }
+
+    _parseOptions(headers, rows) {
+        this._columnsWithOptions = { ...headers }
+        const allOptions = { ...headers }
+
+        rows.map(row => Object.keys(allOptions).map((headerKey, index) => _.isObject(allOptions[headerKey])
+            ? allOptions[headerKey] = {
+                ...allOptions[headerKey],
+                [row[index]]: 0
+            }
+            : allOptions[headerKey] = { [row[index]]: 0 }))
+
+        Object.keys(allOptions).map(headerKey => allOptions[headerKey] = Object.keys(allOptions[headerKey])
+            .filter(value => { return value !== "" && !_.toNumber(value) && !isUrl(value) && !isSteamKey(value) }))
+
+        // console.log("allOptions", allOptions)
+
+        this._columnsWithOptions = allOptions
+    }
 
     // https://developers.google.com/chart/interactive/docs/querylanguage
-    Query = async (spreadsheetId, filters = []) => this._get(`https://docs.google.com/a/google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tq=${this._createQueryString(filters)}`)
+    _query = async (offset, limit, orderBy, asc, filters) => this._get(`https://docs.google.com/a/google.com/spreadsheets/d/${this.spreadsheetId}/gviz/tq?tq=${this._createQueryString(offset, limit, orderBy, asc, filters)}`)
 
     // https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/update
-    async updateSingleCell(range = "Keys!A921", value = ["1", "2", "3"]) {
+    async UpdateSingleCell(range = "Keys!A930", value = ["1", "2", "3"]) {
         var params = {
             // The ID of the spreadsheet to update.
             spreadsheetId: googleConfig.spreadsheetId,  // TODO: Update placeholder value.
@@ -75,22 +127,27 @@ class Spreashsheets {
         }, function (reason) {
             console.error('error: ' + reason.result.error.message);
         });
-
-    }
-
-    _parseTable(rows) {
-        const result = rows.reduce()
     }
 
     async GetInitialTable(spreadsheetId) {
-        return this.Query(spreadsheetId).then(response => {
-            const table = JSON.parse(response.data.slice(response.data.indexOf("{"), response.data.length - 2)).table;
-            console.log("Table", table);
+        this.spreadsheetId = spreadsheetId;
 
-            this._setColumns(table.cols)
-
-            return { headers: this._columns, rows: this._parseTable(table.rows) }
+        await this._query(0, 10000).then(response => {
+            const table = this._parseTable(response);
+            this._setColumns(table.cols);
+            this._parseOptions(this._columns, table.rows);
+            // console.log("this._columnsWithOptions", this._columnsWithOptions);
         })
+
+        return this._query().then(response => { return { headers: this._columnsWithOptions, rows: this._parseTable(response).rows } })
+    }
+
+    async GetFilteredData(offset, limit, orderBy, asc, filters) {
+        return this._query(offset, limit, orderBy, asc, filters)
+            .then(response => {
+                const rows = this._parseTable(response).rows
+                return { headers: this._columnsWithOptions, rows: rows }
+            })
     }
 }
 

@@ -8,30 +8,29 @@ import spreadsheets from "../../../google/spreadsheet";
 import _ from 'lodash';
 
 // { key: 'From', values: ['Humblebundle'] }, { key: 'Status', values: ['Unused', 'Given'] }
-function KeysTable({ inverted, allOptions, spreadsheetId }) {
+function KeysTable({ inverted, spreadsheetId }) {
     const [rowsToDisplay, setRowsToDisplay] = React.useState(50);
     const [sortingFunction, setSortingFunction] = React.useState({ callback: sortByDate });
     const [filters, setFilters] = React.useState([]);
     const [descending, setDescending] = React.useState(true);
     const [headers, setHeaders] = React.useState([]);
-
     const [games, setGames] = React.useState([]);
+    const [loading, setLoading] = React.useState(false);
 
     React.useEffect(() => {
-        if (_.isEmpty(games) && _.isEmpty(filters)) {
+        if (_.isEmpty(headers)) {
             console.log("First time loading Table");
             spreadsheets.GetInitialTable(spreadsheetId)
                 .then(response => {
-                    console.log("Table recieved:", response)
+                    setHeaders(response.headers)
+                    setGames(response.rows)
                 })
         } else {
             console.log("Loading Table");
-            spreadsheets.Query(spreadsheetId, filters)
-                .then(response => {
-                    console.log("Table recieved:", response)
-                })
+            console.log("Filters:", filters)
+            getGames(filters);
         }
-    }, [])
+    }, [filters])
 
     const addUsedFilter = () => setFilters([...filters, { key: 'Status', values: ['Used'] }])
 
@@ -53,26 +52,33 @@ function KeysTable({ inverted, allOptions, spreadsheetId }) {
                         values: filter.values.filter(filter => { return filter !== valueToRemove })
                     }])
                 : result.concat(filter)
-        }, []))
-    }
-
-    function getGames(filters) {
-        spreadsheets.Query(spreadsheetId, filters)
-            .then(response => { console.log(response) })
+        }, []));
     }
 
     function addFilter(newFilter) {
-        const oldSelectedFilter = filters.filter(filter => { return filter.key === newFilter.key })[0]
-        const oldFiltersWithoutNew = filters.filter(filter => { return filter.key !== newFilter.key })
+        const oldSelectedFilter = filters.filter(filter => { return filter.key === newFilter.key })[0];
 
-        const newFilters = oldSelectedFilter
-            ? oldFiltersWithoutNew.concat({ "key": newFilter["key"], "values": oldSelectedFilter["values"].concat(newFilter.values) })
-            : filters.concat(newFilter)
+        setFilters(
+            oldSelectedFilter
+                ? _.concat(
+                    filters.filter(filter => { return filter.key !== newFilter.key }),
+                    { "key": newFilter["key"], "values": _.concat(oldSelectedFilter["values"], newFilter.values) }
+                )
+                : _.concat(
+                    filters,
+                    newFilter
+                )
+        )
+    }
 
-        getGames(newFilters)
-        setFilters(newFilters)
-
-        // console.log("adding filter", filter)
+    function getGames(filters) {
+        setLoading(true)
+        spreadsheets.GetFilteredData(undefined, undefined, undefined, undefined, filters)
+            .then(games => {
+                console.log("Got filtered games:", games.rows)
+                setGames(games.rows)
+                setLoading(false)
+            })
     }
 
     return (
@@ -112,65 +118,42 @@ function KeysTable({ inverted, allOptions, spreadsheetId }) {
                         </List>
                     </Segment>
                     <Segment size="mini">
-                        <Table celled structured inverted={inverted}>
+                        <Table celled striped inverted={inverted}>
                             <Table.Header>
                                 <Table.Row>
                                     <Table.HeaderCell></Table.HeaderCell>
                                     {
-                                        headers.map(rowName => {
-                                            return <HeaderCell
-                                                filterCallback={addFilter}
-                                                filters={filters}
-                                                header={rowName}
-                                                values={allOptions[rowName]}
-                                                key={rowName}
-                                            />
-                                        })
+                                        Object.keys(headers)
+                                            .filter(headerKey => headerKey !== "ID")
+                                            .map(headerKey => {
+                                                return <HeaderCell
+                                                    filterCallback={addFilter}
+                                                    filters={filters}
+                                                    header={headerKey}
+                                                    values={headers[headerKey]}
+                                                    key={headerKey}
+                                                />
+                                            })
                                     }
                                 </Table.Row>
                             </Table.Header>
-
                             <Table.Body>
                                 {
-                                    _.isEmpty(games)
+                                    loading
                                         ? (
-                                            <Dimmer active>
-                                                <Loader />
-                                            </Dimmer>
+                                            <Table.Row verticalAlign="middle" textAlign="center">
+                                                <Table.Cell colSpan={Object.keys(headers).length}>
+                                                    <Loader active inline='centered' content='Loading' />
+                                                </Table.Cell>
+                                            </Table.Row>
                                         )
-                                        : games
-                                            .filter(game => {
-                                                let result = true;
-                                                filters.forEach(filter => { result = result && filter.values.some((currentValue) => { return game[filter.key] === currentValue }) });
-                                                return result;
-                                            })
-                                            .sort(sortingFunction.callback)
-                                            .map((game, index) => {
-                                                return index < rowsToDisplay && <KeyRow
-                                                    gameData={game}
-                                                    headers={headers}
-                                                    key={game.ssLocation.row}
-                                                />
-                                            })
+                                        : games.map(game => <KeyRow
+                                            gameData={game}
+                                            headers={Object.keys(headers)}
+                                            key={`${game[0]}-${game[1]}`}
+                                        />)
                                 }
-                                {
 
-                                    false && Object.keys(games)
-                                        .map((game, keysIndex) => {
-                                            return games[game]
-                                                .sort(sortingFunction.callback)
-                                                .map((gameRow, gamesIndex) => {
-                                                    return keysIndex < rowsToDisplay && <KeyRow
-                                                        gameData={gameRow}
-                                                        isFirst={gamesIndex === 0}
-                                                        headers={headers}
-                                                        numberOfDuplicates={games[game].length}
-                                                        key={gameRow.ssLocation.row}
-                                                    ></KeyRow>
-                                                })
-
-                                        })
-                                }
                             </Table.Body>
                         </Table>
                     </Segment>
@@ -180,3 +163,38 @@ function KeysTable({ inverted, allOptions, spreadsheetId }) {
 }
 
 export default KeysTable;
+
+// {
+
+//     false && Object.keys(games)
+//         .map((game, keysIndex) => {
+//             return games[game]
+//                 .sort(sortingFunction.callback)
+//                 .map((gameRow, gamesIndex) => {
+//                     return keysIndex < rowsToDisplay && <KeyRow
+//                         gameData={gameRow}
+//                         isFirst={gamesIndex === 0}
+//                         headers={headers}
+//                         numberOfDuplicates={games[game].length}
+//                         key={gameRow.ssLocation.row}
+//                     ></KeyRow>
+//                 })
+
+//         })
+// }
+
+
+// games
+//                                             .filter(game => {
+//                                                 let result = true;
+//                                                 filters.forEach(filter => { result = result && filter.values.some((currentValue) => { return game[filter.key] === currentValue }) });
+//                                                 return result;
+//                                             })
+//                                             .sort(sortingFunction.callback)
+//                                             .map((game, index) => {
+//                                                 return index < rowsToDisplay && <KeyRow
+//                                                     gameData={game}
+//                                                     headers={headers}
+//                                                     key={game.ssLocation.row}
+//                                                 />
+//                                             })

@@ -1,11 +1,7 @@
 import React from "react";
-import { Table, Icon, Button } from "semantic-ui-react";
+import { Table, Icon } from "semantic-ui-react";
 
 function KeyCell({ gameKey }) {
-    function unlockKey() {
-
-    }
-
     return (
         <Table.Cell singleLine>
             <Icon circular size='small' name='lock' />
