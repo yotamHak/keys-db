@@ -1,6 +1,6 @@
 import React from "react";
 import { Modal, Search, Segment, Header, Item, Icon, Container, Button, Input, Divider } from "semantic-ui-react";
-import itadApi from "../../../itad";
+import itadApi from "../../../../itad";
 import _ from 'lodash';
 
 function SearchModal({ onSelect, initialValue, children }) {

@@ -15,3 +15,7 @@ body {
 .pointer{
   cursor: pointer;
 }
+
+.visibility-hidden{
+  visibility: hidden;
+}

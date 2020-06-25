@@ -1,18 +1,18 @@
 import React from "react";
 import { Table, Button } from 'semantic-ui-react';
-import StatusCell from "../StatusCell/StatusCell";
-import OwnStatusCell from "../OwnStatusCell/OwnStatusCell";
-import FromCell from "../FromCell/FromRow";
-import KeyCell from "../KeyCell/KeyCell";
-import AddedCell from "../AddedCell/AddedCell";
-import NoteCell from "../NoteCell/NoteCell";
-import UrlCell from "../UrlCell/UrlCell";
-import CardsCell from "../CardsCell/CardsCell";
-import AppIdCell from "../AppIdCell/AppIdCell";
-import NameCell from "../NameCell/NameCell";
+import StatusCell from "../Cells/StatusCell/StatusCell";
+import OwnStatusCell from "../Cells/OwnStatusCell/OwnStatusCell";
+import FromCell from "../Cells/FromCell/FromRow";
+import KeyCell from "../Cells/KeyCell/KeyCell";
+import AddedCell from "../Cells/AddedCell/AddedCell";
+import NoteCell from "../Cells/NoteCell/NoteCell";
+import UrlCell from "../Cells/UrlCell/UrlCell";
+import CardsCell from "../Cells/CardsCell/CardsCell";
+import AppIdCell from "../Cells/AppIdCell/AppIdCell";
+import NameCell from "../Cells/NameCell/NameCell";
 import itadApi from "../../../itad";
 
-function KeyRow({ isFirst, headers, numberOfDuplicates, gameData }) {
+function KeyRow({ headers, gameData }) {
     const [isRefreshing, setIsRefreshing] = React.useState(false);
     const [isSaving, setIsSaving] = React.useState(false);
 
@@ -153,14 +153,17 @@ function KeyRow({ isFirst, headers, numberOfDuplicates, gameData }) {
         setGame(gameData)
     }
 
+    function edit() { }
+
     return (
         <Table.Row>
             <Table.Cell singleLine>
 
-                <Button.Group basic size="tiny"
+                <Button.Group basic size='mini'
                     buttons={[
                         { key: 'refresh', icon: 'refresh', onClick: refresh, loading: isRefreshing, size: 'tiny' },
                         { key: 'save', icon: 'save', onClick: save, loading: isSaving, size: 'tiny' },
+                        { key: 'edit', icon: 'pencil', onClick: edit, size: 'tiny' },
                     ]}
                 />
 

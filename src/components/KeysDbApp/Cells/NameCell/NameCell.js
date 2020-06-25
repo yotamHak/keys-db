@@ -1,7 +1,6 @@
 import React from "react";
 import { Table } from "semantic-ui-react";
-
-import SearchModal from "../Search Modal/SearchModal";
+import SearchModal from "../../Modals/SearchModal/SearchModal";
 
 function NameCell({ name }) {
     // function findGame(name) {
