@@ -21,7 +21,7 @@ import steamApi from "../../../../steam/steam";
 function NewModal({ onSelect, initialValue, children }) {
     const INITIAL_STATE = Object.keys(initialValue.headers).reduce((acc, header) => ({ ...acc, [header]: '' }), {})
 
-    const [showModal, setShowModal] = React.useState(true)
+    const [showModal, setShowModal] = React.useState(false)
     const [isSearching, setIsSearching] = React.useState(false)
     const [searchResults, setSearchResults] = React.useState(null)
     const { handleSubmit, handleChange, updateValues, values, errors } = useFormValidation(INITIAL_STATE, validateNewKey, handleCreateKey);
@@ -38,9 +38,9 @@ function NewModal({ onSelect, initialValue, children }) {
 
         Spreadsheets.InsertNewRow(sortedArray)
             .then(response => {
-                debugger
                 if (response.updatedRows === 1) {
-                    closeModal()
+                    onSelect(true);
+                    closeModal();
                 }
             })
             .then(reason => {

@@ -23,7 +23,7 @@ function HeaderCell({ header, headerOptions, filterCallback, orderByCallback }) 
         if (prevSortIcon && (prevSortIcon !== sortIcon)) {
             orderByCallback(
                 sortIcon === 'sort'
-                    ? { sort: '', asc: true }
+                    ? { sort: '', asc: false }
                     : { sort: header, asc: sortIcon === 'sort up' ? true : false }
             )
         }

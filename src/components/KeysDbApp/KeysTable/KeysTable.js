@@ -8,16 +8,23 @@ import useBottomPage, { usePrevious, genericSort } from "../../../utils";
 import NewModal from "../Modals/NewModal/NewModal";
 import steamApi from "../../../steam/steam";
 
+const INITIAL_ORDERBY = { sort: '', asc: false }
+const INITIAL_OFFSET = 0
+const INITIAL_LIMIT = 24
+
 // { key: 'From', values: ['Humblebundle'] }, { key: 'Status', values: ['Unused', 'Given'] }
 function KeysTable({ inverted, spreadsheetId }) {
     const [headers, setHeaders] = useState({});
     const [games, setGames] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
-    const [offset, setOffset] = useState(0);
-    const [limit, setLimit] = useState(24);
-    const [orderBy, setOrderBy] = useState({ sort: '', asc: false });
+    const [offset, setOffset] = useState(INITIAL_OFFSET);
+    const [limit, setLimit] = useState(INITIAL_LIMIT);
+    const [orderBy, setOrderBy] = useState(INITIAL_ORDERBY);
     const [filters, setFilters] = useState([]);
+
+    const [newModalKey, setNewModalKey] = useState(0);
+    const [reload, setReload] = useState(false);
 
     const prevOffset = usePrevious(offset);
 
@@ -33,8 +40,6 @@ function KeysTable({ inverted, spreadsheetId }) {
     useEffect(() => {
         if (_.isEmpty(headers)) {                                           // Initializing
             // console.log("First time loading Table");
-
-
             Spreadsheets.GetInitialTable(spreadsheetId, offset, limit, orderBy, filters)
                 .then(response => {
                     setHeaders(response.headers)
@@ -44,7 +49,7 @@ function KeysTable({ inverted, spreadsheetId }) {
                     setError(true)
                 })
         } else {
-            if (prevOffset !== offset && offset !== 0) {                    // Fetching more
+            if ((prevOffset !== offset && offset !== 0)) {                    // Fetching more
                 console.log("Loading more...");
                 console.log("Offset:", offset);
                 loadMoreGames(offset, limit, orderBy, filters);
@@ -56,8 +61,10 @@ function KeysTable({ inverted, spreadsheetId }) {
                 console.log("Filters:", filters);
                 getGames(offset, limit, orderBy, filters);
             }
+
+            // setReload(true)
         }
-    }, [filters, offset, orderBy])
+    }, [filters, offset, orderBy, reload])
 
     const getOptionsWithoutValues = (options, values) => _.without(options, ...values)
 
@@ -77,8 +84,8 @@ function KeysTable({ inverted, spreadsheetId }) {
 
     function removeFilter(filterKey, valueToRemove) {
         setHeaders(getNewHeadersOptions({ [filterKey]: getOptionsWithValues(headers[filterKey], [valueToRemove]) }))
-        setOffset(0);
-        setOrderBy({ sort: '', asc: true });
+        setOffset(INITIAL_OFFSET);
+        setOrderBy(INITIAL_ORDERBY);
         setFilters(filters.reduce((result, filter) => {
             return filter.key === filterKey
                 ? filter.values.length === 1
@@ -94,8 +101,8 @@ function KeysTable({ inverted, spreadsheetId }) {
     function addFilter(newFilter) {
         const otherFilters = filters.filter(filter => { return filter.key !== newFilter.key });
         setHeaders(getNewHeadersOptions({ [newFilter.key]: getOptionsWithoutValues(headers[newFilter.key], newFilter.values) }))
-        setOffset(0);
-        setOrderBy({ sort: '', asc: true });
+        setOffset(INITIAL_OFFSET);
+        setOrderBy(INITIAL_ORDERBY);
         setFilters(
             otherFilters.length > 0
                 ? _.concat(otherFilters, newFilter)
@@ -128,7 +135,11 @@ function KeysTable({ inverted, spreadsheetId }) {
         setOrderBy(order)
     }
 
-    function add(value) { console.log("Finished adding...", value); }
+    function add(value) {
+        console.log("Finished adding...", value);
+        setNewModalKey(newModalKey + 1);
+        setReload(true)
+    }
 
     return (
         error
@@ -140,37 +151,28 @@ function KeysTable({ inverted, spreadsheetId }) {
                     </Dimmer>
                 )
                 : (
-                    // <Button onClick={() => { setOffset(offset + limit) }}>load more</Button>
-                    //         <Button onClick={() => { Spreadsheets.InsertNewRow() }}>write</Button>
                     <Segment.Group raised>
-                        <Segment size="mini">
+                        <Segment size="mini" key={`action-menu-segment`}>
                             <Menu>
-                                <NewModal onSelect={add} initialValue={{ headers: headers }} >
-                                    <Menu.Item
-                                        name='new'
-                                    >
-                                        <Icon name='plus' />
-                                    </Menu.Item>
-                                </NewModal>
+                                <React.Fragment key={newModalKey}>
+                                    <NewModal onSelect={add} initialValue={{ headers: headers }}>
+                                        <Menu.Item name='add-new'>
+                                            <Icon name='plus' />
+                                        </Menu.Item>
+                                    </NewModal>
+                                </React.Fragment>
 
                                 <Menu.Item
                                     name='load-more'
                                     onClick={() => { setOffset(offset + limit) }}
                                 >
-                                    load more
+                                    Load More
                                 </Menu.Item>
 
-                                <Menu.Item
-                                    name='write'
-                                    onClick={() => { Spreadsheets.InsertNewRow() }}
-                                >
-                                    write
-                                </Menu.Item>
                             </Menu>
                         </Segment>
-                        <Segment size="mini">
+                        <Segment size="mini" key={`filters-segment`}>
                             <List verticalAlign="middle" size="small" divided horizontal >
-                                {/* <List.Item header={<Icon name="filter" />} /> */}
                                 {
                                     filters.map((filter, filterIndex) => {
                                         return (
@@ -178,25 +180,28 @@ function KeysTable({ inverted, spreadsheetId }) {
                                                 <List.Content>
                                                     <List.Header>{filter.key}</List.Header>
                                                     {
-                                                        filter.values.map((filterValue, valueIndex) => <Label key={valueIndex} basic>
-                                                            {filterValue}
-                                                            <Icon name='close' onClick={() => { removeFilter(filter.key, filterValue) }} />
-                                                        </Label>)
+                                                        filter.values.map((filterValue, valueIndex) => (
+                                                            <Label basic key={valueIndex}>
+                                                                {filterValue}
+                                                                <Icon name='close' onClick={() => { removeFilter(filter.key, filterValue) }} />
+                                                            </Label>
+                                                        ))
                                                     }
                                                 </List.Content>
                                             </List.Item>
                                         )
                                     })
                                 }
-
                             </List>
                         </Segment>
-                        <Segment size="mini">
+                        <Segment size="mini" key={`table-segment`}>
                             <Table celled striped inverted={inverted}>
                                 <Table.Header>
                                     <Table.Row>
                                         <Table.HeaderCell>
-                                            <Button.Group className={'visibility-hidden'} basic size='mini'
+                                            <Button.Group basic
+                                                className={'visibility-hidden'}
+                                                size='mini'
                                                 buttons={[
                                                     { key: 'refresh', icon: 'refresh', size: 'tiny' },
                                                     { key: 'save', icon: 'save', size: 'tiny' },
@@ -207,13 +212,13 @@ function KeysTable({ inverted, spreadsheetId }) {
                                         {
                                             Object.keys(headers)
                                                 .filter(headerKey => headerKey !== "ID")
-                                                .map(headerKey => {
+                                                .map((headerKey, index) => {
                                                     return <HeaderCell
                                                         header={headerKey}
                                                         headerOptions={headers[headerKey].options}
                                                         filterCallback={addFilter}
                                                         orderByCallback={order}
-                                                        key={headerKey}
+                                                        key={index}
                                                     />
                                                 })
                                         }
@@ -229,10 +234,10 @@ function KeysTable({ inverted, spreadsheetId }) {
                                                     </Table.Cell>
                                                 </Table.Row>
                                             )
-                                            : games.map(game => <KeyRow
+                                            : games.map((game, index) => <KeyRow
                                                 gameData={game}
-                                                headers={Object.keys(headers)}
-                                                key={`${game[0]}-${game[1]}`}
+                                                headers={headers}
+                                                key={index}
                                             />)
                                     }
                                 </Table.Body>
@@ -244,38 +249,3 @@ function KeysTable({ inverted, spreadsheetId }) {
 }
 
 export default KeysTable;
-
-// {
-
-//     false && Object.keys(games)
-//         .map((game, keysIndex) => {
-//             return games[game]
-//                 .sort(sortingFunction.callback)
-//                 .map((gameRow, gamesIndex) => {
-//                     return keysIndex < rowsToDisplay && <KeyRow
-//                         gameData={gameRow}
-//                         isFirst={gamesIndex === 0}
-//                         headers={headers}
-//                         numberOfDuplicates={games[game].length}
-//                         key={gameRow.ssLocation.row}
-//                     ></KeyRow>
-//                 })
-
-//         })
-// }
-
-
-// games
-//                                             .filter(game => {
-//                                                 let result = true;
-//                                                 filters.forEach(filter => { result = result && filter.values.some((currentValue) => { return game[filter.key] === currentValue }) });
-//                                                 return result;
-//                                             })
-//                                             .sort(sortingFunction.callback)
-//                                             .map((game, index) => {
-//                                                 return index < rowsToDisplay && <KeyRow
-//                                                     gameData={game}
-//                                                     headers={headers}
-//                                                     key={game.ssLocation.row}
-//                                                 />
-//                                             })

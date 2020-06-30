@@ -2,7 +2,7 @@ import React from "react";
 import { Table, Button } from 'semantic-ui-react';
 import StatusCell from "../Cells/StatusCell/StatusCell";
 import OwnStatusCell from "../Cells/OwnStatusCell/OwnStatusCell";
-import FromCell from "../Cells/FromCell/FromRow";
+import FromCell from "../Cells/FromCell/FromCell";
 import KeyCell from "../Cells/KeyCell/KeyCell";
 import DateCell from "../Cells/DateCell/DateCell";
 import NoteCell from "../Cells/NoteCell/NoteCell";
@@ -30,13 +30,10 @@ function KeyRow({ headers, gameData }) {
     }
 
     function selectCell(header, index) {
-        const rKey = `${game[0]}-${header}-${index}`;
         const gameHeaderValue = game[index];
+        const rKey = `${index}-${header.id}-${gameHeaderValue}`;
 
-        switch (header) {
-            case "ID":
-                return <React.Fragment key={rKey}></React.Fragment>
-            // return <Table.Cell key={rKey}></Table.Cell>
+        switch (header.label) {
             case "Name":
                 return <NameCell
                     onChange={changeCallback}
@@ -171,7 +168,7 @@ function KeyRow({ headers, gameData }) {
                 <Button onClick={save} circular basic icon='save' size="tiny" loading={isSaving} /> */}
             </Table.Cell>
             {
-                game && headers.map((header, index) => { return selectCell(header, index) })
+                game && Object.keys(headers).map((key, index) => { return selectCell(headers[key], index) })
             }
         </Table.Row>
     );
