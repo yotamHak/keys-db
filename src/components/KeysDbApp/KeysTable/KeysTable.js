@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Dimmer, List, Label, Icon, Segment, Loader, Placeholder } from 'semantic-ui-react';
+import { Table, Button, Dimmer, List, Label, Icon, Segment, Loader, Placeholder, Menu } from 'semantic-ui-react';
 import KeyRow from "../KeyRow/KeyRow";
 import HeaderCell from "../Cells/HeaderCell/HeaderCell";
 import Spreadsheets from '../../../google/Spreadsheets';
 import _ from 'lodash';
-import { usePrevious, genericSort } from "../../../utils";
+import useBottomPage, { usePrevious, genericSort } from "../../../utils";
+import NewModal from "../Modals/NewModal/NewModal";
+import steamApi from "../../../steam/steam";
 
 // { key: 'From', values: ['Humblebundle'] }, { key: 'Status', values: ['Unused', 'Given'] }
 function KeysTable({ inverted, spreadsheetId }) {
@@ -13,17 +15,27 @@ function KeysTable({ inverted, spreadsheetId }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
     const [offset, setOffset] = useState(0);
-    const [limit, setLimit] = useState(50);
-    const [orderBy, setOrderBy] = useState({ sort: '', asc: true });
+    const [limit, setLimit] = useState(24);
+    const [orderBy, setOrderBy] = useState({ sort: '', asc: false });
     const [filters, setFilters] = useState([]);
 
+    const prevOffset = usePrevious(offset);
 
-    const prevOffset = usePrevious(offset)
+    // const isBottom = useBottomPage(500);    
+    // const prevBottom = usePrevious(isBottom);
+
+    // useEffect(() => {
+    //     if (isBottom && prevBottom !== isBottom) {
+    //         setOffset(offset + limit);
+    //     }
+    // }, [isBottom])
 
     useEffect(() => {
         if (_.isEmpty(headers)) {                                           // Initializing
             // console.log("First time loading Table");
-            Spreadsheets.GetInitialTable(spreadsheetId)
+
+
+            Spreadsheets.GetInitialTable(spreadsheetId, offset, limit, orderBy, filters)
                 .then(response => {
                     setHeaders(response.headers)
                     setGames(response.rows)
@@ -33,8 +45,8 @@ function KeysTable({ inverted, spreadsheetId }) {
                 })
         } else {
             if (prevOffset !== offset && offset !== 0) {                    // Fetching more
-                // console.log("Loading more...");
-                // console.log("Offset:", offset);
+                console.log("Loading more...");
+                console.log("Offset:", offset);
                 loadMoreGames(offset, limit, orderBy, filters);
             } else {                                                        // Resetting and ReFetching
                 console.log("Loading Table");
@@ -52,14 +64,6 @@ function KeysTable({ inverted, spreadsheetId }) {
     const getOptionsWithValues = (options, values) => _.concat(options, values).sort(genericSort)
 
     function getNewHeadersOptions(options) {
-        // return {
-        //     ...headers,
-        //     ...{
-        //         ...headers,
-        //         ...options
-        //     }
-        // }
-
         return {
             ...headers,
             ...{
@@ -124,6 +128,8 @@ function KeysTable({ inverted, spreadsheetId }) {
         setOrderBy(order)
     }
 
+    function add(value) { console.log("Finished adding...", value); }
+
     return (
         error
             ? <div>Error</div>
@@ -134,10 +140,33 @@ function KeysTable({ inverted, spreadsheetId }) {
                     </Dimmer>
                 )
                 : (
+                    // <Button onClick={() => { setOffset(offset + limit) }}>load more</Button>
+                    //         <Button onClick={() => { Spreadsheets.InsertNewRow() }}>write</Button>
                     <Segment.Group raised>
                         <Segment size="mini">
-                            <Button onClick={() => { setOffset(offset + limit) }}>load more</Button>
-                            <Button onClick={() => { Spreadsheets.updateSingleCell() }}>write</Button>
+                            <Menu>
+                                <NewModal onSelect={add} initialValue={{ headers: headers }} >
+                                    <Menu.Item
+                                        name='new'
+                                    >
+                                        <Icon name='plus' />
+                                    </Menu.Item>
+                                </NewModal>
+
+                                <Menu.Item
+                                    name='load-more'
+                                    onClick={() => { setOffset(offset + limit) }}
+                                >
+                                    load more
+                                </Menu.Item>
+
+                                <Menu.Item
+                                    name='write'
+                                    onClick={() => { Spreadsheets.InsertNewRow() }}
+                                >
+                                    write
+                                </Menu.Item>
+                            </Menu>
                         </Segment>
                         <Segment size="mini">
                             <List verticalAlign="middle" size="small" divided horizontal >
@@ -194,23 +223,11 @@ function KeysTable({ inverted, spreadsheetId }) {
                                     {
                                         loading
                                             ? (
-                                                false
-                                                    ? <Table.Row verticalAlign="middle" textAlign="center">
-                                                        {Object.keys(headers).map((header, index) => {
-                                                            return (
-                                                                <Table.Cell key={index}>
-                                                                    <Placeholder fluid>
-                                                                        <Placeholder.Line length='full' />
-                                                                    </Placeholder>
-                                                                </Table.Cell>
-                                                            )
-                                                        })}
-                                                    </Table.Row>
-                                                    : <Table.Row verticalAlign="middle" textAlign="center">
-                                                        <Table.Cell colSpan={Object.keys(headers).length}>
-                                                            <Loader active inline='centered' content='Loading' />
-                                                        </Table.Cell>
-                                                    </Table.Row>
+                                                <Table.Row verticalAlign="middle" textAlign="center">
+                                                    <Table.Cell colSpan={Object.keys(headers).length}>
+                                                        <Loader active inline='centered' content='Loading' />
+                                                    </Table.Cell>
+                                                </Table.Row>
                                             )
                                             : games.map(game => <KeyRow
                                                 gameData={game}
@@ -218,7 +235,6 @@ function KeysTable({ inverted, spreadsheetId }) {
                                                 key={`${game[0]}-${game[1]}`}
                                             />)
                                     }
-
                                 </Table.Body>
                             </Table>
                         </Segment>

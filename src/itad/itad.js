@@ -44,7 +44,10 @@ class ItadApi {
     // }
     async GetInfoAboutGame(gameName) {
         const plainName = _encodeName(gameName);
-        return await axios.get(this.getCORSLink(`https://api.isthereanydeal.com/v01/game/info/?key=${this.apiKey}&plains=${plainName}`));
+        return axios.get(this.getCORSLink(`https://api.isthereanydeal.com/v01/game/info/?key=${this.apiKey}&plains=${plainName}`))
+            .then(response => {
+                return response.data.data[plainName]
+            })
     }
 
     // https://itad.docs.apiary.io/#reference/game/identifier/get-plain?console=1

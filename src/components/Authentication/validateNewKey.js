@@ -1,8 +1,8 @@
 import dateFns from "date-fns";
 
-export default function validateEvent(values) {
+export default function validateNewKey(values) {
     let errors = {};
-
+    return errors;
     // Title Errors
     if (!values.title) {
         errors.title = "Title required";

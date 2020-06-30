@@ -18,11 +18,22 @@ function useFormValidation(initialState, validate, authenticate) {
         }
     }, [errors])
 
-    function handleChange(event) {
+    function updateValues(event, values) {
         event.persist();
         setValues(previousValues => ({
             ...previousValues,
-            [event.target.name]: event.target.value
+            ...Object.keys(values).reduce((result, item) => ({
+                ...result,
+                [values[item].header]: values[item].value
+            }), {})
+        }))
+    }
+
+    function handleChange(event, { name, value }) {
+        event.persist();
+        setValues(previousValues => ({
+            ...previousValues,
+            [name]: value
         }));
     }
 
@@ -38,7 +49,7 @@ function useFormValidation(initialState, validate, authenticate) {
         setSubmitting(true);
     }
 
-    return { handleSubmit, handleBlur, handleChange, values, errors, isSubmitting }
+    return { handleSubmit, handleBlur, handleChange, updateValues, values, errors, isSubmitting }
 }
 
 export default useFormValidation;

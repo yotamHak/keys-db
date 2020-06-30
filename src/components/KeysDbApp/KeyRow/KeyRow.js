@@ -4,7 +4,7 @@ import StatusCell from "../Cells/StatusCell/StatusCell";
 import OwnStatusCell from "../Cells/OwnStatusCell/OwnStatusCell";
 import FromCell from "../Cells/FromCell/FromRow";
 import KeyCell from "../Cells/KeyCell/KeyCell";
-import AddedCell from "../Cells/AddedCell/AddedCell";
+import DateCell from "../Cells/DateCell/DateCell";
 import NoteCell from "../Cells/NoteCell/NoteCell";
 import UrlCell from "../Cells/UrlCell/UrlCell";
 import CardsCell from "../Cells/CardsCell/CardsCell";
@@ -72,8 +72,8 @@ function KeyRow({ headers, gameData }) {
                     ownStatus={gameHeaderValue}
                     key={rKey}
                 />
-            case "Added":
-                return <AddedCell
+            case "Date Added":
+                return <DateCell
                     onChange={changeCallback}
                     header={header}
                     dateAdded={gameHeaderValue}
