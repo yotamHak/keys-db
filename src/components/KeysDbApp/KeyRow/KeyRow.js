@@ -66,7 +66,7 @@ function KeyRow({ headers, gameData }) {
                 return <OwnStatusCell
                     onChange={changeCallback}
                     header={header}
-                    ownStatus={gameHeaderValue}
+                    status={gameHeaderValue}
                     key={rKey}
                 />
             case "Date Added":

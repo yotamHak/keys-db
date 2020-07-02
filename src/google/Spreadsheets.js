@@ -14,7 +14,7 @@ class Spreashsheets {
     }
 
     get token() {
-        if (this._token === '') { this._token = gapi.client.getToken().access_token }
+        if (this._token === '') { this._token = localStorage.getItem('gTokenId') }
 
         return this._token
     }
@@ -50,21 +50,26 @@ class Spreashsheets {
     // { key: 'From', values: ['Humblebundle'] }, { key: 'Status', values: ['Unused', 'Given'] }
     _parseFilters(filters = []) {
         if (_.isEmpty(filters)) { return "" }
-        const filtersArray = filters.reduce((result, filter) => _.concat(result, [filter.values.map(value => { return { [this._getColumn(filter.key)]: `'${value}'` } })]), [])
+        const filtersArray = filters.reduce((result, filter) => _.concat(
+            result,
+            [filter.values.map(value => ({ [this._getColumn(filter.key)]: `'${value}'` }))]
+        ), [])
         return _.join(filtersArray.map(group => `(${_.join(group.map(item => `${Object.keys(item)[0]} = ${item[Object.keys(item)[0]]}`), ' or ')})`), ' and ')
     }
 
-    _createQueryString(offset = 0, limit = 50, orderBy = { sort: "F", asc: false }, filters = [], range = "*") {
+    _createQueryString(offset = 0, limit = 50, orderBy = { sort: "Date Added", asc: false }, filters = [], range = "*", countOnly = false) {
         const select = `select ${range}`
         const where = _.isEmpty(filters)
             ? ``
-            : ` where ${this._parseFilters(filters)}`
+            : `where ${this._parseFilters(filters)}`
         const order = orderBy
-            ? `order by ${orderBy.sort ? orderBy.sort : "F"} ${orderBy.asc ? "asc" : "desc"}`
+            ? `order by ${orderBy.sort && !_.isEmpty(this.columns) ? this._getColumn(orderBy.sort) : "F"} ${orderBy.asc ? "asc" : "desc"}`
             : ``
         const offsetAndLimit = `limit ${limit} offset ${offset}`
 
-        return encodeURIComponent(`${select} ${where} ${order} ${offsetAndLimit}`)
+        return countOnly
+            ? encodeURIComponent(`select count(A) ${where}`)
+            : encodeURIComponent(`${select} ${where} ${order} ${offsetAndLimit}`)
     }
 
     _parseTable(response) {
@@ -119,8 +124,6 @@ class Spreashsheets {
 
     // https://developers.google.com/chart/interactive/docs/querylanguage
     _query = async (offset, limit, orderBy, filters) => {
-        if (orderBy && orderBy.sort) { orderBy.sort = this._getColumn(orderBy.sort) }
-
         return this._get(`https://docs.google.com/a/google.com/spreadsheets/d/${this._spreadsheetId}/gviz/tq?tq=${this._createQueryString(offset, limit, orderBy, filters)}`)
             .then(response => {
                 const parsedQuery = JSON.parse(response.data.slice(response.data.indexOf("{"), response.data.length - 2));
@@ -130,6 +133,20 @@ class Spreashsheets {
                 }
                 else {
                     return parsedQuery
+                }
+            })
+    }
+
+    _queryCount = async (offset, limit, orderBy, filters) => {
+        return this._get(`https://docs.google.com/a/google.com/spreadsheets/d/${this._spreadsheetId}/gviz/tq?tq=${this._createQueryString(offset, limit, orderBy, filters, '*', true)}`)
+            .then(response => {
+                const parsedQuery = JSON.parse(response.data.slice(response.data.indexOf("{"), response.data.length - 2));
+
+                if (parsedQuery.status === 'error') {
+                    return Promise.reject(parsedQuery.errors);
+                }
+                else {
+                    return parsedQuery.table.rows[0]['c'][0]['v']
                 }
             })
     }
@@ -146,7 +163,7 @@ class Spreashsheets {
             range: range,  // TODO: Update placeholder value.
 
             // How the input data should be interpreted.
-            valueInputOption: 'RAW',  // TODO: Update placeholder value.
+            valueInputOption: 'USER_ENTERED',  // TODO: Update placeholder value.
         };
 
         const valueRangeBody = {
@@ -173,7 +190,7 @@ class Spreashsheets {
         return this._query(0, 10000).then(response => {
             if (response.errors) {
                 console.error(response);
-                return null
+                return response
             }
 
             const table = this._parseTable(response);
@@ -198,18 +215,29 @@ class Spreashsheets {
         })
     }
 
+    async GetFilteredData(offset, limit, orderBy, filters) {
+        return offset > 0
+            ? this._query(offset, limit, orderBy, filters)
+                .then(response => {
+                    this.rows = this._parseTable(response).rows
+                    return { headers: this._columns, rows: this.rows }
+                })
+            : this._queryCount(offset, limit, orderBy, filters)
+                .then(count => {
+                    return this._query(offset, limit, orderBy, filters)
+                        .then(response => {
+                            this.rows = this._parseTable(response).rows
+                            return { headers: this._columns, rows: this.rows, count: count - 1 }
+                        })
+                })
+
+
+    }
+
     async LoadMore(offset, limit, orderBy, filters) {
         return this._query(offset, limit, orderBy, filters)
             .then(response => {
                 this.rows = _.concat(this.rows, this._parseTable(response).rows)
-                return { headers: this._columns, rows: this.rows }
-            })
-    }
-
-    async GetFilteredData(offset, limit, orderBy, filters) {
-        return this._query(offset, limit, orderBy, filters)
-            .then(response => {
-                this.rows = this._parseTable(response).rows
                 return { headers: this._columns, rows: this.rows }
             })
     }

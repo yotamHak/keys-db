@@ -8,16 +8,6 @@ import { getFormattedDate } from "../../../../utils";
 import Spreadsheets from "../../../../google/Spreadsheets";
 import steamApi from "../../../../steam/steam";
 
-// const newRowValues = Object.keys(initialValue.headers)
-//     .reduce((result, header) => _.concat(result, {
-//         id: initialValue.headers[header].id,
-//         header: header,
-//         value: ''
-//     }), [])
-//     .sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0)
-
-
-
 function NewModal({ onSelect, initialValue, children }) {
     const INITIAL_STATE = Object.keys(initialValue.headers).reduce((acc, header) => ({ ...acc, [header]: '' }), {})
 
@@ -28,7 +18,7 @@ function NewModal({ onSelect, initialValue, children }) {
 
     const ownedGames = steamApi.ownedGames
 
-    React.useEffect(() => { console.log(initialValue); }, [])
+    React.useEffect(() => { }, [])
 
     function handleCreateKey() {
         const sortedArray = Object.keys(values)

@@ -1,15 +1,10 @@
 import React from "react";
 import { Table, Dropdown } from "semantic-ui-react";
+import { parseOptions } from "../../../../utils";
 
-function StatusCell({ status }) {
-    const options = [
-        { key: 1, text: 'Used', value: 1 },
-        { key: 2, text: 'Unused', value: 2 },
-        { key: 3, text: 'Traded', value: 3 },
-        { key: 4, text: 'Given', value: 4 },
-    ]
-
-    const [currentlySelected, setCurrentlySelected] = React.useState(options.filter(option => { return status === option.text })[0]);
+function StatusCell({ status, header, onChange }) {
+    const options = parseOptions(header.options);
+    const [currentlySelected, setCurrentlySelected] = React.useState(options.filter(option => option.text === status)[0] || 0);
 
     function handleChange(e, selected) {
         status = options.filter(option => option.value === selected.value)[0].text;
@@ -19,8 +14,8 @@ function StatusCell({ status }) {
     return (
         <Table.Cell
             positive={currentlySelected.value === 2}
-            negative={currentlySelected.value === 1}
-            warning={currentlySelected.value !== 1 && currentlySelected.value !== 2}
+            negative={currentlySelected.value === 3}
+            warning={currentlySelected.value !== 2 && currentlySelected.value !== 3}
         >
             <Dropdown
                 onChange={handleChange}

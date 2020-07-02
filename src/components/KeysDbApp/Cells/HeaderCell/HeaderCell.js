@@ -5,10 +5,8 @@ import { usePrevious } from "../../../../utils";
 function HeaderCell({ header, headerOptions, filterCallback, orderByCallback }) {
     const [options, setOptions] = React.useState(null);
     const [filters, setFilters] = React.useState({ key: header, values: [] });
-    const [sortIcon, setSortIcon] = React.useState("sort");
 
     const prevFilters = usePrevious(filters)
-    const prevSortIcon = usePrevious(sortIcon)
     const prevHeaderOptions = usePrevious(headerOptions)
 
     React.useEffect(() => {
@@ -19,15 +17,7 @@ function HeaderCell({ header, headerOptions, filterCallback, orderByCallback }) 
         if (prevFilters && (prevFilters !== filters)) {
             filterCallback(filters)
         }
-
-        if (prevSortIcon && (prevSortIcon !== sortIcon)) {
-            orderByCallback(
-                sortIcon === 'sort'
-                    ? { sort: '', asc: false }
-                    : { sort: header, asc: sortIcon === 'sort up' ? true : false }
-            )
-        }
-    }, [filters, sortIcon, headerOptions])
+    }, [filters, headerOptions])
 
     function initOptions(options) {
         return options.reduce((result, option) => {
@@ -47,16 +37,6 @@ function HeaderCell({ header, headerOptions, filterCallback, orderByCallback }) 
         })
     }
 
-    function sort(e, { value }) {
-        setSortIcon(
-            sortIcon === 'sort'
-                ? 'sort up'
-                : sortIcon === 'sort up'
-                    ? 'sort down'
-                    : 'sort'
-        )
-    }
-
     return (
         <Table.HeaderCell singleLine>
             <Grid>
@@ -65,7 +45,6 @@ function HeaderCell({ header, headerOptions, filterCallback, orderByCallback }) 
                         {header}
                     </Grid.Column>
                     <Grid.Column floated='right' width="8" textAlign="right" verticalAlign="middle">
-                        <Icon name={`${sortIcon}`} onClick={sort} className={'pointer'} />
                         {
                             options && (
                                 <Dropdown icon='filter'>

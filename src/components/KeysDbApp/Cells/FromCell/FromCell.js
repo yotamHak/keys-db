@@ -1,13 +1,9 @@
 import React from "react";
 import { Table, Dropdown } from "semantic-ui-react";
-import _ from 'lodash';
+import { parseOptions } from "../../../../utils";
 
-function FromCell({ from, onChange, header }) {
-    const options = header.options.reduce((acc, option) => (_.concat(acc, [{
-        key: acc.length + 1,
-        value: acc.length + 1,
-        text: option
-    }])), [])
+function FromCell({ from, header, onChange }) {
+    const options = parseOptions(header.options);
     const [currentlySelected, setCurrentlySelected] = React.useState(options.filter(option => option.text === from)[0] || 0);
 
     function handleChange(e, { value }) {

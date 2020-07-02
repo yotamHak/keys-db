@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import dateFns from 'date-fns';
+import _ from 'lodash';
 
 export const LINKS_PER_PAGE = 5;
 
@@ -14,6 +15,12 @@ export const genericSort = (a, b) => a < b ? -1 : a > b ? 1 : 0
 export const getFormattedDate = date => dateFns.format(dateFns.parse(date, 'yyyy,mm,dd'), 'DD/MM/YYYY');
 
 export const corsLink = url => `https://cors-anywhere.herokuapp.com/${url}`;
+
+export const parseOptions = options => options.reduce((acc, option) => (_.concat(acc, [{
+  key: acc.length,
+  value: acc.length,
+  text: option
+}])), [])
 
 // Custom hook for saving previous value
 export function usePrevious(value) {
