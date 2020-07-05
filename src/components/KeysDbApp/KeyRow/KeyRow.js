@@ -11,18 +11,20 @@ import CardsCell from "../Cells/CardsCell/CardsCell";
 import AppIdCell from "../Cells/AppIdCell/AppIdCell";
 import NameCell from "../Cells/NameCell/NameCell";
 import itadApi from "../../../itad";
+import { Context } from "../Main";
+import OptionsCell from "../Cells/OptionsCell/OptionsCell";
+import ActionsCell from "../Cells/ActionsCell/ActionsCell";
 
 function KeyRow({ headers, gameData }) {
+    const context = React.useContext(Context);
+
     const [isRefreshing, setIsRefreshing] = React.useState(false);
     const [isSaving, setIsSaving] = React.useState(false);
 
-    const [game, setGame] = React.useState(null);
-    const [originalGameData, setOriginalGameData] = React.useState(null);
+    const [game, setGame] = React.useState({ ...gameData });
+    const [originalGameData, setOriginalGameData] = React.useState({ ...gameData });
 
-    React.useEffect(() => {
-        setOriginalGameData({ ...gameData });
-        setGame({ ...gameData });
-    }, []);
+    React.useEffect(() => { }, []);
 
     function changeCallback(header, changedValue) {
         console.log("Changed Value", `${header}: ${changedValue}`)
@@ -56,10 +58,16 @@ function KeyRow({ headers, gameData }) {
                     key={rKey}
                 />
             case "From":
-                return <FromCell
+                // return <FromCell
+                //     onChange={changeCallback}
+                //     header={header}
+                //     from={gameHeaderValue}
+                //     key={rKey}
+                // />
+                return <OptionsCell
                     onChange={changeCallback}
                     header={header}
-                    from={gameHeaderValue}
+                    title={gameHeaderValue}
                     key={rKey}
                 />
             case "Own Status":
@@ -154,50 +162,12 @@ function KeyRow({ headers, gameData }) {
 
     return (
         <Table.Row>
-            <Table.Cell singleLine>
-
-                <Button.Group basic size='mini'
-                    buttons={[
-                        { key: 'refresh', icon: 'refresh', onClick: refresh, loading: isRefreshing, size: 'tiny' },
-                        { key: 'save', icon: 'save', onClick: save, loading: isSaving, size: 'tiny' },
-                        { key: 'edit', icon: 'pencil', onClick: edit, size: 'tiny' },
-                    ]}
-                />
-
-                {/* <Button onClick={refresh} circular basic icon='refresh' size="tiny" loading={isRefreshing} />
-                <Button onClick={save} circular basic icon='save' size="tiny" loading={isSaving} /> */}
-            </Table.Cell>
+            <ActionsCell />
             {
-                game && Object.keys(headers).map((key, index) => { return selectCell(headers[key], index) })
+                game && Object.keys(context.headers).map((key, index) => { return selectCell(context.headers[key], index) })
             }
         </Table.Row>
     );
-
-    // return (
-    //     isFirst
-    //         ? (
-    //             <Table.Row>
-    //                 {
-    //                     headers.map(header => {
-    //                         return selectCell(header)
-    //                     })
-    //                 }
-    //             </Table.Row>
-    //         )
-    //         : (
-    //             <Table.Row>
-    //                 {
-    //                     headers.map(header => {
-    //                         if (header === "Name") {
-    //                             return
-    //                         } else {
-    //                             return selectCell(header)
-    //                         }
-    //                     })
-    //                 }
-    //             </Table.Row>
-    //         )
-    // );
 }
 
 export default KeyRow;

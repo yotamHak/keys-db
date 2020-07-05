@@ -1,40 +1,66 @@
-import React from "react";
+import React, { useState } from "react";
 import KeysTable from "./KeysTable/KeysTable";
 import GoogleAuthentication from "../../google/GoogleAuthentication";
-import { GoogleLogin, GoogleLogout, useGoogleLogin } from 'react-google-login';
-import googleConfig from "../../google/config";
-import { gapi } from "gapi-script";
-import { GoogleLoginComponent } from "../auth/GoogleLoginComponent/GoogleLoginComponent";
+// import { GoogleLogin, GoogleLogout, useGoogleLogin } from 'react-google-login';
+// import googleConfig from "../../google/config";
+// import { gapi } from "gapi-script";
+// import { GoogleLoginComponent } from "../auth/GoogleLoginComponent/GoogleLoginComponent";
+import Spreadsheets from "../../google/Spreadsheets";
 // import Login from "./auth/Login";
+
+const themes = {
+    light: {
+        name: "light",
+        foreground: "#000000",
+        background: "#eeeeee"
+    },
+    dark: {
+        name: "dark",
+        foreground: "#ffffff",
+        background: "#222222"
+    }
+};
+export const Context = React.createContext(null);
 
 function MainApp(props) {
     const [signedIn, setSignedIn] = React.useState(false);
+    const [spreadsheetReady, setSpreadsheetReady] = React.useState(false);
     const spreadsheetId = props.match.params.spreadsheetId;
+
+    const [headers, setHeaders] = useState(null);
+    const [theme, setTheme] = useState(themes.light);
+
+    function toggleTheme() {
+        setTheme(theme => (theme.name === "light" ? theme.dark : theme.light));
+    }
 
     const load = () => setSignedIn(true)
 
-    const handleLoggedSuccess = (response) => console.log(response)
-    const handleLoggedError = (response) => console.log(response)
+    // const handleLoggedSuccess = (response) => console.log(response)
+    // const handleLoggedError = (response) => console.log(response)
 
-    React.useEffect(() => { }, [])
+    React.useEffect(() => {
+        Spreadsheets.Initialize(spreadsheetId).then(response => {
+            setHeaders(response.headers)
+            setSpreadsheetReady(true);
+        })
+    }, [])
 
     return (
-        <div style={{ overflow: 'auto' }}>
+        <Context.Provider value={{ headers, theme, toggleTheme }}>
             {
-                signedIn
+                signedIn && spreadsheetReady
                     ? <KeysTable
                         spreadsheetId={spreadsheetId}
-                        inverted={false}
                         key={spreadsheetId}
                     />
-                    :
-                    <GoogleAuthentication callbackOnSignIn={load} />
+                    : <GoogleAuthentication callbackOnSignIn={load} />
                 // <GoogleLoginComponent
                 //     onLogin={() => { setSignedIn(true) }}
                 //     onLogout={() => { setSignedIn(false) }}
                 // />
             }
-        </div>
+        </Context.Provider>
     )
 }
 

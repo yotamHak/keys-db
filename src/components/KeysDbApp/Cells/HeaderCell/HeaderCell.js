@@ -1,38 +1,52 @@
-import React from "react";
-import { Table, Dropdown, Icon, Grid, } from "semantic-ui-react";
+import React, { forwardRef, useImperativeHandle } from "react";
+import { Table, Dropdown, Grid, } from "semantic-ui-react";
 import { usePrevious } from "../../../../utils";
+import { Context } from "../../Main";
+import _ from 'lodash';
 
-function HeaderCell({ header, headerOptions, filterCallback, orderByCallback }) {
-    const [options, setOptions] = React.useState(null);
-    const [filters, setFilters] = React.useState({ key: header, values: [] });
+const HeaderCell = forwardRef(({ title, filterCallback }, ref) => {
+    const context = React.useContext(Context);
 
-    const prevFilters = usePrevious(filters)
-    const prevHeaderOptions = usePrevious(headerOptions)
+    const [filters, setFilters] = React.useState({ key: title, values: [] });
+    const [options, setOptions] = React.useState(initOptions(context.headers[title].options));
+
+    const prevFilters = usePrevious(filters);
 
     React.useEffect(() => {
-        if ((!prevHeaderOptions && headerOptions) || (prevHeaderOptions !== headerOptions)) {
-            setOptions(initOptions(headerOptions))
-        }
+        if (prevFilters && (prevFilters.values.length !== filters.values.length)) {
+            setOptions(initOptions(context.headers[title].options))
 
-        if (prevFilters && (prevFilters !== filters)) {
-            filterCallback(filters)
+            if (prevFilters.values.length < filters.values.length) {
+                filterCallback(filters);
+            }
         }
-    }, [filters, headerOptions])
+    }, [filters])
+
+    // https://stackoverflow.com/questions/37949981/call-child-method-from-parent
+    useImperativeHandle(ref, () => ({
+        handleFilterRemoval(value) {
+            console.log(value)
+
+            setFilters({
+                key: title,
+                values: _.without(filters.values, value)
+            })
+        }
+    }));
 
     function initOptions(options) {
-        return options.reduce((result, option) => {
+        return _.without(options, ...filters.values).reduce((result, option) => {
             return result.concat({
                 "key": option,
                 "text": option,
                 "value": option,
-                // "label": {},
             })
         }, [])
     }
 
     function filter(e, { value }) {
         setFilters({
-            key: header,
+            key: title,
             values: filters.values.concat(value)
         })
     }
@@ -42,17 +56,21 @@ function HeaderCell({ header, headerOptions, filterCallback, orderByCallback }) 
             <Grid>
                 <Grid.Row>
                     <Grid.Column floated='left' width="8">
-                        {header}
+                        {title}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     </Grid.Column>
                     <Grid.Column floated='right' width="8" textAlign="right" verticalAlign="middle">
                         {
-                            options && (
+                            options.length > 0 && (
                                 <Dropdown icon='filter'>
                                     <Dropdown.Menu>
                                         <Dropdown.Menu scrolling>
                                             {
                                                 options.map((option) => (
-                                                    <Dropdown.Item onClick={filter} key={option.value} {...option} />
+                                                    <Dropdown.Item
+                                                        onClick={filter}
+                                                        key={option.value}
+                                                        {...option}
+                                                    />
                                                 ))
                                             }
                                         </Dropdown.Menu>
@@ -66,6 +84,6 @@ function HeaderCell({ header, headerOptions, filterCallback, orderByCallback }) 
             </Grid>
         </Table.HeaderCell>
     );
-}
+})
 
 export default HeaderCell;

@@ -1,6 +1,5 @@
 import React from "react";
 import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom';
-// import firebase from "firebase";
 
 import MainApp from "./KeysDbApp/Main";
 import Settings from "./KeysDbApp/Settings/Settings"
@@ -23,9 +22,6 @@ function App() {
                 <Route path="/new/:page" component={LinkList} /> */}
             </Switch>
         </BrowserRouter>
-        // <BrowserRouter>
-        //     <MainApp />
-        // </BrowserRouter>
     );
 }
 

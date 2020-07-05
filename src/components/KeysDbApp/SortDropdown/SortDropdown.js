@@ -1,32 +1,13 @@
 import React from "react";
-import { Header, Dropdown, Grid, Button, Icon, Placeholder } from "semantic-ui-react";
-import _ from 'lodash'
+import { Header, Dropdown, Grid, Button, Icon } from "semantic-ui-react";
 
 function SortDropdown({ headers, value, onSort }) {
-    const styles = {
-        placeholder: { width: '8em', height: '0.5em', display: 'inherit' },
-        placeholderLine: { margin: '0', display: 'inherit' }
-    }
-
     return (
         <Header as='h4'>
             <Header.Content>
                 Sort: <React.Fragment>
                     {value.sort} {value.asc ? ' (Ascending)' : ' (Descending)'}
                 </React.Fragment>
-                {/* {
-                    value.sort.length === 1
-                        ? (
-                            <React.Fragment>
-                                {Object.keys(headers).filter(key => headers[key].id === value.sort ? headers[key].label : false)[0]} {value.asc ? ' (Ascending)' : ' (Descending)'}
-                            </React.Fragment>
-                        )
-                        : (
-                            <Placeholder style={styles.placeholder}>
-                                <Placeholder.Line length='full' style={styles.placeholderLine} />
-                            </Placeholder>
-                        )
-                } */}
                 <Dropdown floating>
                     <Dropdown.Menu>
                         {

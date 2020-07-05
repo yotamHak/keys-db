@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Button, Form, Grid, Header, Message, Segment, Label, Icon } from 'semantic-ui-react'
+import { Button, Form, Grid, Header, Message, Segment, Label } from 'semantic-ui-react'
 
 import _ from 'lodash';
 

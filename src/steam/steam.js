@@ -25,33 +25,8 @@ class SteamApi {
     }
     get ownedGames() { return this._ownedGames }
 
-    // async register(name, email, password) {
-    //     const newUser = await this.auth.createUserWithEmailAndPassword(
-    //         email,
-    //         password
-    //     )
-    //     return await newUser.user.updateProfile({
-    //         displayName: name
-    //     })
-    // }
-
-    async AppDetails(appid = 440) {
-        return await axios.get(corsLink(`http://store.steampowered.com/api/appdetails/?appids=${appid}`));
-    }
-
-    async SteamUserStats(appid = 440) {
-        return await axios.get(corsLink(`http://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v0002/?appid=${appid}&key=${this.steamApiKey}&steamid=${this.steamId}`));
-    }
-
     // http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=00D5B3E37E04C5E734BF1B98A3CA9ADE&steamid=76561197967370369&format=json
     async _getOwnedGames() {
-        // return await axios.get(`http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${this.steamApiKey}&steamid=${this.steamId}&format=json`, {
-        //     headers: {
-        //         'Access-Control-Allow-Origin': '*',
-        //         'crossdomain': true,
-        //     }
-        // })
-
         return await axios.get(corsLink(`http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${this.steamApiKey}&steamid=${this.steamId}&format=json`))
             .then(response => {
                 if (response.status === 200) {
@@ -60,6 +35,14 @@ class SteamApi {
                     return response.data.response
                 }
             });
+    }
+
+    async AppDetails(appid = 440) {
+        return await axios.get(corsLink(`http://store.steampowered.com/api/appdetails/?appids=${appid}`));
+    }
+
+    async SteamUserStats(appid = 440) {
+        return await axios.get(corsLink(`http://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v0002/?appid=${appid}&key=${this.steamApiKey}&steamid=${this.steamId}`));
     }
 
     // http://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v0001/?key=00D5B3E37E04C5E734BF1B98A3CA9ADE&steamid=76561197967370369&format=json

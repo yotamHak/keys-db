@@ -11,6 +11,8 @@ class Spreashsheets {
         this._columnsWithOptions = {};
         this._rows = [];
         this._newRowRange = '';
+
+        this._count = 0;
     }
 
     get token() {
@@ -91,7 +93,7 @@ class Spreashsheets {
         }
     }
 
-    _parseOptions(headers, rows) {
+    _initOptions(headers, rows) {
         const allOptions = { ...headers }
 
         _.forEach(rows, row => {
@@ -99,24 +101,31 @@ class Spreashsheets {
 
             _.forEach(allOptions, allOptionValue => {
                 let rowValue = row[optionIndex++]
-
-                if (allOptionValue.type === 'date') {
-                    const capturedValue = RegExp("([0-9]{1,},[0-9]{1,},[0-9]{1,})").exec(rowValue);
-                    rowValue = capturedValue ? getFormattedDate(capturedValue[0]) : ''
-                }
-
-                _.isObject(allOptionValue.options)
-                    ? allOptionValue.options = {
-                        ...allOptionValue.options,
-                        [rowValue]: 0
+                if (rowValue) {
+                    if (allOptionValue.type === 'date') {
+                        const capturedValue = RegExp("([0-9]{1,},[0-9]{1,},[0-9]{1,})").exec(rowValue);
+                        rowValue = capturedValue ? getFormattedDate(capturedValue[0]) : ''
                     }
-                    : allOptionValue.options = { [rowValue]: 0 }
+
+                    _.isObject(allOptionValue.options)
+                        ? allOptionValue.options = {
+                            ...allOptionValue.options,
+                            [rowValue]: 0
+                        }
+                        : allOptionValue.options = { [rowValue]: 0 }
+                }
             })
         })
 
         Object.keys(allOptions)
             .map(headerKey => allOptions[headerKey].options = Object.keys(allOptions[headerKey].options)
-                .filter(value => { return value !== "" && !_.toNumber(value) && !isUrl(value) && !isSteamKey(value) && value !== 'Invalid Date' })
+                .filter(value => {
+                    return value !== ""
+                        && !_.toNumber(value)
+                        && !isUrl(value)
+                        && !isSteamKey(value)
+                        && value !== 'Invalid Date'
+                })
                 .sort(genericSort))
 
         return allOptions
@@ -184,7 +193,7 @@ class Spreashsheets {
             });
     }
 
-    async GetInitialTable(spreadsheetId, offset, limit, orderBy, filters) {
+    async Initialize(spreadsheetId) {
         this.spreadsheetId = spreadsheetId
 
         return this._query(0, 10000).then(response => {
@@ -195,23 +204,26 @@ class Spreashsheets {
 
             const table = this._parseTable(response);
             this.columns = table.cols;
-            const options = this._parseOptions(this._columns, table.rows);
+            this.newRowRange = table.rows.length + 2;
+            const options = this._initOptions(this._columns, table.rows);
 
-            this._columns = Object.keys(options).reduce((result, key) => {
-                return {
-                    ...result,
-                    ...{
-                        [key]: {
-                            ...this._columns[key],
-                            ...options[key]
-                        }
-                    }
-                }
-            }, {})
+            this._columns = options;
 
-            this.newRowRange = table.rows.length + 2
+            // this._columns = Object.keys(options).reduce((result, key) => {
+            //     return {
+            //         ...result,
+            //         ...{
+            //             [key]: {
+            //                 ...this._columns[key],
+            //                 ...options[key]
+            //             }
+            //         }
+            //     }
+            // }, {})
 
-            return this.GetFilteredData(offset, limit, orderBy, filters);
+            return {
+                headers: options
+            }
         })
     }
 
