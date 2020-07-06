@@ -1,38 +1,30 @@
 import React, { forwardRef, useImperativeHandle } from "react";
 import { Table, Dropdown, Grid, } from "semantic-ui-react";
 import { usePrevious } from "../../../../utils";
-import { Context } from "../../Main";
 import _ from 'lodash';
+import { useDispatch, useSelector } from "react-redux";
+import { addFilter, resetTableParams } from "../../../../actions";
 
-const HeaderCell = forwardRef(({ title, filterCallback }, ref) => {
-    const context = React.useContext(Context);
+function HeaderCell({ title }) {
+    const dispatch = useDispatch()
+    const filters = useSelector((state) => {
+        const filter = state.filters.filter(filter => filter.key === title);
 
-    const [filters, setFilters] = React.useState({ key: title, values: [] });
-    const [options, setOptions] = React.useState(initOptions(context.headers[title].options));
+        return filter.length > 0
+            ? filter[0]
+            : { key: title, values: [] }
+    })
+    const headers = useSelector((state) => state.table.headers)
+
+    const [options, setOptions] = React.useState(initOptions(headers[title].options));
 
     const prevFilters = usePrevious(filters);
 
     React.useEffect(() => {
         if (prevFilters && (prevFilters.values.length !== filters.values.length)) {
-            setOptions(initOptions(context.headers[title].options))
-
-            if (prevFilters.values.length < filters.values.length) {
-                filterCallback(filters);
-            }
+            setOptions(initOptions(headers[title].options))
         }
     }, [filters])
-
-    // https://stackoverflow.com/questions/37949981/call-child-method-from-parent
-    useImperativeHandle(ref, () => ({
-        handleFilterRemoval(value) {
-            console.log(value)
-
-            setFilters({
-                key: title,
-                values: _.without(filters.values, value)
-            })
-        }
-    }));
 
     function initOptions(options) {
         return _.without(options, ...filters.values).reduce((result, option) => {
@@ -45,10 +37,11 @@ const HeaderCell = forwardRef(({ title, filterCallback }, ref) => {
     }
 
     function filter(e, { value }) {
-        setFilters({
+        dispatch(resetTableParams(['offset']))
+        dispatch(addFilter({
             key: title,
             values: filters.values.concat(value)
-        })
+        }))
     }
 
     return (
@@ -61,7 +54,7 @@ const HeaderCell = forwardRef(({ title, filterCallback }, ref) => {
                     <Grid.Column floated='right' width="8" textAlign="right" verticalAlign="middle">
                         {
                             options.length > 0 && (
-                                <Dropdown icon='filter'>
+                                <Dropdown icon='filter' compact>
                                     <Dropdown.Menu>
                                         <Dropdown.Menu scrolling>
                                             {
@@ -84,6 +77,6 @@ const HeaderCell = forwardRef(({ title, filterCallback }, ref) => {
             </Grid>
         </Table.HeaderCell>
     );
-})
+}
 
 export default HeaderCell;

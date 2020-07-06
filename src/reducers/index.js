@@ -1,67 +1,90 @@
 import { combineReducers } from 'redux';
 import * as actionTypes from '../actions/types';
+import _ from 'lodash';
 
-const initialUserState = {
-    currentUser: null,
-    isLoading: true
+const initialTableState = {
+    headers: {},
+    reset: {
+        limit: false,
+        offset: false,
+        filters: false,
+        orderBy: false
+    }
 }
 
-const user_reducer = (state = initialUserState, action) => {
+const table_reducer = (state = initialTableState, action) => {
     switch (action.type) {
-        case actionTypes.SET_USER:
-            return {
-                currentUser: action.payload.currentUser,
-                isLoading: false
-            }
-        case actionTypes.CLEAR_USER:
+        case actionTypes.RESET_TABLE_PARAMS:
             return {
                 ...state,
-                isLoading: false
+                reset: action.payload.reduce((result, paramToReset) => (
+                    {
+                        ...result,
+                        [paramToReset]: !result[paramToReset]
+                    }
+                ), state.reset)
+            }
+        case actionTypes.ADD_HEADERS:
+            return {
+                ...state,
+                headers: action.payload
+            }
+        case actionTypes.REMOVE_HEADERS:
+            return {
+                ...state,
+                headers: {}
             }
         default:
             return state;
     }
 }
 
-const initialChannelState = {
-    currentChannel: null,
-    isPrivateChannel: false,
-    userPosts: null,
-};
+const initialFiltersState = []
 
-const channel_reducer = (state = initialChannelState, action) => {
+const filters_reducer = (state = initialFiltersState, action) => {
     switch (action.type) {
-        case actionTypes.SET_CURRENT_CHANNEL:
-            return {
-                ...state,
-                currentChannel: action.payload.currentChannel
-            }
-        case actionTypes.SET_PRIVATE_CHANNEL:
-            return {
-                ...state,
-                isPrivateChannel: action.payload.isPrivateChannel
-            }
-        case actionTypes.SET_USER_POSTS:
-            return {
-                ...state,
-                userPosts: action.payload.userPosts
-            }
+        case actionTypes.ADD_FILTER:
+            const oldFilters = state.filter(filter => { return filter.key !== action.payload.key });
+
+            return oldFilters.length > 0
+                ? _.concat(oldFilters, action.payload)
+                : [action.payload];
+        case actionTypes.REMOVE_FILTER:
+            return state.reduce((result, filter) => {
+                return filter.key === action.payload.key
+                    ? filter.values.length === 1
+                        ? result
+                        : result.concat([{
+                            key: action.payload.key,
+                            values: filter.values.filter(filterValue => { return filterValue !== action.payload.value })
+                        }])
+                    : result.concat(filter)
+            }, [])
         default:
             return state;
     }
 }
 
-const initialColorsState = {
-    primaryColor: '#4c3c4c',
-    secondaryColor: '#eee',
+const initialThemeState = {
+    selected: "light",
+    light: {
+        name: "light",
+        foreground: "#000000",
+        background: "#eeeeee"
+    },
+    dark: {
+        name: "dark",
+        foreground: "#ffffff",
+        background: "#222222"
+    }
 }
 
-const colors_reducer = (state = initialColorsState, action) => {
+const theme_reducer = (state = initialThemeState, action) => {
     switch (action.type) {
-        case actionTypes.SET_COLORS:
+        case actionTypes.CHANGE_THEME:
             return {
-                primaryColor: action.payload.primaryColor,
-                secondaryColor: action.payload.secondaryColor
+                ...state,
+                selected: state.selected === "light" ? "dark" : "light"
             }
         default:
             return state;
@@ -69,9 +92,9 @@ const colors_reducer = (state = initialColorsState, action) => {
 }
 
 const rootReducer = combineReducers({
-    user: user_reducer,
-    channel: channel_reducer,
-    colors: colors_reducer,
+    filters: filters_reducer,
+    table: table_reducer,
+    theme: theme_reducer,
 });
 
 export default rootReducer;

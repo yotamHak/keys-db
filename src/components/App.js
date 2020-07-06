@@ -5,8 +5,6 @@ import MainApp from "./KeysDbApp/Main";
 import Settings from "./KeysDbApp/Settings/Settings"
 
 function App() {
-    React.useEffect(() => { }, [])
-
     return (
         <BrowserRouter>
             <Switch>

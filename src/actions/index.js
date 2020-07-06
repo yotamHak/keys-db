@@ -1,56 +1,50 @@
 import * as actionTypes from './types';
 
-// User Actions
-export const setUser = user => {
+// Table Actions
+export const resetTableParams = paramsToReset => {
     return {
-        type: actionTypes.SET_USER,
+        type: actionTypes.RESET_TABLE_PARAMS,
+        payload: paramsToReset
+    }
+}
+
+export const addHeaders = headers => {
+    return {
+        type: actionTypes.ADD_HEADERS,
+        payload: headers
+    }
+}
+
+export const removeHeaders = () => {
+    return {
+        type: actionTypes.REMOVE_HEADERS
+    }
+}
+
+// Filters Actions
+export const addFilter = filter => {
+    return {
+        type: actionTypes.ADD_FILTER,
         payload: {
-            currentUser: user
+            key: filter.key,
+            values: filter.values
         }
     }
 }
 
-export const clearUser = () => {
+export const removeFilter = filter => {
     return {
-        type: actionTypes.CLEAR_USER
-    }
-}
-
-// Channel Actions
-export const setCurrentChannel = channel => {
-    return {
-        type: actionTypes.SET_CURRENT_CHANNEL,
+        type: actionTypes.REMOVE_FILTER,
         payload: {
-            currentChannel: channel
+            key: filter.key,
+            value: filter.value
         }
     }
 }
 
-export const setPrivateChannel = isPrivateChannel => {
+// Theme Actions
+export const changeTheme = () => {
     return {
-        type: actionTypes.SET_PRIVATE_CHANNEL,
-        payload: {
-            isPrivateChannel
-        }
-    }
-}
-
-export const setUserPosts = userPosts => {
-    return {
-        type: actionTypes.SET_USER_POSTS,
-        payload: {
-            userPosts
-        }
-    }
-}
-
-/* Colors Actions */
-export const setColors = (primaryColor, secondaryColor) => {
-    return {
-        type: actionTypes.SET_COLORS,
-        payload: {
-            primaryColor,
-            secondaryColor
-        }
+        type: actionTypes.CHANGE_THEME
     }
 }

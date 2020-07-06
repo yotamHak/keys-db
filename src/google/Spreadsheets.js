@@ -59,7 +59,7 @@ class Spreashsheets {
         return _.join(filtersArray.map(group => `(${_.join(group.map(item => `${Object.keys(item)[0]} = ${item[Object.keys(item)[0]]}`), ' or ')})`), ' and ')
     }
 
-    _createQueryString(offset = 0, limit = 50, orderBy = { sort: "Date Added", asc: false }, filters = [], range = "*", countOnly = false) {
+    _createQueryString(offset = 0, limit = 24, orderBy = { sort: "Date Added", asc: false }, filters = [], range = "*", countOnly = false) {
         const select = `select ${range}`
         const where = _.isEmpty(filters)
             ? ``
@@ -161,31 +161,43 @@ class Spreashsheets {
     }
 
     // https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/update
-    async InsertNewRow(value, range = `Keys!A${this.newRowRange}`) {
-        const oldRange = this.newRowRange;
-
+    // https://any-api.com/googleapis_com/sheets/docs/spreadsheets/sheets_spreadsheets_values_append
+    async InsertNewRow(value, range = `Keys!B1`) {
         const params = {
-            // The ID of the spreadsheet to update.
-            spreadsheetId: this._spreadsheetId,  // TODO: Update placeholder value.
-
-            // The A1 notation of the values to update.
-            range: range,  // TODO: Update placeholder value.
-
-            // How the input data should be interpreted.
-            valueInputOption: 'USER_ENTERED',  // TODO: Update placeholder value.
+            spreadsheetId: this._spreadsheetId,
+            range: range,
+            valueInputOption: 'USER_ENTERED',
+            insertDataOption: "INSERT_ROWS"
         };
 
-        const valueRangeBody = {
-            // TODO: Add desired properties to the request body. All existing properties
-            // will be replaced.
-            "values": [value]
+        const valueRangeBody = { "values": [value] };
+
+        return gapi.client.sheets.spreadsheets.values.append(params, valueRangeBody)
+            .then(response => {
+                console.log(response.result);
+                return response.result
+            }, reason => {
+                console.error('error: ' + reason.result.error.message);
+                return reason.result.error.message
+            });
+
+
+    }
+
+    async Update(value, range) {
+        const params = {
+            spreadsheetId: this._spreadsheetId,
+            range: range,
+            valueInputOption: 'USER_ENTERED',
+            insertDataOption: "INSERT_ROWS"
         };
+
+        const valueRangeBody = { "values": [value] };
 
         return gapi.client.sheets.spreadsheets.values.update(params, valueRangeBody)
             .then(response => {
                 // TODO: Change code below to process the `response` object:
                 console.log(response.result);
-                this._setNewRowRange(oldRange + 1);
                 return response.result
             }, reason => {
                 console.error('error: ' + reason.result.error.message);
@@ -208,18 +220,6 @@ class Spreashsheets {
             const options = this._initOptions(this._columns, table.rows);
 
             this._columns = options;
-
-            // this._columns = Object.keys(options).reduce((result, key) => {
-            //     return {
-            //         ...result,
-            //         ...{
-            //             [key]: {
-            //                 ...this._columns[key],
-            //                 ...options[key]
-            //             }
-            //         }
-            //     }
-            // }, {})
 
             return {
                 headers: options

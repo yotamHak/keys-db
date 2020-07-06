@@ -1,7 +1,15 @@
-import React from "react";
-import { Table, Dropdown } from "semantic-ui-react";
+import React, { useState } from "react";
+import { Table, Dropdown, Header, Modal, Button, Icon } from "semantic-ui-react";
 
-function ActionsCell() {
+function ActionsCell({ index, gameData }) {
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+
+    function handleEditModalClose() {
+        console.log("handleEditModalClose")
+        console.log(gameData)
+        setIsEditModalOpen(false)
+    }
+
     return (
         <Table.Cell singleLine>
             <Dropdown
@@ -10,25 +18,37 @@ function ActionsCell() {
             >
                 <Dropdown.Menu>
                     <Dropdown.Item>
+                        Info
+                    </Dropdown.Item>
+                    <Dropdown.Item>
                         Refresh
                     </Dropdown.Item>
                     <Dropdown.Item>
                         Save
                     </Dropdown.Item>
-                    <Dropdown.Item>
-                        Edit
-                    </Dropdown.Item>
+
+                    <Modal
+                        trigger={<Dropdown.Item onClick={() => { setIsEditModalOpen(true) }}>Edit</Dropdown.Item>}
+                        open={isEditModalOpen}
+                        onClose={handleEditModalClose}
+                        basic
+                        size='small'
+                    >
+                        <Header icon='browser' content='Cookies policy' />
+                        <Modal.Content>
+                            <h3>This website uses cookies to ensure the best user experience.</h3>
+                        </Modal.Content>
+                        <Modal.Actions>
+                            <Button color='green' onClick={handleEditModalClose} inverted>
+                                <Icon name='checkmark' /> Got it
+                            </Button>
+                        </Modal.Actions>
+                    </Modal>
+
+
 
                 </Dropdown.Menu>
             </Dropdown>
-
-            {/* <Button.Group basic size='mini'
-                buttons={[
-                    { key: 'refresh', icon: 'refresh', onClick: refresh, loading: isRefreshing, size: 'tiny' },
-                    { key: 'save', icon: 'save', onClick: save, loading: isSaving, size: 'tiny' },
-                    { key: 'edit', icon: 'pencil', onClick: edit, size: 'tiny' },
-                ]}
-            /> */}
         </Table.Cell>
     )
 }

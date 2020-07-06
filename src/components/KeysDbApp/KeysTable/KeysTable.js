@@ -1,7 +1,6 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, } from "react";
 import { useHistory } from 'react-router-dom';
-import { Context } from "../Main";
-import { Table, Dimmer, List, Label, Icon, Segment, Loader, Placeholder, Menu, Pagination, Dropdown, Header } from 'semantic-ui-react';
+import { Table, Dimmer, Icon, Segment, Loader, Placeholder, Menu, Pagination, Dropdown, Header } from 'semantic-ui-react';
 import _ from 'lodash';
 import { usePrevious } from "../../../utils";
 import KeyRow from "../KeyRow/KeyRow";
@@ -9,6 +8,8 @@ import HeaderCell from "../Cells/HeaderCell/HeaderCell";
 import Spreadsheets from '../../../google/Spreadsheets';
 import NewModal from "../Modals/NewModal/NewModal";
 import SortDropdown from "../SortDropdown/SortDropdown";
+import { useSelector, useDispatch } from "react-redux";
+import DataFilters from "./DataFilters/DataFilters";
 
 const INITIAL_ORDERBY = { sort: 'Date Added', asc: false }
 const INITIAL_OFFSET = 0
@@ -16,91 +17,52 @@ const INITIAL_LIMIT = 24
 const INITIAL_ACTIVEPAGE = 1
 
 function KeysTable({ spreadsheetId }) {
-    const context = React.useContext(Context);
-
-    const [headers, setHeaders] = useState(context.headers);
     const [games, setGames] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
     const [offset, setOffset] = useState(INITIAL_OFFSET);
     const [limit, setLimit] = useState(INITIAL_LIMIT);
     const [orderBy, setOrderBy] = useState(INITIAL_ORDERBY);
-    const [filters, setFilters] = useState([]);
-
     const [newModalKey, setNewModalKey] = useState(0);
-
     const [activePage, setActivePage] = useState(INITIAL_ACTIVEPAGE);
     const [pages, setPages] = useState(0);
 
     const [reload, setReload] = useState(false);
-    const history = useHistory();
 
+    const dispatch = useDispatch()
+    const filters = useSelector((state) => state.filters)
+    const headers = useSelector((state) => state.table.headers)
+    const resetTable = useSelector((state) => state.table.reset)
+
+    const history = useHistory();
     const prevOffset = usePrevious(offset);
     const prevLimit = usePrevious(limit);
+    const prevFilters = usePrevious(filters);
     const prevReload = usePrevious(reload);
 
-    const headerCellRefs = Object.keys(headers).reduce((acc, item) => {
-        return {
-            ...acc,
-            [item]: useRef()
-        }
-    }, {})
-
     useEffect(() => {
-        if (prevReload === true && reload === false) { return }
         if (!spreadsheetId) { history.push(`settings`); return }
+        if (prevReload === true && reload === false) { return }
 
-        console.log("Loading Table");
+        if (prevOffset && (prevOffset !== offset)) { }
+        if ((prevLimit && (prevLimit !== limit)) || (prevFilters && (prevFilters !== filters))) {
+            if (offset !== INITIAL_OFFSET) {
+                setOffset(INITIAL_OFFSET)
+                setActivePage(INITIAL_ACTIVEPAGE)
+                return
+            }
+        }
+
         console.log("Offset:", offset);
         console.log("Limit:", limit);
-        console.log("Order:", orderBy);
+        console.log("OrderBy:", orderBy);
         console.log("Filters:", filters);
         console.log("-------------------------")
 
-        if (!reload && (prevOffset !== offset && offset !== 0)) {                           // Fetching more
-            console.log("Loading more...");
-            // loadMoreGames(offset, limit, orderBy, filters);
-        } else if (prevLimit !== limit) {                                                   // Resetting because of Limit
-            console.log("Resetting Limit...");
-
-            loadGames(INITIAL_OFFSET, limit, orderBy, filters);
-        }
-        else {                                                                              // Resetting and ReFetching
-            console.log("Resetting...");
-            loadGames(offset, limit, orderBy, filters);
-        }
-
+        loadGames(offset, limit, orderBy, filters)
         setReload(false)
 
     }, [filters, offset, limit, orderBy, reload]);
-
-    function removeFilter(filterKey, valueToRemove) {
-        setOffset(INITIAL_OFFSET);
-        setOrderBy(INITIAL_ORDERBY);
-        setFilters(filters.reduce((result, filter) => {
-            return filter.key === filterKey
-                ? filter.values.length === 1
-                    ? result
-                    : result.concat([{
-                        key: filterKey,
-                        values: filter.values.filter(filter => { return filter !== valueToRemove })
-                    }])
-                : result.concat(filter)
-        }, []));
-
-        headerCellRefs[filterKey].current.handleFilterRemoval(valueToRemove);
-    }
-
-    function addFilter(newFilter) {
-        const otherFilters = filters.filter(filter => { return filter.key !== newFilter.key });
-        setOffset(INITIAL_OFFSET);
-        setOrderBy(INITIAL_ORDERBY);
-        setFilters(
-            otherFilters.length > 0
-                ? _.concat(otherFilters, newFilter)
-                : [newFilter]
-        )
-    }
 
     function handleOrderByChange(order) {
         console.log("Changing orderBy: ", order)
@@ -186,40 +148,12 @@ function KeysTable({ spreadsheetId }) {
                                     <Menu.Item name='settings' onClick={() => history.push('/settings', { edit: true })}>
                                         <Icon name='cog' />
                                     </Menu.Item>
-
-                                    {/* <React.Fragment>
-                                        <Settings key={"settings-modal"}>
-                                            <Menu.Item name='add-new'>
-                                                <Icon name='settings' />
-                                            </Menu.Item>
-                                        </Settings>
-                                    </React.Fragment> */}
                                 </Menu.Menu>
 
                             </Menu>
                         </Segment>
                         <Segment size="mini" key={`filters-segment`}>
-                            <List verticalAlign="middle" size="small" divided horizontal>
-                                {
-                                    filters.map((filter, filterIndex) => {
-                                        return (
-                                            <List.Item key={filterIndex}>
-                                                <List.Content>
-                                                    <List.Header>{filter.key}</List.Header>
-                                                    {
-                                                        filter.values.map((filterValue, valueIndex) => (
-                                                            <Label basic key={valueIndex}>
-                                                                {filterValue}
-                                                                <Icon name='close' onClick={() => { removeFilter(filter.key, filterValue) }} />
-                                                            </Label>
-                                                        ))
-                                                    }
-                                                </List.Content>
-                                            </List.Item>
-                                        )
-                                    })
-                                }
-                            </List>
+                            <DataFilters />
                         </Segment>
                         <Segment size="mini" key={`table-segment`} style={{ overflow: 'auto' }}>
                             <Table celled striped compact>
@@ -228,11 +162,10 @@ function KeysTable({ spreadsheetId }) {
                                         <Table.HeaderCell style={{ minWidth: '40px' }} />
                                         {
                                             Object.keys(headers)
+                                                .filter(filter => filter !== "ID")
                                                 .map((headerKey, index) => {
                                                     return <HeaderCell
-                                                        ref={headerCellRefs[headerKey]}
                                                         title={headerKey}
-                                                        filterCallback={addFilter}
                                                         key={index}
                                                     />
                                                 })

@@ -1,12 +1,11 @@
+// Table Action Types
+export const ADD_HEADERS = 'ADD_HEADERS';
+export const REMOVE_HEADERS = 'REMOVE_HEADERS';
+export const RESET_TABLE_PARAMS = 'RESET_TABLE_PARAMS';
 
-// User Action Types
-export const SET_USER = 'SET_USER';
-export const CLEAR_USER = 'CLEAR_USER';
+// Filters Action Types
+export const ADD_FILTER = 'ADD_FILTER';
+export const REMOVE_FILTER = 'REMOVE_FILTER';
 
-// Channel Action Types
-export const SET_CURRENT_CHANNEL = "SET_CURRENT_CHANNEL";
-export const SET_PRIVATE_CHANNEL = "SET_PRIVATE_CHANNEL";
-export const SET_USER_POSTS = "SET_USER_POSTS";
-
-/* Colors Action Types */
-export const SET_COLORS = "SET_COLORS";
+// Theme Action Types
+export const CHANGE_THEME = 'CHANGE_THEME';

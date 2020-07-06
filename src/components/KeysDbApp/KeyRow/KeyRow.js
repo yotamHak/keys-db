@@ -1,8 +1,7 @@
 import React from "react";
-import { Table, Button } from 'semantic-ui-react';
+import { Table, } from 'semantic-ui-react';
 import StatusCell from "../Cells/StatusCell/StatusCell";
 import OwnStatusCell from "../Cells/OwnStatusCell/OwnStatusCell";
-import FromCell from "../Cells/FromCell/FromCell";
 import KeyCell from "../Cells/KeyCell/KeyCell";
 import DateCell from "../Cells/DateCell/DateCell";
 import NoteCell from "../Cells/NoteCell/NoteCell";
@@ -11,12 +10,12 @@ import CardsCell from "../Cells/CardsCell/CardsCell";
 import AppIdCell from "../Cells/AppIdCell/AppIdCell";
 import NameCell from "../Cells/NameCell/NameCell";
 import itadApi from "../../../itad";
-import { Context } from "../Main";
 import OptionsCell from "../Cells/OptionsCell/OptionsCell";
 import ActionsCell from "../Cells/ActionsCell/ActionsCell";
+import { useSelector } from "react-redux";
 
-function KeyRow({ headers, gameData }) {
-    const context = React.useContext(Context);
+function KeyRow({ gameData }) {
+    const headers = useSelector((state) => state.table.headers)
 
     const [isRefreshing, setIsRefreshing] = React.useState(false);
     const [isSaving, setIsSaving] = React.useState(false);
@@ -32,6 +31,8 @@ function KeyRow({ headers, gameData }) {
     }
 
     function selectCell(header, index) {
+        if (header.label === "ID") { return }
+
         const gameHeaderValue = game[index];
         const rKey = `${index}-${header.id}-${gameHeaderValue}`;
 
@@ -162,9 +163,9 @@ function KeyRow({ headers, gameData }) {
 
     return (
         <Table.Row>
-            <ActionsCell />
+            <ActionsCell gameData={game} />
             {
-                game && Object.keys(context.headers).map((key, index) => { return selectCell(context.headers[key], index) })
+                game && Object.keys(headers).map((key, index) => { return selectCell(headers[key], index) })
             }
         </Table.Row>
     );
