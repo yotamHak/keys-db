@@ -12,6 +12,7 @@
     "gapi-script": "^1.0.2",
     "moment": "^2.27.0",
     "openid-steam": "^0.1.4",
+    "pure-react-carousel": "^1.27.1",
     "querystring": "^0.2.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",

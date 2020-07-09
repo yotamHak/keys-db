@@ -2,7 +2,7 @@ import axios from 'axios';
 import dateFns from 'date-fns';
 import _ from 'lodash';
 import steamConfig from './config';
-import { corsAnywhereLink, corsAllOriginsLink } from '../utils';
+import { corsAnywhereLink, corsAllOriginsLink, corsLink } from '../utils';
 
 // https://developer.valvesoftware.com/wiki/Steam_Web_API
 
@@ -40,7 +40,7 @@ class SteamApi {
 
     // http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=00D5B3E37E04C5E734BF1B98A3CA9ADE&steamid=76561197967370369&format=json
     async _getOwnedGames() {
-        return await axios.get(`http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${this.steamApiKey}&steamid=${this.steamId}&format=json`, { withCredentials: true, })
+        return await axios.get(corsLink(`http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${this.steamApiKey}&steamid=${this.steamId}&format=json`), { headers: { 'Access-Control-Allow-Origin': '*', } })
             .then(response => {
                 if (response.status === 200) {
                     response.data.response.games = response.data.response.games.reduce((acc, game) => (_.concat(acc, [game.appid])), [])
@@ -51,10 +51,15 @@ class SteamApi {
     }
 
     async AppDetails(appid = 440) {
-        return await axios.get(`http://store.steampowered.com/api/appdetails/?appids=${appid}`)
+        return axios.get(corsLink(`http://store.steampowered.com/api/appdetails/?appids=${appid}`))
             .then(response => {
-                return JSON.parse(response.data.contents)
-            });
+                if (response.status === 200) {
+                    if (response.data[appid]) {
+                        return response.data[appid].data
+                    }
+                }
+            })
+            .catch(reason => console.error(reason));
     }
 
     async SteamUserStats(appid = 440) {

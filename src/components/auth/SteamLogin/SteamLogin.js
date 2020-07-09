@@ -25,10 +25,14 @@ function SteamLogin() {
             const cookies = querystring.parse(document.cookie, '; ');
 
             if (cookies.steamId) {
-                axios.get(`https://us-central1-keys-db.cloudfunctions.net/steamOwnedGames`)
-                    .then(response => {
-                        console.log(response)
-                    })
+                // axios.get(`https://us-central1-keys-db.cloudfunctions.net/app/api/appDetails?appids=${'632470'}`, {
+                //     headers: {
+                //         'Access-Control-Allow-Origin': '*',
+                //     }
+                // })
+                //     .then(response => {
+                //         console.log(response)
+                //     })
                 dispatch(steamLoggedIn(true))
                 return
             }
@@ -42,11 +46,7 @@ function SteamLogin() {
         if (query['openid.mode'] !== 'id_res' || !id) return;
 
         const steamId = id.replace('http://steamcommunity.com/openid/id/', '');
-
-
-
-
-
+        
         dispatch(steamLoggedIn(true))
         document.cookie = 'steamId=' + steamId;
     }, [])

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import itadConfig from './config';
+import { corsLink } from '../utils';
 
 class ItadApi {
     constructor() {
@@ -11,6 +12,27 @@ class ItadApi {
     getCORSLink(url) {
         return `${url}`;
         // return `https://cors-anywhere.herokuapp.com/${url}`;
+    }
+
+    // https://api.isthereanydeal.com/v01/game/bundles/
+    async GetInfoAboutBundles(title) {
+        return axios.get(`https://api.isthereanydeal.com/v01/game/bundles/?key=${this.apiKey}&plains=${_encodeName(title)}`)
+            .then(response => (
+                {
+                    success: response.status === 200 ? true : false,
+                    times_bundled: response.status === 200
+                        ? response.data.data[_encodeName(title)].total
+                        : null,
+                    bundle_url: response.status === 200
+                        ? response.data.data[_encodeName(title)].urls.bundles
+                        : null,
+                }))
+            .catch(reason => (
+                {
+                    success: false,
+                    times_bundled: null,
+                    bundle_url: null,
+                }))
     }
 
     //  https://itad.docs.apiary.io/#reference/game/info/get-info-about-game?console=1

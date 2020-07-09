@@ -6,6 +6,7 @@ import * as serviceWorker from "./serviceWorker";
 import store from "./store";
 
 import 'semantic-ui-css/semantic.min.css';
+import "pure-react-carousel/dist/react-carousel.es.css";
 import './styles/index.css'
 
 import App from "./components/App"

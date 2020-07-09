@@ -28,7 +28,7 @@ export const parseSpreadsheetDate = date => {
 }
 
 export const corsLink = url => `https://cors-anywhere.herokuapp.com/${url}`;
-// export const corsAllOriginsLink = url => `https://api.allorigins.win/get?url=${url}`;
+// export const corsLink = url => `https://api.allorigins.win/get?url=${url}`;
 
 export const parseOptions = options => options.reduce((acc, option) => (_.concat(acc, [{
   key: acc.length,
