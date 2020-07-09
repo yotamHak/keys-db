@@ -4,16 +4,40 @@ import _ from 'lodash';
 
 const initialTableState = {
     headers: {},
+    rows: [],
     reset: {
         limit: false,
         offset: false,
         filters: false,
-        orderBy: false
-    }
+        orderBy: false,
+    },
+    reload: false,
+    orderBy: { sort: 'Date Added', asc: false },
+    pageSize: 24,
 }
 
 const table_reducer = (state = initialTableState, action) => {
     switch (action.type) {
+        case actionTypes.SET_CURRENT_ROWS:
+            return {
+                ...state,
+                rows: action.payload
+            }
+        case actionTypes.CHANGE_PAGE_SIZE:
+            return {
+                ...state,
+                orderBy: action.payload
+            }
+        case actionTypes.CHANGE_ORDER_BY:
+            return {
+                ...state,
+                orderBy: action.payload
+            }
+        case actionTypes.RELOAD_TABLE:
+            return {
+                ...state,
+                reload: action.payload
+            }
         case actionTypes.RESET_TABLE_PARAMS:
             return {
                 ...state,
@@ -91,10 +115,33 @@ const theme_reducer = (state = initialThemeState, action) => {
     }
 }
 
+const initialAuthenticationState = {
+    steam: false,
+    google: false
+}
+
+const authentication_reducer = (state = initialAuthenticationState, action) => {
+    switch (action.type) {
+        case actionTypes.STEAM_LOGGED_IN:
+            return {
+                ...state,
+                steam: true
+            }
+        case actionTypes.GOOGLE_LOGGED_IN:
+            return {
+                ...state,
+                google: true
+            }
+        default:
+            return state;
+    }
+}
+
 const rootReducer = combineReducers({
     filters: filters_reducer,
     table: table_reducer,
     theme: theme_reducer,
+    authentication: authentication_reducer,
 });
 
 export default rootReducer;

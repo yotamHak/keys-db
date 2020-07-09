@@ -1,42 +1,60 @@
-import React from "react";
-import { Modal, Search, Segment, Header, Item, Icon, Container, Form, Input } from "semantic-ui-react";
+import React, { useState } from "react";
+import { Modal, Search, Segment, Header, Item, Icon, Container, Form } from "semantic-ui-react";
 import useFormValidation from '../../../Authentication/useFormValidation';
 import validateNewKey from '../../../Authentication/validateNewKey';
 import itadApi from "../../../../itad";
 import _ from 'lodash';
-import { getFormattedDate } from "../../../../utils";
+import { parseSpreadsheetDate } from "../../../../utils";
 import Spreadsheets from "../../../../google/Spreadsheets";
 import steamApi from "../../../../steam/steam";
+import { useSelector } from "react-redux";
+import ErrorBox from "../../../Authentication/ErrorBox/ErrorBox";
 
-function NewModal({ onSelect, initialValue, children }) {
-    const INITIAL_STATE = Object.keys(initialValue.headers).reduce((acc, header) => ({ ...acc, [header]: '' }), {})
+function NewModal({ onComplete, initialValue, children, isEdit }) {
+    const headers = useSelector((state) => state.table.headers)
+    const INITIAL_STATE = initialValue
 
-    const [showModal, setShowModal] = React.useState(false)
-    const [isSearching, setIsSearching] = React.useState(false)
-    const [searchResults, setSearchResults] = React.useState(null)
-    const { handleSubmit, handleChange, updateValues, values, errors } = useFormValidation(INITIAL_STATE, validateNewKey, handleCreateKey);
+    const [showModal, setShowModal] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
+    const [isSubmittinError, setIsSubmittinError] = useState(false)
+    const [isSearching, setIsSearching] = useState(false)
+    const [searchResults, setSearchResults] = useState(null)
+    const { handleSubmit, handleChange, updateValues, values, errors } = useFormValidation(INITIAL_STATE, validateNewKey, handleCreate);
 
-    const ownedGames = steamApi.ownedGames
+    function handleCreate() {
+        setIsLoading(true);
 
-    React.useEffect(() => { }, [])
-
-    function handleCreateKey() {
         const sortedArray = Object.keys(values)
             .reduce((acc, key) => (_.concat(acc, [{ key: [key], value: values[key] }])), [])
-            .sort((a, b) => initialValue.headers[a.key].id < initialValue.headers[b.key].id ? -1 : initialValue.headers[a.key].id > initialValue.headers[b.key].id ? 1 : 0)
+            .sort((a, b) => headers[a.key].id < headers[b.key].id ? -1 : headers[a.key].id > headers[b.key].id ? 1 : 0)
             .reduce((acc, item) => _.concat(acc, [item.value]), [])
 
-        Spreadsheets.InsertNewRow(sortedArray)
-            .then(response => {
-                if (response.updatedRows === 1) {
-                    onSelect(true);
+        if (isEdit) {
+            Spreadsheets.Update(sortedArray, INITIAL_STATE["ID"])
+                .then(response => {
+                    if (response.updatedRows === 1) {
+                        onComplete(true);
+                    }
+                })
+                .catch(reason => { console.error(reason); setIsSubmittinError(true); })
+                .finally(() => {
                     closeModal();
-                }
-            })
-            .then(reason => {
-                console.error(reason)
-            })
-
+                    setIsLoading(false);
+                })
+        }
+        else {
+            Spreadsheets.Insert(sortedArray)
+                .then(response => {
+                    if (response.updates.updatedRows === 1) {
+                        onComplete(true);
+                    }
+                })
+                .catch(reason => { console.error(reason); setIsSubmittinError(true); })
+                .finally(() => {
+                    closeModal();
+                    setIsLoading(false);
+                })
+        }
     }
 
     const Child = React.Children.only(children);
@@ -46,17 +64,15 @@ function NewModal({ onSelect, initialValue, children }) {
     function closeModal() { setShowModal(false) }
 
     async function handleSearchResultSelect(e, { result }) {
-        console.log("selected:", result);
-
         handleChange(e, { name: 'Name', value: result.title })
 
-        const newRowValues = Object.keys(initialValue.headers)
+        const newRowValues = Object.keys(headers)
             .reduce((result, header) => ({
                 ...result,
                 [header]: {
-                    id: initialValue.headers[header].id,
+                    id: headers[header].id,
                     header: header,
-                    value: ''
+                    value: values[header]
                 }
             }), [])
 
@@ -64,8 +80,8 @@ function NewModal({ onSelect, initialValue, children }) {
         newRowValues['AppId'].value = parseInt(result.appid);
         newRowValues['Steam URL'].value = result.urls.steam;
         newRowValues['isthereanydeal URL'].value = result.urls.itad;
-        newRowValues['Date Added'].value = getFormattedDate(new Date());
-        newRowValues['Own Status'].value = _.indexOf(ownedGames.games, parseInt(result.appid)) > -1 ? 'Own' : 'Missing';
+        newRowValues['Own Status'].value = steamApi.isOwning(result.appid) ? 'Own' : 'Missing'
+        newRowValues['Date Added'].value = newRowValues['Date Added'].value ? newRowValues['Date Added'].value : parseSpreadsheetDate(new Date());
 
         await itadApi.GetInfoAboutGame(result.plain).then(response => {
             console.log("More Info from ITAD:", response)
@@ -256,19 +272,20 @@ function NewModal({ onSelect, initialValue, children }) {
                             )
                         }
                         {
-                            initialValue && _.chunk(_.pull(Object.keys(initialValue.headers), "ID", "Name"), 2)
+                            _.chunk(_.pull(Object.keys(headers), "ID", "Name"), 2)
                                 .map(group => {
                                     return (
                                         <Form.Group widths='equal' key={_.flatten(group)}>
                                             {
-                                                group.map(key => selectInput(initialValue.headers[key]))
+                                                group.map(key => selectInput(headers[key]))
                                             }
                                         </Form.Group>
                                     )
                                 })
                         }
-                        <Form.Button type="submit">Submit</Form.Button>
+                        <Form.Button type="submit" loading={isLoading}>Submit</Form.Button>
                     </Form>
+                    <ErrorBox errors={errors} />
                 </Modal.Description>
             </Modal.Content>
         </Modal >

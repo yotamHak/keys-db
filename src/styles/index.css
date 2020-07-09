@@ -16,6 +16,10 @@ body {
   cursor: pointer;
 }
 
+.cursor-auto{
+  cursor: auto !important;
+}
+
 .visibility-hidden{
   visibility: hidden;
 }

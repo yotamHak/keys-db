@@ -1,7 +1,7 @@
 import { gapi } from 'gapi-script';
 import axios from "axios";
 import _ from "lodash";
-import { isUrl, isSteamKey, genericSort, getFormattedDate } from '../utils';
+import { isUrl, isSteamKey, genericSort, parseSpreadsheetDate } from '../utils';
 
 class Spreashsheets {
     constructor() {
@@ -10,8 +10,6 @@ class Spreashsheets {
         this._columns = {};
         this._columnsWithOptions = {};
         this._rows = [];
-        this._newRowRange = '';
-
         this._count = 0;
     }
 
@@ -22,9 +20,6 @@ class Spreashsheets {
     }
 
     set spreadsheetId(id) { this._spreadsheetId = id; }
-
-    get newRowRange() { return this._newRowRange }
-    set newRowRange(range) { this._newRowRange = range }
 
     get rows() { return this._rows }
     set rows(rows) { this._rows = rows; }
@@ -44,10 +39,6 @@ class Spreashsheets {
     _get = async (url) => axios.get(url, { headers: { 'Content-Type': 'application/json; charset=UTF-8', Authorization: _.concat('Bearer ', this.token) } })
 
     _getColumn = key => this.columns[key].id
-
-    _setNewRowRange(range) {
-        this.newRowRange = range
-    }
 
     // { key: 'From', values: ['Humblebundle'] }, { key: 'Status', values: ['Unused', 'Given'] }
     _parseFilters(filters = []) {
@@ -85,7 +76,9 @@ class Spreashsheets {
                     result,
                     [row["c"].map((values, index) => {
                         return values
-                            ? values.v
+                            ? values.f
+                                ? values.f
+                                : values.v
                             : ''
                     })]
                 )
@@ -103,8 +96,7 @@ class Spreashsheets {
                 let rowValue = row[optionIndex++]
                 if (rowValue) {
                     if (allOptionValue.type === 'date') {
-                        const capturedValue = RegExp("([0-9]{1,},[0-9]{1,},[0-9]{1,})").exec(rowValue);
-                        rowValue = capturedValue ? getFormattedDate(capturedValue[0]) : ''
+                        rowValue = parseSpreadsheetDate(rowValue);
                     }
 
                     _.isObject(allOptionValue.options)
@@ -162,15 +154,15 @@ class Spreashsheets {
 
     // https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/update
     // https://any-api.com/googleapis_com/sheets/docs/spreadsheets/sheets_spreadsheets_values_append
-    async InsertNewRow(value, range = `Keys!B1`) {
+    async Insert(value) {
         const params = {
             spreadsheetId: this._spreadsheetId,
-            range: range,
+            range: "Keys!B2",
             valueInputOption: 'USER_ENTERED',
             insertDataOption: "INSERT_ROWS"
         };
 
-        const valueRangeBody = { "values": [value] };
+        const valueRangeBody = { "values": [_.drop(value, 1)] };
 
         return gapi.client.sheets.spreadsheets.values.append(params, valueRangeBody)
             .then(response => {
@@ -180,21 +172,46 @@ class Spreashsheets {
                 console.error('error: ' + reason.result.error.message);
                 return reason.result.error.message
             });
-
-
     }
 
+    // https://any-api.com/googleapis_com/sheets/docs/spreadsheets/sheets_spreadsheets_values_batchUpdate
     async Update(value, range) {
         const params = {
             spreadsheetId: this._spreadsheetId,
-            range: range,
+            range: `Keys!B${range}`,
             valueInputOption: 'USER_ENTERED',
-            insertDataOption: "INSERT_ROWS"
         };
 
-        const valueRangeBody = { "values": [value] };
+        const valueRangeBody = { "values": [_.drop(value, 1)] };
 
         return gapi.client.sheets.spreadsheets.values.update(params, valueRangeBody)
+            .then(response => {
+                // TODO: Change code below to process the `response` object:
+                console.log(response.result);
+                return response.result
+            }, reason => {
+                console.error('error: ' + reason.result.error.message);
+                return reason.result.error.message
+            });
+    }
+
+    async Delete(range) {
+        const params = {
+            spreadsheetId: this._spreadsheetId,
+            requests: [
+                {
+                    deleteDimension: {
+                        range: {
+                            dimension: "ROWS",
+                            startIndex: range - 1,
+                            endIndex: range
+                        }
+                    }
+                }
+            ],
+        }
+
+        return gapi.client.sheets.spreadsheets.batchUpdate(params)
             .then(response => {
                 // TODO: Change code below to process the `response` object:
                 console.log(response.result);
@@ -216,7 +233,6 @@ class Spreashsheets {
 
             const table = this._parseTable(response);
             this.columns = table.cols;
-            this.newRowRange = table.rows.length + 2;
             const options = this._initOptions(this._columns, table.rows);
 
             this._columns = options;

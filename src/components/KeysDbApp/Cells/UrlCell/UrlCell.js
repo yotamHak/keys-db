@@ -1,21 +1,26 @@
 import React from "react";
-import { Table, Image } from "semantic-ui-react";
+import { Table, Grid, Icon } from "semantic-ui-react";
 
-function UrlCell({ website, url }) {
+function UrlCell({ urls }) {
     return (
         <Table.Cell>
-            <Image
-                src={
-                    website === 'steam'
-                        ? 'https://store.steampowered.com/favicon.ico'
-                        : 'https://d2uym1p5obf9p8.cloudfront.net/images/favicon.png'
-                }
-                as='a'
-                size='tiny'
-                avatar
-                href={`${url}`}
-                target='_blank'
-            />
+            <Grid columns={urls.length}>
+                <Grid.Row>
+                    {
+                        urls.map((url, index) => url.url && (
+                            <Grid.Column key={index}>
+                                <a target='_blank' rel='noopener noreferrer' href={`${url.url}`}>
+                                    <Icon
+                                        link={true}
+                                        color='black'
+                                        name={url.website === 'steam' ? 'steam' : 'rocket'}
+                                    />
+                                </a>
+                            </Grid.Column>
+                        ))
+                    }
+                </Grid.Row>
+            </Grid>
         </Table.Cell>
     );
 }

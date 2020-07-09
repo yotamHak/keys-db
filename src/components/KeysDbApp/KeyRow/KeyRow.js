@@ -1,4 +1,4 @@
-import React from "react";
+import React, {  } from "react";
 import { Table, } from 'semantic-ui-react';
 import StatusCell from "../Cells/StatusCell/StatusCell";
 import OwnStatusCell from "../Cells/OwnStatusCell/OwnStatusCell";
@@ -9,36 +9,40 @@ import UrlCell from "../Cells/UrlCell/UrlCell";
 import CardsCell from "../Cells/CardsCell/CardsCell";
 import AppIdCell from "../Cells/AppIdCell/AppIdCell";
 import NameCell from "../Cells/NameCell/NameCell";
-import itadApi from "../../../itad";
 import OptionsCell from "../Cells/OptionsCell/OptionsCell";
 import ActionsCell from "../Cells/ActionsCell/ActionsCell";
 import { useSelector } from "react-redux";
+import { getUrlsLocationAndValue } from "../../../utils";
 
-function KeyRow({ gameData }) {
+function KeyRow({ rowIndex }) {
     const headers = useSelector((state) => state.table.headers)
+    const gameData = useSelector((state) => state.table.rows[rowIndex])
 
-    const [isRefreshing, setIsRefreshing] = React.useState(false);
-    const [isSaving, setIsSaving] = React.useState(false);
-
-    const [game, setGame] = React.useState({ ...gameData });
-    const [originalGameData, setOriginalGameData] = React.useState({ ...gameData });
-
-    React.useEffect(() => { }, []);
+    const urlsInGameData = getUrlsLocationAndValue(headers, gameData);
 
     function changeCallback(header, changedValue) {
         console.log("Changed Value", `${header}: ${changedValue}`)
         gameData[header] = changedValue;
     }
 
-    function selectCell(header, index) {
+    function selectCell(index, header, gameHeaderValue) {
         if (header.label === "ID") { return }
 
-        const gameHeaderValue = game[index];
-        const rKey = `${index}-${header.id}-${gameHeaderValue}`;
+        const rKey = `${rowIndex}-${header.id}-${gameHeaderValue}`;
+
+        if (index === urlsInGameData[urlsInGameData.length - 1].index) {
+            return <UrlCell
+                rowIndex={rowIndex}
+                urls={urlsInGameData}
+                key={rKey}
+            />
+        }
+        if (urlsInGameData.find(item => item.index === index)) { return }
 
         switch (header.label) {
             case "Name":
                 return <NameCell
+                    rowIndex={rowIndex}
                     onChange={changeCallback}
                     header={header}
                     name={gameHeaderValue}
@@ -46,6 +50,7 @@ function KeyRow({ gameData }) {
                 />
             case "Status":
                 return <StatusCell
+                    rowIndex={rowIndex}
                     onChange={changeCallback}
                     header={header}
                     status={gameHeaderValue}
@@ -53,19 +58,15 @@ function KeyRow({ gameData }) {
                 />
             case "Key":
                 return <KeyCell
+                    rowIndex={rowIndex}
                     onChange={changeCallback}
                     header={header}
                     gameKey={gameHeaderValue}
                     key={rKey}
                 />
             case "From":
-                // return <FromCell
-                //     onChange={changeCallback}
-                //     header={header}
-                //     from={gameHeaderValue}
-                //     key={rKey}
-                // />
                 return <OptionsCell
+                    rowIndex={rowIndex}
                     onChange={changeCallback}
                     header={header}
                     title={gameHeaderValue}
@@ -73,6 +74,7 @@ function KeyRow({ gameData }) {
                 />
             case "Own Status":
                 return <OwnStatusCell
+                    rowIndex={rowIndex}
                     onChange={changeCallback}
                     header={header}
                     status={gameHeaderValue}
@@ -80,6 +82,7 @@ function KeyRow({ gameData }) {
                 />
             case "Date Added":
                 return <DateCell
+                    rowIndex={rowIndex}
                     onChange={changeCallback}
                     header={header}
                     dateAdded={gameHeaderValue}
@@ -87,28 +90,22 @@ function KeyRow({ gameData }) {
                 />
             case "Note":
                 return <NoteCell
+                    rowIndex={rowIndex}
                     onChange={changeCallback}
                     header={header}
                     note={gameHeaderValue}
                     key={rKey}
                 />
-            case "isthereanydeal URL":
-            case "Steam URL":
-                return <UrlCell
-                    onChange={changeCallback}
-                    header={header}
-                    website={header === "Steam URL" ? "steam" : "itad"}
-                    url={gameHeaderValue}
-                    key={rKey}
-                />
             case "Cards":
                 return <CardsCell
+                    rowIndex={rowIndex}
                     onChange={changeCallback}
                     header={header}
                     cards={gameHeaderValue}
                     key={rKey} />
             case "AppId":
                 return <AppIdCell
+                    rowIndex={rowIndex}
                     onChange={changeCallback}
                     header={header}
                     appId={gameHeaderValue}
@@ -116,6 +113,7 @@ function KeyRow({ gameData }) {
                 />
             default:
                 return <Table.Cell
+                    rowIndex={rowIndex}
                     onChange={changeCallback}
                     header={header}
                     key={rKey}>
@@ -124,48 +122,11 @@ function KeyRow({ gameData }) {
         }
     }
 
-    function refresh() {
-        setIsRefreshing(true);
-
-        // itadApi.FindGame(game['Name']).then(response => {
-        //     console.log(response)
-        // })
-
-        itadApi.GetInfoAboutGame(game['Name']).then(response => {
-            console.log(`GetInfoAboutGame: ${game['Name']}...`, response);
-            const gameData = response.data.data[itadApi.GetEncodedName(game['Name'])];
-
-            if (gameData) {
-                const gameAppId = gameData.image && gameData.image.split('/')[5]
-
-                setGame({
-                    ...game,
-                    'Cards': gameData['trading_cards'] ? "https://steamcommunity.com/id/justLynx/gamecards/236850" : 'No',
-                    'AppId': gameAppId,
-                })
-            }
-
-            setIsRefreshing(false);
-        })
-    }
-
-    function save() {
-        if (isSaving) { return };
-
-        setIsSaving(true);
-        console.log("game", gameData);
-        console.log("originalGameData", originalGameData)
-
-        setGame(gameData)
-    }
-
-    function edit() { }
-
     return (
         <Table.Row>
-            <ActionsCell gameData={game} />
+            <ActionsCell index={rowIndex} />
             {
-                game && Object.keys(headers).map((key, index) => { return selectCell(headers[key], index) })
+                gameData && Object.keys(headers).map((key, index) => { return selectCell(index, headers[key], gameData[index]) })
             }
         </Table.Row>
     );

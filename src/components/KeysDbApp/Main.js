@@ -1,25 +1,15 @@
 import React, { useState, useEffect } from "react";
 import KeysTable from "./KeysTable/KeysTable";
-import GoogleAuthentication from "../../google/GoogleAuthentication";
-// import { GoogleLogin, GoogleLogout, useGoogleLogin } from 'react-google-login';
-// import googleConfig from "../../google/config";
-// import { gapi } from "gapi-script";
-// import { GoogleLoginComponent } from "../auth/GoogleLoginComponent/GoogleLoginComponent";
 import Spreadsheets from "../../google/Spreadsheets";
-import { useDispatch } from "react-redux";
-import { addHeaders } from "../../actions";
+import { useDispatch, } from "react-redux";
+import { addHeaders, } from "../../actions";
 // import Login from "./auth/Login";
 
 function MainApp(props) {
-    const [signedIn, setSignedIn] = useState(false);
     const [spreadsheetReady, setSpreadsheetReady] = useState(false);
     const spreadsheetId = props.match.params.spreadsheetId;
 
-    const dispatch = useDispatch()
-    const load = () => setSignedIn(true)
-
-    // const handleLoggedSuccess = (response) => console.log(response)
-    // const handleLoggedError = (response) => console.log(response)
+    const dispatch = useDispatch();
 
     useEffect(() => {
         Spreadsheets.Initialize(spreadsheetId).then(response => {
@@ -28,16 +18,14 @@ function MainApp(props) {
         })
     }, [])
 
-    return signedIn && spreadsheetReady
-        ? <KeysTable
-            spreadsheetId={spreadsheetId}
-            key={spreadsheetId}
-        />
-        : <GoogleAuthentication callbackOnSignIn={load} />
-    // <GoogleLoginComponent
-    //     onLogin={() => { setSignedIn(true) }}
-    //     onLogout={() => { setSignedIn(false) }}
-    // />
+    return (
+        spreadsheetReady && (
+            <KeysTable
+                spreadsheetId={spreadsheetId}
+                key={spreadsheetId}
+            />
+        )
+    )
 }
 
 export default MainApp;

@@ -4,38 +4,39 @@ import { Table, Dimmer, Icon, Segment, Loader, Placeholder, Menu, Pagination, Dr
 import _ from 'lodash';
 import { usePrevious } from "../../../utils";
 import KeyRow from "../KeyRow/KeyRow";
-import HeaderCell from "../Cells/HeaderCell/HeaderCell";
 import Spreadsheets from '../../../google/Spreadsheets';
 import NewModal from "../Modals/NewModal/NewModal";
 import SortDropdown from "../SortDropdown/SortDropdown";
 import { useSelector, useDispatch } from "react-redux";
 import DataFilters from "./DataFilters/DataFilters";
+import { reloadTable, setCurrentRows } from "../../../actions";
+import HeaderRow from "../HeaderRow/HeaderRow";
 
-const INITIAL_ORDERBY = { sort: 'Date Added', asc: false }
 const INITIAL_OFFSET = 0
 const INITIAL_LIMIT = 24
 const INITIAL_ACTIVEPAGE = 1
 
 function KeysTable({ spreadsheetId }) {
-    const [games, setGames] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
     const [offset, setOffset] = useState(INITIAL_OFFSET);
     const [limit, setLimit] = useState(INITIAL_LIMIT);
-    const [orderBy, setOrderBy] = useState(INITIAL_ORDERBY);
+
     const [newModalKey, setNewModalKey] = useState(0);
     const [activePage, setActivePage] = useState(INITIAL_ACTIVEPAGE);
     const [pages, setPages] = useState(0);
 
-    const [reload, setReload] = useState(false);
-
     const dispatch = useDispatch()
-    const filters = useSelector((state) => state.filters)
     const headers = useSelector((state) => state.table.headers)
-    const resetTable = useSelector((state) => state.table.reset)
+    const games = useSelector((state) => state.table.rows)
+    const orderBy = useSelector((state) => state.table.orderBy)
+    const reload = useSelector((state) => state.table.reload)
+    const filters = useSelector((state) => state.filters)
+    // const resetTable = useSelector((state) => state.table.reset)
 
     const history = useHistory();
     const prevOffset = usePrevious(offset);
+    const prevOrderBy = usePrevious(orderBy);
     const prevLimit = usePrevious(limit);
     const prevFilters = usePrevious(filters);
     const prevReload = usePrevious(reload);
@@ -45,7 +46,7 @@ function KeysTable({ spreadsheetId }) {
         if (prevReload === true && reload === false) { return }
 
         if (prevOffset && (prevOffset !== offset)) { }
-        if ((prevLimit && (prevLimit !== limit)) || (prevFilters && (prevFilters !== filters))) {
+        if ((prevLimit && (prevLimit !== limit)) || (prevOrderBy && (prevOrderBy !== orderBy)) || (prevFilters && (prevFilters !== filters))) {
             if (offset !== INITIAL_OFFSET) {
                 setOffset(INITIAL_OFFSET)
                 setActivePage(INITIAL_ACTIVEPAGE)
@@ -60,15 +61,9 @@ function KeysTable({ spreadsheetId }) {
         console.log("-------------------------")
 
         loadGames(offset, limit, orderBy, filters)
-        setReload(false)
+        dispatch(reloadTable(false))
 
-    }, [filters, offset, limit, orderBy, reload]);
-
-    function handleOrderByChange(order) {
-        console.log("Changing orderBy: ", order)
-        setOffset(INITIAL_OFFSET);
-        setOrderBy(order)
-    }
+    }, [filters, offset, limit, orderBy, reload, newModalKey]);
 
     function handleLimitChange(e, { value }) {
         console.log("Changing limit: ", value)
@@ -83,21 +78,21 @@ function KeysTable({ spreadsheetId }) {
             .then(games => {
                 console.log("Got filtered games:", games)
                 games.count && setPages(Math.floor(games.count / limit));
-                setGames(games.rows);
+                dispatch(setCurrentRows(games.rows))
                 setLoading(false);
             })
     }
 
     function addGame(value) {
-        console.log("Finished adding...", value);
-        setNewModalKey(newModalKey + 1);
-        setReload(true)
+        // console.log("Finished adding...", value)
+        setNewModalKey(newModalKey + 1)
+        dispatch(reloadTable(true))
     }
 
     function handlePaginationChange(e, { activePage }) {
         setActivePage(activePage);
         setOffset((activePage - 1) * limit);
-        setReload(true);
+        dispatch(reloadTable(true))
         window.scroll({
             top: 0,
             left: 0,
@@ -119,26 +114,34 @@ function KeysTable({ spreadsheetId }) {
                         <Segment size="mini" key={`action-menu-segment`}>
                             <Menu>
                                 <Menu.Item>
-                                    <SortDropdown headers={headers} value={orderBy} onSort={handleOrderByChange} />
+                                    <SortDropdown />
                                 </Menu.Item>
 
                                 <Menu.Item>
                                     <Header as='h4'>
                                         <Header.Content>
-                                            {` Limit: `}
                                             <Dropdown
                                                 floating
+                                                text={`Limit: ${limit}`}
                                                 defaultValue={limit}
                                                 onChange={handleLimitChange}
-                                                options={_.times(3, number => ({ key: INITIAL_LIMIT * (number + 1), text: INITIAL_LIMIT * (number + 1), value: INITIAL_LIMIT * (number + 1) }))}
+                                                options={_.times(3, number => ({
+                                                    key: INITIAL_LIMIT * Math.pow(2, number),
+                                                    text: INITIAL_LIMIT * Math.pow(2, number),
+                                                    value: INITIAL_LIMIT * Math.pow(2, number),
+                                                }))}
                                             />
                                         </Header.Content>
                                     </Header>
                                 </Menu.Item>
 
                                 <Menu.Menu position='right'>
-                                    <React.Fragment>
-                                        <NewModal onSelect={addGame} initialValue={{ headers: headers }} key={newModalKey}>
+                                    <React.Fragment key={newModalKey}>
+                                        <NewModal
+                                            onComplete={addGame}
+                                            initialValue={Object.keys(headers).reduce((acc, header) => ({ ...acc, [header]: '' }), {})}
+                                            isEdit={false}
+                                        >
                                             <Menu.Item name='add-new'>
                                                 <Icon name='plus' />
                                             </Menu.Item>
@@ -158,19 +161,7 @@ function KeysTable({ spreadsheetId }) {
                         <Segment size="mini" key={`table-segment`} style={{ overflow: 'auto' }}>
                             <Table celled striped compact>
                                 <Table.Header>
-                                    <Table.Row>
-                                        <Table.HeaderCell style={{ minWidth: '40px' }} />
-                                        {
-                                            Object.keys(headers)
-                                                .filter(filter => filter !== "ID")
-                                                .map((headerKey, index) => {
-                                                    return <HeaderCell
-                                                        title={headerKey}
-                                                        key={index}
-                                                    />
-                                                })
-                                        }
-                                    </Table.Row>
+                                    <HeaderRow />
                                 </Table.Header>
                                 <Table.Body>
                                     {
@@ -178,17 +169,19 @@ function KeysTable({ spreadsheetId }) {
                                             ? _.times(limit).map((item, index) => (
                                                 <Table.Row key={index}>
                                                     {
-                                                        _.times(Object.keys(headers).length + 1).map((key, index) => (
-                                                            <Table.Cell key={index}>
-                                                                <Placeholder>
-                                                                    <Placeholder.Line />
-                                                                </Placeholder>
-                                                            </Table.Cell>
-                                                        ))
+                                                        _.times(Object.keys(headers).length - 1)
+                                                            .map((key, index) => (
+                                                                <Table.Cell key={index}>
+                                                                    <Placeholder>
+                                                                        <Placeholder.Line />
+                                                                    </Placeholder>
+                                                                </Table.Cell>
+                                                            ))
                                                     }
                                                 </Table.Row>)
                                             )
                                             : games.map((game, index) => <KeyRow
+                                                rowIndex={index}
                                                 gameData={game}
                                                 key={index}
                                             />)

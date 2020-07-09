@@ -1,13 +1,28 @@
 import React, { useState } from "react";
-import { Table, Dropdown, Header, Modal, Button, Icon } from "semantic-ui-react";
+import { Table, Dropdown, Confirm, } from "semantic-ui-react";
+import NewModal from "../../Modals/NewModal/NewModal";
+import { useSelector, useDispatch } from "react-redux";
+import { parseSpreadsheetDate, getValueByLabel } from "../../../../utils";
+import { reloadTable } from "../../../../actions";
+import Spreadsheets from "../../../../google/Spreadsheets";
+import GameInfoModal from "../../Modals/GameInfoModal/GameInfoModal";
 
-function ActionsCell({ index, gameData }) {
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+function ActionsCell({ index }) {
+    const headers = useSelector((state) => state.table.headers)
+    const gameData = useSelector((state) => state.table.rows[index])
+    const dispatch = useDispatch()
 
-    function handleEditModalClose() {
-        console.log("handleEditModalClose")
-        console.log(gameData)
-        setIsEditModalOpen(false)
+    const [prompt, setPrompt] = useState(false)
+
+    function handleDelete(e, data) {
+        setPrompt(false)
+        Spreadsheets.Delete(getValueByLabel("ID", headers, gameData))
+            .then(response => {
+                if (response.replies && response.replies.length > 0) {
+                    dispatch(reloadTable(true))
+                }
+            })
+            .catch(reason => console.error(reason))
     }
 
     return (
@@ -17,35 +32,32 @@ function ActionsCell({ index, gameData }) {
                 compact
             >
                 <Dropdown.Menu>
-                    <Dropdown.Item>
-                        Info
-                    </Dropdown.Item>
-                    <Dropdown.Item>
-                        Refresh
-                    </Dropdown.Item>
-                    <Dropdown.Item>
-                        Save
-                    </Dropdown.Item>
+                    <GameInfoModal appId={getValueByLabel("AppId", headers, gameData)}>
+                        <Dropdown.Item text="Info" />
+                    </GameInfoModal>
 
-                    <Modal
-                        trigger={<Dropdown.Item onClick={() => { setIsEditModalOpen(true) }}>Edit</Dropdown.Item>}
-                        open={isEditModalOpen}
-                        onClose={handleEditModalClose}
-                        basic
-                        size='small'
+                    <NewModal
+                        onComplete={() => dispatch(reloadTable(true))}
+                        isEdit={true}
+                        initialValue={Object.keys(headers).reduce((acc, header) => ({
+                            ...acc,
+                            [header]: headers[header].type === "date"
+                                ? parseSpreadsheetDate(getValueByLabel(header, headers, gameData))
+                                : getValueByLabel(header, headers, gameData)
+                        }), {})}
                     >
-                        <Header icon='browser' content='Cookies policy' />
-                        <Modal.Content>
-                            <h3>This website uses cookies to ensure the best user experience.</h3>
-                        </Modal.Content>
-                        <Modal.Actions>
-                            <Button color='green' onClick={handleEditModalClose} inverted>
-                                <Icon name='checkmark' /> Got it
-                            </Button>
-                        </Modal.Actions>
-                    </Modal>
+                        <Dropdown.Item text="Edit" />
+                    </NewModal>
 
-
+                    <Confirm
+                        open={prompt}
+                        header={"Delete Key"}
+                        content={"Are you sure you want to delete this key?"}
+                        onCancel={() => { setPrompt(false) }}
+                        onConfirm={handleDelete}
+                        confirmButton="Delete"
+                        trigger={<Dropdown.Item onClick={() => { setPrompt(true) }}>Delete</Dropdown.Item>}
+                    />
 
                 </Dropdown.Menu>
             </Dropdown>

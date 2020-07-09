@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import dateFns from 'date-fns';
 import _ from 'lodash';
+import moment from 'moment'
 
-export const LINKS_PER_PAGE = 5;
+const _alphabet = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
 
 export const getDomain = (url) => url.replace(/^https?:\/\//i, "");
 
@@ -12,15 +12,50 @@ export const isSteamKey = (key) => /(\w{5}-){2}\w{5}/.test(key)
 
 export const genericSort = (a, b) => a < b ? -1 : a > b ? 1 : 0
 
-export const getFormattedDate = date => dateFns.format(dateFns.parse(date, 'yyyy,mm,dd'), 'DD/MM/YYYY');
+export const parseSpreadsheetDate = date => {
+  if (date) {
+    let parsedDate = new Date(date);
+
+    if (!moment.isDate(date)) {
+      parsedDate = moment(date, 'DD/MM/YYYY')
+    }
+
+    return moment(parsedDate).format('DD/MM/YYYY')
+  }
+  else {
+    return ""
+  }
+}
 
 export const corsLink = url => `https://cors-anywhere.herokuapp.com/${url}`;
+// export const corsAllOriginsLink = url => `https://api.allorigins.win/get?url=${url}`;
 
 export const parseOptions = options => options.reduce((acc, option) => (_.concat(acc, [{
   key: acc.length,
   value: acc.length,
   text: option
 }])), [])
+
+export const getIndexByLabel = (label, headers) => _alphabet.indexOf(headers[label].id)
+export const getValueByLabel = (label, headers, gameData) => gameData[getIndexByLabel(label, headers)]
+export const getUrlsLocationAndValue = (headers, gameData) => Object.keys(headers)
+  .filter(header => _.upperCase(header).indexOf("URL") > -1)
+  .reduce((result, key) => (_.concat(
+    ...result,
+    [gameData
+      ? {
+        index: getIndexByLabel(key, headers),
+        website: gameData[getIndexByLabel(key, headers)]
+          ? _.lowerCase(gameData[getIndexByLabel(key, headers)]).indexOf("isthereanydeal") > -1
+            ? "itad"
+            : "steam"
+          : "",
+        url: gameData[getIndexByLabel(key, headers)],
+      }
+      : {
+        index: getIndexByLabel(key, headers),
+      }]
+  )), [])
 
 // Custom hook for saving previous value
 export function usePrevious(value) {

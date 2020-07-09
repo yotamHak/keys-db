@@ -1,25 +1,29 @@
 import React from "react";
 import { Table } from "semantic-ui-react";
-import SearchModal from "../../Modals/SearchModal/SearchModal";
+import NewModal from "../../Modals/NewModal/NewModal";
+import { useSelector, useDispatch } from "react-redux";
+import { reloadTable } from "../../../../actions";
+import { parseSpreadsheetDate, getValueByLabel } from "../../../../utils";
 
-function NameCell({ name }) {
-    // function findGame(name) {
-    //     setSearchValue(name)
-    //     setShowModal(true)
-    // }
+function NameCell({ name, rowIndex }) {
+    const headers = useSelector((state) => state.table.headers)
+    const gameData = useSelector((state) => state.table.rows[rowIndex])
 
-    // function gameSelected() {
-
-    // }
-
-    function onSelect(name) {
-        console.log(name)
-    }
+    const dispatch = useDispatch();
 
     return (
-        <SearchModal onSelect={onSelect} initialValue={name}>
+        <NewModal
+            onComplete={() => dispatch(reloadTable(true))}
+            isEdit={true}
+            initialValue={Object.keys(headers).reduce((acc, header) => ({
+                ...acc,
+                [header]: headers[header].type === "date"
+                    ? parseSpreadsheetDate(getValueByLabel(header, headers, gameData))
+                    : getValueByLabel(header, headers, gameData)
+            }), {})}
+        >
             <Table.Cell className={'pointer'}>{name}</Table.Cell>
-        </SearchModal>
+        </NewModal>
     );
 }
 

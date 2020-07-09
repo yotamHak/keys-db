@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react'
 import { Button, Form, Grid, Header, Message, Segment, Label } from 'semantic-ui-react'
-import _ from 'lodash';
 
 import validateSettings from '../../Authentication/validateSettings';
 import useFormValidation from '../../Authentication/useFormValidation';
 import { useHistory } from 'react-router-dom';
+import ErrorBox from '../../Authentication/ErrorBox/ErrorBox';
 
 const INITIAL_STATE = {
     spreadsheetId: localStorage.getItem('spreadsheetId') || '',
@@ -73,22 +73,7 @@ function Settings() {
                         <Button color='black' fluid size='large'>Save</Button>
                     </Segment>
                 </Form>
-                {
-                    !_.isEmpty(errors) && (
-                        <Message style={{ textAlign: 'left' }} error>
-                            <Message.Header>Errors</Message.Header>
-                            <Message.List>
-                                {
-                                    Object.keys(errors).map((errorKey, index) => (
-                                        <Message.Item key={errorKey}>
-                                            {errors[errorKey]}
-                                        </Message.Item>
-                                    ))
-                                }
-                            </Message.List>
-                        </Message>
-                    )
-                }
+                <ErrorBox errors={errors} />
                 {
                     haveValues && (
                         <Message positive>

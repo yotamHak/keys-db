@@ -18,7 +18,7 @@ function useFormValidation(initialState, validate, authenticate) {
         }
     }, [errors])
 
-    function updateValues(event, values) {
+    function updateValues(event, values) {        
         event.persist();
         setValues(previousValues => ({
             ...previousValues,

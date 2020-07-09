@@ -1,4 +1,4 @@
-import React, { forwardRef, useImperativeHandle } from "react";
+import React from "react";
 import { Table, Dropdown, Grid, } from "semantic-ui-react";
 import { usePrevious } from "../../../../utils";
 import _ from 'lodash';
@@ -15,8 +15,9 @@ function HeaderCell({ title }) {
             : { key: title, values: [] }
     })
     const headers = useSelector((state) => state.table.headers)
+    const headerData = headers[title]
 
-    const [options, setOptions] = React.useState(initOptions(headers[title].options));
+    const [options, setOptions] = React.useState(headerData ? initOptions(headerData.options) : false);
 
     const prevFilters = usePrevious(filters);
 
@@ -53,7 +54,7 @@ function HeaderCell({ title }) {
                     </Grid.Column>
                     <Grid.Column floated='right' width="8" textAlign="right" verticalAlign="middle">
                         {
-                            options.length > 0 && (
+                            (options && options.length > 0 && title !== "Key" && title !== "URLs") && (
                                 <Dropdown icon='filter' compact>
                                     <Dropdown.Menu>
                                         <Dropdown.Menu scrolling>
