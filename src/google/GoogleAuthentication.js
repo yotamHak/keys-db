@@ -1,6 +1,8 @@
 import React from "react";
 import googleConfig from "./config";
 import { gapi } from 'gapi-script';
+import { useDispatch } from "react-redux";
+import { googleLoading, googleClientReady } from "../actions";
 
 function GoogleAuthentication({ callbackOnSignIn }) {
     React.useEffect(() => {
@@ -8,6 +10,8 @@ function GoogleAuthentication({ callbackOnSignIn }) {
         // let auth2 = await loadAuth2(googleConfig.clientId, scopes);
         loadGoogle()
     }, []);
+
+    const dispatch = useDispatch()
 
     async function loadGoogle() { gapi.load("client:auth2", initClient); }
 
@@ -30,6 +34,8 @@ function GoogleAuthentication({ callbackOnSignIn }) {
 
                 // 3. Initialize and make the API request.
                 // load(onLoad);
+
+                dispatch(googleClientReady(true))
             });
     };
 

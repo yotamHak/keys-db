@@ -105,7 +105,7 @@ function KeysTable({ spreadsheetId }) {
             ? <div>Error</div>
             : _.isEmpty(games)
                 ? (
-                    <Dimmer active>
+                    <Dimmer active inverted>
                         <Loader />
                     </Dimmer>
                 )
@@ -148,9 +148,9 @@ function KeysTable({ spreadsheetId }) {
                                         </NewModal>
                                     </React.Fragment>
 
-                                    <Menu.Item name='settings' onClick={() => history.push('/settings', { edit: true })}>
+                                    {/* <Menu.Item name='settings' onClick={() => history.push('/settings', { edit: true })}>
                                         <Icon name='cog' />
-                                    </Menu.Item>
+                                    </Menu.Item> */}
                                 </Menu.Menu>
 
                             </Menu>

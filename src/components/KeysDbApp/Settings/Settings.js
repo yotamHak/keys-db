@@ -3,8 +3,10 @@ import { Button, Form, Grid, Header, Message, Segment, Label } from 'semantic-ui
 
 import validateSettings from '../../Authentication/validateSettings';
 import useFormValidation from '../../Authentication/useFormValidation';
-import { useHistory } from 'react-router-dom';
+// import { useHistory } from 'react-router-dom';
 import ErrorBox from '../../Authentication/ErrorBox/ErrorBox';
+import { useSelector, useDispatch } from 'react-redux';
+import { setupComplete, steamApiKeySet, spreadsheetIdSet } from '../../../actions';
 
 const INITIAL_STATE = {
     spreadsheetId: localStorage.getItem('spreadsheetId') || '',
@@ -14,29 +16,49 @@ const INITIAL_STATE = {
 function Settings() {
     const { handleSubmit, handleChange, values, errors } = useFormValidation(INITIAL_STATE, validateSettings, handleUpdate);
     const [haveValues, setHaveValues] = React.useState(localStorage.getItem('spreadsheetId') && localStorage.getItem('steamApiKey') ? true : false);
-    const history = useHistory();
+    // const history = useHistory();
+
+    const steamApiKey = useSelector((state) => state.authentication.steamApiKey)
+    const spreadsheetId = useSelector((state) => state.authentication.spreadsheetId)
+    const isSetupComplete = useSelector((state) => state.authentication.setupComplete)
+
+    const dispatch = useDispatch()
 
     useEffect(() => {
-        if (history.location.state && history.location.state.edit) { history.location.state = null; return; }
+        if (steamApiKey.isSet && spreadsheetId.isSet) {
+            localStorage.setItem('spreadsheetId', values.spreadsheetId)
+            localStorage.setItem('steamApiKey', values.steamApiKey)
 
-        if (haveValues) {
-            goToSpreadsheet()
+            dispatch(setupComplete())
         }
-    }, [])
 
-    function goToSpreadsheet() {
-        history.push(`/id/${localStorage.getItem('spreadsheetId')}`)
-    }
+        if (localStorage.getItem('spreadsheetId') && localStorage.getItem('steamApiKey')) {
+            dispatch(steamApiKeySet(values.steamApiKey))
+            dispatch(spreadsheetIdSet(values.spreadsheetId))
+        }
+
+        if (isSetupComplete) { console.log("Ready!") }
+
+        // if (history.location.state && history.location.state.edit) { history.location.state = null; return; }
+
+        // if (haveValues) {
+        //     goToSpreadsheet()
+        // }
+    }, [steamApiKey, spreadsheetId, isSetupComplete])
+
+    // function goToSpreadsheet() {
+    //     history.push(`/id/${localStorage.getItem('spreadsheetId')}`)
+    // }
 
     function handleUpdate() {
-        localStorage.setItem('spreadsheetId', values.spreadsheetId)
-        localStorage.setItem('steamApiKey', values.steamApiKey)
+        dispatch(steamApiKeySet(values.steamApiKey))
+        dispatch(spreadsheetIdSet(values.spreadsheetId))
 
         setHaveValues(true)
     }
 
     return (
-        <Grid textAlign='center' style={{ height: '100vh' }} verticalAlign='middle'>
+        <Grid textAlign='center' style={{ height: '100%' }} verticalAlign='middle'>
             <Grid.Column style={{ maxWidth: 600 }}>
                 <Header as='h2' color='black' textAlign='center'>Settings</Header>
                 <Form onSubmit={handleSubmit} size='large'>
@@ -74,7 +96,7 @@ function Settings() {
                     </Segment>
                 </Form>
                 <ErrorBox errors={errors} />
-                {
+                {/* {
                     haveValues && (
                         <Message positive>
                             <Message.Header>All done!</Message.Header>
@@ -85,7 +107,7 @@ function Settings() {
                             </p>
                         </Message>
                     )
-                }
+                } */}
                 <Message style={{ textAlign: 'left' }}>
                     <Message.Header>Where do I get them from?</Message.Header>
                     <Message.List>

@@ -1,41 +1,44 @@
-import React, { useEffect } from "react"
+import React, { useEffect, } from "react"
 import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom'
 import { useSelector, useDispatch } from "react-redux"
 
+import firebase, { FirebaseContext } from '../firebase';
+
 import MainApp from "./KeysDbApp/Main"
 import Settings from "./KeysDbApp/Settings/Settings"
-import SteamLogin from "./auth/SteamLogin/SteamLogin"
-import { Container } from "semantic-ui-react"
-import GoogleAuthentication from "../google/GoogleAuthentication"
-import { googleLoggedIn } from "../actions"
+import SetupPage from "./KeysDbApp/SetupPage/SetupPage";
+import { steamApiKeySet, spreadsheetIdSet, steamLoggedIn } from "../actions"
 
 function App() {
-    const isSteamLogged = useSelector((state) => state.authentication.steam)
-    const isGoogleLogged = useSelector((state) => state.authentication.google)
+    const setupComplete = useSelector((state) => state.authentication.setupComplete)
+    const spreadsheetId = useSelector((state) => state.authentication.spreadsheetId)
 
-    useEffect(() => { }, [])
+    const dispatch = useDispatch()
 
-    const dispatch = useDispatch();
-    const load = () => dispatch(googleLoggedIn(true))
+    useEffect(() => {
+        if (localStorage.getItem('spreadsheetId') && localStorage.getItem('steamApiKey')) {
+            dispatch(steamApiKeySet(localStorage.getItem('steamApiKey')))
+            dispatch(spreadsheetIdSet(localStorage.getItem('spreadsheetId')))
+        }
+        if (localStorage.getItem('steamId')) {
+            dispatch(steamLoggedIn(true))
+        }
+    }, [setupComplete])
 
-    return (
-        isSteamLogged && isGoogleLogged
-            ? (
-                <BrowserRouter>
+    return setupComplete
+        ? (
+            <BrowserRouter>
+                <FirebaseContext.Provider value={{ firebase }}>
                     <Switch>
-                        <Route exact path="/" render={() => <Redirect to="/settings" />} />
+                        <Route exact path="/" render={() => <Redirect to={`/id/${spreadsheetId.id}`} />} />
                         <Route path="/settings" component={Settings} />
                         <Route path="/id/:spreadsheetId" component={MainApp} />
                     </Switch>
-                </BrowserRouter>
-            )
-            : (
-                <Container>
-                    <SteamLogin />
-                    <GoogleAuthentication callbackOnSignIn={load} />
-                </Container>
-            )
-    )
+                </FirebaseContext.Provider>
+            </BrowserRouter>
+        )
+        : <SetupPage />
+
 }
 
 export default App;

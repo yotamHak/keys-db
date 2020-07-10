@@ -17,8 +17,8 @@ const urlGetPlayerBans = 'http://api.steampowered.com/ISteamUser/GetPlayerBans/v
 
 class SteamApi {
     constructor() {
-        this.steamApiKey = steamConfig.steamApiKey;
-        this.steamId = steamConfig.steamId;
+        this.steamApiKey = localStorage.getItem("steamApiKey");
+        this.steamId = localStorage.getItem("steamId");
         this.ownedGames = localStorage.getItem('ownedGames');
     }
 

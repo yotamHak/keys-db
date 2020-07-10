@@ -117,11 +117,42 @@ const theme_reducer = (state = initialThemeState, action) => {
 
 const initialAuthenticationState = {
     steam: false,
-    google: false
+    google: false,
+    googleClientReady: false,
+    setupComplete: false,
+    steamApiKey: {
+        key: null,
+        isSet: false,
+    },
+    spreadsheetId: {
+        id: null,
+        isSet: false,
+    },
 }
 
 const authentication_reducer = (state = initialAuthenticationState, action) => {
     switch (action.type) {
+        case actionTypes.SET_UP_COMPLETE:
+            return {
+                ...state,
+                setupComplete: true
+            }
+        case actionTypes.SPREADSHEET_ID_SET:
+            return {
+                ...state,
+                spreadsheetId: {
+                    isSet: true,
+                    id: action.payload
+                }
+            }
+        case actionTypes.STEAM_API_KEY_SET:
+            return {
+                ...state,
+                steamApiKey: {
+                    isSet: true,
+                    key: action.payload
+                }
+            }
         case actionTypes.STEAM_LOGGED_IN:
             return {
                 ...state,
@@ -131,6 +162,11 @@ const authentication_reducer = (state = initialAuthenticationState, action) => {
             return {
                 ...state,
                 google: true
+            }
+        case actionTypes.GOOGLE_CLIENT_READY:
+            return {
+                ...state,
+                googleClientReady: action.payload
             }
         default:
             return state;
