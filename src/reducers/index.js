@@ -116,57 +116,103 @@ const theme_reducer = (state = initialThemeState, action) => {
 }
 
 const initialAuthenticationState = {
-    steam: false,
-    google: false,
-    googleClientReady: false,
+    steam: {
+        loggedIn: null,
+        id: null,
+        apiKey: null,
+        profile: null,
+    },
+    google: {
+        loggedIn: null,
+        googleClientReady: false,
+        profile: null,
+    },
     setupComplete: false,
     steamApiKey: {
         key: null,
         isSet: false,
     },
-    spreadsheetId: {
-        id: null,
-        isSet: false,
-    },
+    spreadsheetId: null,
 }
 
 const authentication_reducer = (state = initialAuthenticationState, action) => {
+    let newState = null;
+
     switch (action.type) {
-        case actionTypes.SET_UP_COMPLETE:
+        case actionTypes.STEAM_SET_ID:
             return {
                 ...state,
-                setupComplete: true
-            }
-        case actionTypes.SPREADSHEET_ID_SET:
-            return {
-                ...state,
-                spreadsheetId: {
-                    isSet: true,
-                    id: action.payload
+                steam: {
+                    ...state.steam,
+                    id: action.payload,
                 }
             }
-        case actionTypes.STEAM_API_KEY_SET:
+        case actionTypes.STEAM_SET_API_KEY:
             return {
                 ...state,
-                steamApiKey: {
-                    isSet: true,
-                    key: action.payload
+                steam: {
+                    ...state.steam,
+                    apiKey: action.payload,
+                }
+            }
+        case actionTypes.STEAM_SET_PROFILE:
+            return {
+                ...state,
+                steam: {
+                    ...state.steam,
+                    profile: action.payload,
                 }
             }
         case actionTypes.STEAM_LOGGED_IN:
+            newState = {
+                ...state,
+                steam: {
+                    ...state.steam,
+                    loggedIn: true
+                }
+            }
+
+            localStorage.setItem('steam', JSON.stringify(newState.steam))
+            return newState
+        case actionTypes.STEAM_LOAD:
             return {
                 ...state,
-                steam: true
+                steam: action.payload
             }
+
+
         case actionTypes.GOOGLE_LOGGED_IN:
             return {
                 ...state,
-                google: true
+                google: {
+                    ...state.google,
+                    loggedIn: true,
+                    profile: action.payload
+                }
             }
         case actionTypes.GOOGLE_CLIENT_READY:
             return {
                 ...state,
-                googleClientReady: action.payload
+                google: {
+                    ...state.google,
+                    googleClientReady: action.payload,
+                }
+            }
+
+
+        case actionTypes.SPREADSHEET_SET_ID:
+            newState = {
+                ...state,
+                spreadsheetId: action.payload
+            }
+
+            localStorage.setItem('spreadsheetId', action.payload)
+            return newState
+
+        case actionTypes.SET_UP_COMPLETE:
+            return {
+                ...state,
+                setupComplete: true
             }
         default:
             return state;

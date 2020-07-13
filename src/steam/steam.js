@@ -6,7 +6,6 @@ import { corsAnywhereLink, corsAllOriginsLink, corsLink } from '../utils';
 
 // https://developer.valvesoftware.com/wiki/Steam_Web_API
 
-const apiKey = '00D5B3E37E04C5E734BF1B98A3CA9ADE'
 const urlVanityNameSearch = 'https://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/'
 const urlSearchUserGameList = 'https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/'
 const urlGameAchivements = 'http://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v0001/'
@@ -38,6 +37,26 @@ class SteamApi {
     }
     get ownedGames() { return this._ownedGames }
 
+    async GetUserInfo(steamId, steamApiKey) {
+        return await axios.get(corsLink(`https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${steamApiKey}&steamids=${steamId}`), { headers: { 'Access-Control-Allow-Origin': '*', } })
+            .then(response => {
+                if (response.status === 200) {
+                    return {
+                        success: true,
+                        error: null,
+                        user: response.data.response.players[0]
+                    }
+                } else {
+                    return {
+                        success: false,
+                        error: null,
+                        user: null
+                    }
+                }
+            })
+            .catch(reason => ({ success: false, error: reason, user: null }));
+    }
+
     // http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=00D5B3E37E04C5E734BF1B98A3CA9ADE&steamid=76561197967370369&format=json
     async _getOwnedGames() {
         return await axios.get(corsLink(`http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${this.steamApiKey}&steamid=${this.steamId}&format=json`), { headers: { 'Access-Control-Allow-Origin': '*', } })
@@ -48,6 +67,20 @@ class SteamApi {
                     return response.data.response
                 }
             });
+    }
+
+    async ActivateKey(key) {
+        return axios.post("https://store.steampowered.com/account/ajaxregisterkey/", {
+            withCredentials: true,
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': "application/x-www-form-urlencoded; charset=UTF-8"
+            },
+            body: {
+                sessionid: '4364b932ee560b091ea2644c',
+                product_key: key
+            }
+        })
     }
 
     async AppDetails(appid = 440) {

@@ -1,9 +1,15 @@
 // Authentication Action Types
-export const STEAM_LOGGED_IN = 'STEAM_LOGGED_IN';
+
 export const GOOGLE_LOGGED_IN = 'GOOGLE_LOGGED_IN';
 export const GOOGLE_CLIENT_READY = 'GOOGLE_CLIENT_READY';
-export const STEAM_API_KEY_SET = 'STEAM_API_KEY_SET';
-export const SPREADSHEET_ID_SET = 'SPREADSHEET_ID_SET';
+
+export const STEAM_SET_ID = 'STEAM_SET_ID';
+export const STEAM_SET_API_KEY = 'STEAM_SET_API_KEY';
+export const STEAM_SET_PROFILE = 'STEAM_SET_PROFILE';
+export const STEAM_LOGGED_IN = 'STEAM_LOGGED_IN';
+export const STEAM_LOAD = 'STEAM_LOAD';
+
+export const SPREADSHEET_SET_ID = 'SPREADSHEET_SET_ID';
 export const SET_UP_COMPLETE = 'SET_UP_COMPLETE';
 
 // Table Action Types

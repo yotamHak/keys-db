@@ -2,9 +2,9 @@ import React from "react";
 import googleConfig from "./config";
 import { gapi } from 'gapi-script';
 import { useDispatch } from "react-redux";
-import { googleLoading, googleClientReady } from "../actions";
+import { googleClientReady, googleLoggedIn } from "../actions";
 
-function GoogleAuthentication({ callbackOnSignIn }) {
+function GoogleAuthentication({ dontLogin }) {
     React.useEffect(() => {
         // window.gapi.load("client", this.initClient);
         // let auth2 = await loadAuth2(googleConfig.clientId, scopes);
@@ -23,7 +23,7 @@ function GoogleAuthentication({ callbackOnSignIn }) {
                 clientId: googleConfig.clientId,
                 // Your API key will be automatically added to the Discovery Document URLs.
                 discoveryDocs: googleConfig.discoveryDocs,
-                scope: "https://www.googleapis.com/auth/spreadsheets"
+                scope: "https://www.googleapis.com/auth/spreadsheets",
             })
             .then(() => {
                 // Listen for sign-in state changes.
@@ -45,12 +45,25 @@ function GoogleAuthentication({ callbackOnSignIn }) {
 
         if (isSignedIn) {
             localStorage.setItem('gTokenId', gapi.client.getToken().access_token)
-            callbackOnSignIn()
+
+            const basicProfile = {
+                id: gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile().getId(),
+                fullName: gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile().getName(),
+                givenName: gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile().getGivenName(),
+                familyName: gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile().getFamilyName(),
+                imageUrl: gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile().getImageUrl(),
+                email: gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile().getEmail(),
+            }
+
+            dispatch(googleLoggedIn(basicProfile))
+
+            // callbackOnSignIn()
             // authorizeButton.style.display = 'none';
             // signoutButton.style.display = 'block';
             // load(onLoad);            
             // listMajors();
         } else {
+            if (dontLogin) { return }
             gapi.auth2.getAuthInstance().signIn();
             // authorizeButton.style.display = 'block';
             // signoutButton.style.display = 'none';

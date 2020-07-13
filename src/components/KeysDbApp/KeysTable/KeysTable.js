@@ -1,5 +1,4 @@
 import React, { useEffect, useState, } from "react";
-import { useHistory } from 'react-router-dom';
 import { Table, Dimmer, Icon, Segment, Loader, Placeholder, Menu, Pagination, Dropdown, Header } from 'semantic-ui-react';
 import _ from 'lodash';
 import { usePrevious } from "../../../utils";
@@ -32,9 +31,7 @@ function KeysTable({ spreadsheetId }) {
     const orderBy = useSelector((state) => state.table.orderBy)
     const reload = useSelector((state) => state.table.reload)
     const filters = useSelector((state) => state.filters)
-    // const resetTable = useSelector((state) => state.table.reset)
 
-    const history = useHistory();
     const prevOffset = usePrevious(offset);
     const prevOrderBy = usePrevious(orderBy);
     const prevLimit = usePrevious(limit);
@@ -42,7 +39,6 @@ function KeysTable({ spreadsheetId }) {
     const prevReload = usePrevious(reload);
 
     useEffect(() => {
-        if (!spreadsheetId) { history.push(`settings`); return }
         if (prevReload === true && reload === false) { return }
 
         if (prevOffset && (prevOffset !== offset)) { }
@@ -54,11 +50,11 @@ function KeysTable({ spreadsheetId }) {
             }
         }
 
-        console.log("Offset:", offset);
-        console.log("Limit:", limit);
-        console.log("OrderBy:", orderBy);
-        console.log("Filters:", filters);
-        console.log("-------------------------")
+        // console.log("Offset:", offset);
+        // console.log("Limit:", limit);
+        // console.log("OrderBy:", orderBy);
+        // console.log("Filters:", filters);
+        // console.log("-------------------------")
 
         loadGames(offset, limit, orderBy, filters)
         dispatch(reloadTable(false))
@@ -147,10 +143,6 @@ function KeysTable({ spreadsheetId }) {
                                             </Menu.Item>
                                         </NewModal>
                                     </React.Fragment>
-
-                                    {/* <Menu.Item name='settings' onClick={() => history.push('/settings', { edit: true })}>
-                                        <Icon name='cog' />
-                                    </Menu.Item> */}
                                 </Menu.Menu>
 
                             </Menu>
@@ -158,7 +150,7 @@ function KeysTable({ spreadsheetId }) {
                         <Segment size="mini" key={`filters-segment`}>
                             <DataFilters />
                         </Segment>
-                        <Segment size="mini" key={`table-segment`} style={{ overflow: 'auto' }}>
+                        <Segment size="mini" key={`table-segment`}>
                             <Table celled striped compact>
                                 <Table.Header>
                                     <HeaderRow />

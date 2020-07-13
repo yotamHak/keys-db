@@ -1,15 +1,40 @@
 import * as actionTypes from './types';
 
 // Authentication Action
-export const steamApiKeySet = key => {
+export const steamSetApiKey = apiKey => {
     return {
-        type: actionTypes.STEAM_API_KEY_SET,
+        type: actionTypes.STEAM_SET_API_KEY,
+        payload: apiKey
+    }
+}
+export const steamSetId = key => {
+    return {
+        type: actionTypes.STEAM_SET_ID,
         payload: key
     }
 }
-export const spreadsheetIdSet = id => {
+export const steamSetProfile = profile => {
     return {
-        type: actionTypes.SPREADSHEET_ID_SET,
+        type: actionTypes.STEAM_SET_PROFILE,
+        payload: profile
+    }
+}
+export const steamLoggedIn = () => {
+    return {
+        type: actionTypes.STEAM_LOGGED_IN
+    }
+}
+export const steamLoad = steam => {
+    return {
+        type: actionTypes.STEAM_LOAD,
+        payload: steam
+    }
+}
+
+
+export const spreadsheetSetId = id => {
+    return {
+        type: actionTypes.SPREADSHEET_SET_ID,
         payload: id
     }
 }
@@ -18,14 +43,11 @@ export const setupComplete = () => {
         type: actionTypes.SET_UP_COMPLETE
     }
 }
-export const steamLoggedIn = () => {
+
+export const googleLoggedIn = profile => {
     return {
-        type: actionTypes.STEAM_LOGGED_IN
-    }
-}
-export const googleLoggedIn = () => {
-    return {
-        type: actionTypes.GOOGLE_LOGGED_IN
+        type: actionTypes.GOOGLE_LOGGED_IN,
+        payload: profile
     }
 }
 export const googleClientReady = state => {

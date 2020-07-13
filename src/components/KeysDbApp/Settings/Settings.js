@@ -1,60 +1,67 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Button, Form, Grid, Header, Message, Segment, Label } from 'semantic-ui-react'
 
 import validateSettings from '../../Authentication/validateSettings';
 import useFormValidation from '../../Authentication/useFormValidation';
-// import { useHistory } from 'react-router-dom';
 import ErrorBox from '../../Authentication/ErrorBox/ErrorBox';
 import { useSelector, useDispatch } from 'react-redux';
-import { setupComplete, steamApiKeySet, spreadsheetIdSet } from '../../../actions';
+import { setupComplete, spreadsheetSetId, steamSetApiKey, steamSetProfile, steamLoggedIn } from '../../../actions';
+import steamApi from '../../../steam';
+import { usePrevious, useInterval } from '../../../utils';
 
 const INITIAL_STATE = {
     spreadsheetId: localStorage.getItem('spreadsheetId') || '',
-    steamApiKey: localStorage.getItem('steamApiKey') || '',
+    steamApiKey: (JSON.parse(localStorage.getItem('steam')) && JSON.parse(localStorage.getItem('steam')).apiKey) || '',
 }
 
 function Settings() {
     const { handleSubmit, handleChange, values, errors } = useFormValidation(INITIAL_STATE, validateSettings, handleUpdate);
-    const [haveValues, setHaveValues] = React.useState(localStorage.getItem('spreadsheetId') && localStorage.getItem('steamApiKey') ? true : false);
-    // const history = useHistory();
+    // const [haveValues, setHaveValues] = React.useState(localStorage.getItem('spreadsheetId') && (localStorage.getItem('steam') && localStorage.getItem('steam').apiKey) ? true : false);
 
-    const steamApiKey = useSelector((state) => state.authentication.steamApiKey)
+    const steam = useSelector((state) => state.authentication.steam)
     const spreadsheetId = useSelector((state) => state.authentication.spreadsheetId)
-    const isSetupComplete = useSelector((state) => state.authentication.setupComplete)
 
     const dispatch = useDispatch()
 
+    const prevSteamProfile = usePrevious(steam.profile);
+
+    const [isFinishedAlertTimerRunning, setIsFinishedAlertTimerRunning] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
+
+    useInterval(() => {
+        setIsSuccess(false)
+    }, isFinishedAlertTimerRunning ? 3000 : null);
+
     useEffect(() => {
-        if (steamApiKey.isSet && spreadsheetId.isSet) {
-            localStorage.setItem('spreadsheetId', values.spreadsheetId)
-            localStorage.setItem('steamApiKey', values.steamApiKey)
-
-            dispatch(setupComplete())
+        if (steam.loggedIn && spreadsheetId) {
+            dispatch(setupComplete(true))
+            return
         }
 
-        if (localStorage.getItem('spreadsheetId') && localStorage.getItem('steamApiKey')) {
-            dispatch(steamApiKeySet(values.steamApiKey))
-            dispatch(spreadsheetIdSet(values.spreadsheetId))
+        if (steam.id && steam.apiKey) {
+            if (!steam.profile) {
+                steamApi.GetUserInfo(steam.id, steam.apiKey)
+                    .then(response => {
+                        if (response.success) {
+                            dispatch(steamSetProfile(response.user))
+                        }
+                    })
+            }
+
+            if (prevSteamProfile === null && steam.profile) {
+                dispatch(steamLoggedIn())
+            }
         }
-
-        if (isSetupComplete) { console.log("Ready!") }
-
-        // if (history.location.state && history.location.state.edit) { history.location.state = null; return; }
-
-        // if (haveValues) {
-        //     goToSpreadsheet()
-        // }
-    }, [steamApiKey, spreadsheetId, isSetupComplete])
-
-    // function goToSpreadsheet() {
-    //     history.push(`/id/${localStorage.getItem('spreadsheetId')}`)
-    // }
+    }, [steam, spreadsheetId])
 
     function handleUpdate() {
-        dispatch(steamApiKeySet(values.steamApiKey))
-        dispatch(spreadsheetIdSet(values.spreadsheetId))
+        dispatch(steamSetApiKey(values.steamApiKey))
+        dispatch(spreadsheetSetId(values.spreadsheetId))        
 
-        setHaveValues(true)
+        setIsSuccess(true)
+        setIsFinishedAlertTimerRunning(true)     
+
+        // setHaveValues(true)
     }
 
     return (
@@ -62,7 +69,7 @@ function Settings() {
             <Grid.Column style={{ maxWidth: 600 }}>
                 <Header as='h2' color='black' textAlign='center'>Settings</Header>
                 <Form onSubmit={handleSubmit} size='large'>
-                    <Segment stacked>
+                    <Segment>
                         <Form.Input
                             fluid
                             icon='file excel'
@@ -96,6 +103,13 @@ function Settings() {
                     </Segment>
                 </Form>
                 <ErrorBox errors={errors} />
+                {
+                    isSuccess && (
+                        <Message positive>
+                            <Message.Header>Saved!</Message.Header>                            
+                        </Message>
+                    )
+                }
                 {/* {
                     haveValues && (
                         <Message positive>

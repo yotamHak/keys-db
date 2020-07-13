@@ -56,7 +56,7 @@ class Spreashsheets {
             ? ``
             : `where ${this._parseFilters(filters)}`
         const order = orderBy
-            ? `order by ${orderBy.sort && !_.isEmpty(this.columns) ? this._getColumn(orderBy.sort) : "F"} ${orderBy.asc ? "asc" : "desc"}`
+            ? `order by ${orderBy.sort && !_.isEmpty(this.columns) ? this._getColumn(orderBy.sort) : "G"} ${orderBy.asc ? "asc" : "desc"}`
             : ``
         const offsetAndLimit = `limit ${limit} offset ${offset}`
 
@@ -90,10 +90,11 @@ class Spreashsheets {
         const allOptions = { ...headers }
 
         _.forEach(rows, row => {
-            let optionIndex = 0;
+            let optionIndex = 0
 
             _.forEach(allOptions, allOptionValue => {
                 let rowValue = row[optionIndex++]
+
                 if (rowValue) {
                     if (allOptionValue.type === 'date') {
                         rowValue = parseSpreadsheetDate(rowValue);
@@ -110,7 +111,7 @@ class Spreashsheets {
         })
 
         Object.keys(allOptions)
-            .map(headerKey => allOptions[headerKey].options = Object.keys(allOptions[headerKey].options)
+            .map(headerKey => allOptions[headerKey].options = _.isObject(allOptions[headerKey].options) ? Object.keys(allOptions[headerKey].options) : []
                 .filter(value => {
                     return value !== ""
                         && !_.toNumber(value)
@@ -128,7 +129,7 @@ class Spreashsheets {
         return this._get(`https://docs.google.com/a/google.com/spreadsheets/d/${this._spreadsheetId}/gviz/tq?tq=${this._createQueryString(offset, limit, orderBy, filters)}`)
             .then(response => {
                 const parsedQuery = JSON.parse(response.data.slice(response.data.indexOf("{"), response.data.length - 2));
-
+                console.log(parsedQuery)
                 if (parsedQuery.status === 'error') {
                     return Promise.reject(parsedQuery.errors);
                 }
@@ -186,11 +187,10 @@ class Spreashsheets {
 
         return gapi.client.sheets.spreadsheets.values.update(params, valueRangeBody)
             .then(response => {
-                // TODO: Change code below to process the `response` object:
-                console.log(response.result);
+                // console.log(response.result);
                 return response.result
             }, reason => {
-                console.error('error: ' + reason.result.error.message);
+                // console.error('error: ' + reason.result.error.message);
                 return reason.result.error.message
             });
     }
@@ -213,11 +213,10 @@ class Spreashsheets {
 
         return gapi.client.sheets.spreadsheets.batchUpdate(params)
             .then(response => {
-                // TODO: Change code below to process the `response` object:
-                console.log(response.result);
+                // console.log(response.result);
                 return response.result
             }, reason => {
-                console.error('error: ' + reason.result.error.message);
+                // console.error('error: ' + reason.result.error.message);
                 return reason.result.error.message
             });
     }
@@ -225,22 +224,29 @@ class Spreashsheets {
     async Initialize(spreadsheetId) {
         this.spreadsheetId = spreadsheetId
 
-        return this._query(0, 10000).then(response => {
-            if (response.errors) {
-                console.error(response);
-                return response
-            }
+        return this.GetHeadersAndSettings(spreadsheetId)
+            .then(response => {
+                console.log("GetHeadersAndSettings", response)
 
-            const table = this._parseTable(response);
-            this.columns = table.cols;
-            const options = this._initOptions(this._columns, table.rows);
+                
 
-            this._columns = options;
+                return this._query(0, 10000).then(response => {
+                    if (response.errors) {
+                        console.error(response);
+                        return response
+                    }
 
-            return {
-                headers: options
-            }
-        })
+                    const table = this._parseTable(response);
+                    this.columns = table.cols;
+                    const options = this._initOptions(this._columns, table.rows);
+
+                    this._columns = options;
+
+                    return {
+                        headers: options
+                    }
+                })
+            })
     }
 
     async GetFilteredData(offset, limit, orderBy, filters) {
@@ -268,6 +274,16 @@ class Spreashsheets {
                 this.rows = _.concat(this.rows, this._parseTable(response).rows)
                 return { headers: this._columns, rows: this.rows }
             })
+    }
+
+
+    async GetHeadersAndSettings(spreadsheetId) {
+        return axios.get(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/A1:Z2`, {
+            headers: {
+                'Authorization': 'Bearer ' + gapi.auth.getToken().access_token
+            }
+        })
+            .then(response => console.log(response))
     }
 }
 
