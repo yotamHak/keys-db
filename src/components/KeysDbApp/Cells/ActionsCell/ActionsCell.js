@@ -26,7 +26,7 @@ function ActionsCell({ index }) {
     }
 
     return (
-        <Table.Cell singleLine>
+        <Table.Cell singleLine textAlign='center' verticalAlign='middle'>
             <Dropdown
                 icon='ellipsis vertical'
                 compact

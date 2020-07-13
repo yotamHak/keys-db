@@ -23,3 +23,31 @@ body {
 .visibility-hidden{
   visibility: hidden;
 }
+
+.__dropdown{}
+
+.__dropdown > .dropdown{
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: start;
+}
+.__dropdown > .dropdown > input{
+  cursor: pointer !important;
+}
+
+.__dropdown > .dropdown > .text{
+  display: flex;
+  cursor: pointer !important;
+  flex-grow: 1;
+}
+
+.__dropdown > .dropdown > .icon{
+  color: black !important;
+  display: flex;
+  cursor: pointer !important;
+}
+
+.__dropdown > .dropdown > .menu{
+  width: 100%;
+}

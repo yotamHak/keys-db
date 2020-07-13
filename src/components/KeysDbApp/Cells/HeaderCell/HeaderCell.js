@@ -1,9 +1,9 @@
 import React from "react";
 import { Table, Dropdown, Grid, } from "semantic-ui-react";
-import { usePrevious } from "../../../../utils";
 import _ from 'lodash';
 import { useDispatch, useSelector } from "react-redux";
 import { addFilter, resetTableParams } from "../../../../actions";
+import { parseOptions, usePrevious } from "../../../../utils";
 
 function HeaderCell({ title }) {
     const dispatch = useDispatch()
@@ -28,20 +28,16 @@ function HeaderCell({ title }) {
     }, [filters])
 
     function initOptions(options) {
-        return _.without(options, ...filters.values).reduce((result, option) => {
-            return result.concat({
-                "key": option,
-                "text": option,
-                "value": option,
-            })
-        }, [])
+        if (!options) return
+
+        return parseOptions(options)
     }
 
-    function filter(e, { value }) {
+    function filter(e, { text }) {
         dispatch(resetTableParams(['offset']))
         dispatch(addFilter({
             key: title,
-            values: filters.values.concat(value)
+            values: filters.values.concat(text)
         }))
     }
 
@@ -54,7 +50,7 @@ function HeaderCell({ title }) {
                     </Grid.Column>
                     <Grid.Column floated='right' width="8" textAlign="right" verticalAlign="middle">
                         {
-                            (options && options.length > 0 && title !== "Key" && title !== "URLs") && (
+                            headerData && headerData.isFilter && headerData.options && (
                                 <Dropdown icon='filter' compact>
                                     <Dropdown.Menu>
                                         <Dropdown.Menu scrolling>
@@ -72,7 +68,6 @@ function HeaderCell({ title }) {
                                 </Dropdown>
                             )
                         }
-
                     </Grid.Column>
                 </Grid.Row>
             </Grid>

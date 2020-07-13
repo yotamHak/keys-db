@@ -30,16 +30,18 @@ export const parseSpreadsheetDate = date => {
 export const corsLink = url => `https://cors-anywhere.herokuapp.com/${url}`;
 // export const corsLink = url => `https://api.allorigins.win/get?url=${url}`;
 
-export const parseOptions = options => options.reduce((acc, option) => (_.concat(acc, [{
+export const parseOptions = options => options.values.reduce((acc, option) => (_.concat(acc, [{
   key: acc.length,
   value: acc.length,
-  text: option
+  text: option.value,
+  color: option.color
 }])), [])
 
 export const getIndexByLabel = (label, headers) => _alphabet.indexOf(headers[label].id)
 export const getValueByLabel = (label, headers, gameData) => gameData[getIndexByLabel(label, headers)]
+
 export const getUrlsLocationAndValue = (headers, gameData) => Object.keys(headers)
-  .filter(header => _.upperCase(header).indexOf("URL") > -1)
+  .filter(key => headers[key].type === 'url')
   .reduce((result, key) => (_.concat(
     ...result,
     [gameData

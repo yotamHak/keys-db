@@ -35,8 +35,6 @@ function KeysDBWrapper(props) {
             }
         }
 
-
-
         if (google.googleClientReady && initSpreadsheet) {
             Spreadsheets.Initialize(spreadsheetId)
                 .then(response => {

@@ -27,13 +27,13 @@ class Spreashsheets {
     get columns() { return this._columns }
     set columns(columns) {
         this._columns = columns
-            .filter(column => column.label)
-            .reduce((result, column) => {
-                return {
-                    ...result,
-                    ...{ [column.label]: column }
-                }
-            }, {})
+        // .filter(column => column.label)
+        // .reduce((result, column) => {
+        //     return {
+        //         ...result,
+        //         ...{ [column.label]: column }
+        //     }
+        // }, {})
     }
 
     _get = async (url) => axios.get(url, { headers: { 'Content-Type': 'application/json; charset=UTF-8', Authorization: _.concat('Bearer ', this.token) } })
@@ -43,6 +43,7 @@ class Spreashsheets {
     // { key: 'From', values: ['Humblebundle'] }, { key: 'Status', values: ['Unused', 'Given'] }
     _parseFilters(filters = []) {
         if (_.isEmpty(filters)) { return "" }
+
         const filtersArray = filters.reduce((result, filter) => _.concat(
             result,
             [filter.values.map(value => ({ [this._getColumn(filter.key)]: `'${value}'` }))]
@@ -129,7 +130,7 @@ class Spreashsheets {
         return this._get(`https://docs.google.com/a/google.com/spreadsheets/d/${this._spreadsheetId}/gviz/tq?tq=${this._createQueryString(offset, limit, orderBy, filters)}`)
             .then(response => {
                 const parsedQuery = JSON.parse(response.data.slice(response.data.indexOf("{"), response.data.length - 2));
-                console.log(parsedQuery)
+
                 if (parsedQuery.status === 'error') {
                     return Promise.reject(parsedQuery.errors);
                 }
@@ -148,9 +149,40 @@ class Spreashsheets {
                     return Promise.reject(parsedQuery.errors);
                 }
                 else {
-                    return parsedQuery.table.rows[0]['c'][0]['v']
+                    return parsedQuery.table.rows.length === 0 ? 0 : parsedQuery.table.rows[0]['c'][0]['v']
                 }
             })
+    }
+
+    _combineHeadersAndSettings(headersArray, settings) {
+        return Object.keys(settings).reduce((result, key) => ({
+            ...result,
+            [key]: {
+                ...headersArray.find(item => item.label === key),
+                ...settings[key],
+            }
+        }), {})
+    }
+
+    _getSettings(headersArray, settingsValuesArray) {
+        return headersArray.reduce((result, key, index) => {
+            if (key === "ID") {
+                return {
+                    ...result,
+                    [key]: {
+                        id: "A",
+                        label: "ID",
+                        type: "number",
+                        pattern: "General",
+                        display: false,
+                    }
+                }
+            }
+
+            return {
+                ...result, [key]: JSON.parse(settingsValuesArray[index])
+            }
+        }, {})
     }
 
     // https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/update
@@ -221,31 +253,99 @@ class Spreashsheets {
             });
     }
 
+    async _getHeadersAndSettings(spreadsheetId) {
+        return gapi.client.sheets.spreadsheets.values.get({
+            "spreadsheetId": spreadsheetId,
+            "range": "A1:Z2",
+            "majorDimension": "ROWS"
+        })
+            .then(response => response)
+            .catch(reason => console.log(reason))
+    }
+
+    async SaveSettings(spreadsheetId, settings) {
+        const newValues = Object.keys(settings)
+            .filter(header => header !== "ID")
+            .sort((a, b) => a.id > b.id)
+            .reduce((result, key) => {
+                return _.concat(
+                    result,
+                    ...[JSON.stringify(settings[key])]
+                )
+            }, [])
+
+        return gapi.client.sheets.spreadsheets.values.update({
+            "spreadsheetId": spreadsheetId,
+            "range": "Keys!A2:Z2",
+            "valueInputOption": "USER_ENTERED",
+            "resource": {
+                "values": [
+                    [
+                        "=ArrayFormula(ROW(A2:A))",
+                        ...newValues
+                    ]
+                ]
+            }
+        })
+            .then(response => {
+                if (response.status === 200) {
+                    return response.result
+                } else {
+
+                }
+            })
+            .catch(reason => console.log(reason))
+    }
+
+    async ImportAllOptions(spreadsheetId) {
+        return this._query(0, 10000).then(response => {
+            if (response.errors) {
+                console.error(response);
+                return response
+            }
+
+            const table = this._parseTable(response);
+            const options = this._initOptions(this._columns, table.rows);
+
+
+            return {
+                headers: options
+            }
+        })
+    }
+
     async Initialize(spreadsheetId) {
         this.spreadsheetId = spreadsheetId
 
-        return this.GetHeadersAndSettings(spreadsheetId)
+        return this._getHeadersAndSettings(spreadsheetId)
             .then(response => {
-                console.log("GetHeadersAndSettings", response)
+                if (response.status === 200) {
+                    const headersWithSettings = this._getSettings(response.result.values[0], response.result.values[1])
 
-                
+                    if (headersWithSettings[Object.keys(headersWithSettings)[1]].id) {
+                        this.columns = headersWithSettings;
 
-                return this._query(0, 10000).then(response => {
-                    if (response.errors) {
-                        console.error(response);
-                        return response
+                        return {
+                            headers: headersWithSettings
+                        }
+                    } else {
+                        return this._query(0, 1).then(response => {
+                            if (!response.errors) {
+                                const combinedHeadersAndSettings = this._combineHeadersAndSettings(response.table.cols, headersWithSettings)
+                                this.columns = combinedHeadersAndSettings
+
+                                this.SaveSettings(spreadsheetId, combinedHeadersAndSettings)
+
+                                return {
+                                    headers: combinedHeadersAndSettings
+                                }
+                            } else {
+                                console.error(response);
+                                return response
+                            }
+                        })
                     }
-
-                    const table = this._parseTable(response);
-                    this.columns = table.cols;
-                    const options = this._initOptions(this._columns, table.rows);
-
-                    this._columns = options;
-
-                    return {
-                        headers: options
-                    }
-                })
+                } else { console.error('GetHeadersAndSettings Error', response) }
             })
     }
 
@@ -274,16 +374,6 @@ class Spreashsheets {
                 this.rows = _.concat(this.rows, this._parseTable(response).rows)
                 return { headers: this._columns, rows: this.rows }
             })
-    }
-
-
-    async GetHeadersAndSettings(spreadsheetId) {
-        return axios.get(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/A1:Z2`, {
-            headers: {
-                'Authorization': 'Bearer ' + gapi.auth.getToken().access_token
-            }
-        })
-            .then(response => console.log(response))
     }
 }
 

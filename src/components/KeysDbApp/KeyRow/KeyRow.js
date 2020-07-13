@@ -1,5 +1,7 @@
-import React, {  } from "react";
-import { Table, } from 'semantic-ui-react';
+import React, { useState } from "react";
+import { Table, Button, } from 'semantic-ui-react';
+import _ from 'lodash';
+
 import StatusCell from "../Cells/StatusCell/StatusCell";
 import OwnStatusCell from "../Cells/OwnStatusCell/OwnStatusCell";
 import KeyCell from "../Cells/KeyCell/KeyCell";
@@ -12,17 +14,21 @@ import NameCell from "../Cells/NameCell/NameCell";
 import OptionsCell from "../Cells/OptionsCell/OptionsCell";
 import ActionsCell from "../Cells/ActionsCell/ActionsCell";
 import { useSelector } from "react-redux";
-import { getUrlsLocationAndValue } from "../../../utils";
+import { getUrlsLocationAndValue, getIndexByLabel } from "../../../utils";
+import Spreadsheets from "../../../google/Spreadsheets";
 
 function KeyRow({ rowIndex }) {
+    const [hasChanges, setHasChanges] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+
     const headers = useSelector((state) => state.table.headers)
     const gameData = useSelector((state) => state.table.rows[rowIndex])
 
     const urlsInGameData = getUrlsLocationAndValue(headers, gameData);
 
     function changeCallback(header, changedValue) {
-        console.log("Changed Value", `${header}: ${changedValue}`)
-        gameData[header] = changedValue;
+        gameData[getIndexByLabel(header.label, headers)] = changedValue;
+        setHasChanges(true)
     }
 
     function selectCell(index, header, gameHeaderValue) {
@@ -49,22 +55,9 @@ function KeyRow({ rowIndex }) {
                     key={rKey}
                 />
             case "Status":
-                return <StatusCell
-                    rowIndex={rowIndex}
-                    onChange={changeCallback}
-                    header={header}
-                    status={gameHeaderValue}
-                    key={rKey}
-                />
-            case "Key":
-                return <KeyCell
-                    rowIndex={rowIndex}
-                    onChange={changeCallback}
-                    header={header}
-                    gameKey={gameHeaderValue}
-                    key={rKey}
-                />
+            case "Own Status":
             case "From":
+            case "Cards":
                 return <OptionsCell
                     rowIndex={rowIndex}
                     onChange={changeCallback}
@@ -72,12 +65,32 @@ function KeyRow({ rowIndex }) {
                     title={gameHeaderValue}
                     key={rKey}
                 />
-            case "Own Status":
-                return <OwnStatusCell
+            // return <StatusCell
+            //     rowIndex={rowIndex}
+            //     onChange={changeCallback}
+            //     header={header}
+            //     status={gameHeaderValue}
+            //     key={rKey}
+            // />
+            // return <CardsCell
+            //     rowIndex={rowIndex}
+            //     onChange={changeCallback}
+            //     header={header}
+            //     cards={gameHeaderValue}
+            //     key={rKey} />
+            // return <OwnStatusCell
+            //     rowIndex={rowIndex}
+            //     onChange={changeCallback}
+            //     header={header}
+            //     status={gameHeaderValue}
+            //     key={rKey}
+            // />
+            case "Key":
+                return <KeyCell
                     rowIndex={rowIndex}
                     onChange={changeCallback}
                     header={header}
-                    status={gameHeaderValue}
+                    gameKey={gameHeaderValue}
                     key={rKey}
                 />
             case "Date Added":
@@ -96,13 +109,6 @@ function KeyRow({ rowIndex }) {
                     note={gameHeaderValue}
                     key={rKey}
                 />
-            case "Cards":
-                return <CardsCell
-                    rowIndex={rowIndex}
-                    onChange={changeCallback}
-                    header={header}
-                    cards={gameHeaderValue}
-                    key={rKey} />
             case "AppId":
                 return <AppIdCell
                     rowIndex={rowIndex}
@@ -122,9 +128,32 @@ function KeyRow({ rowIndex }) {
         }
     }
 
+    function saveChanges(gameData) {
+        setIsSaving(true)
+
+        Spreadsheets.Update(gameData, gameData[0])
+            .then(response => {
+                console.log(response)
+                setHasChanges(false)
+            })
+            .catch(reason => {
+                console.error(reason)
+            })
+            .finally(response => {
+                setIsSaving(false)
+            })
+    }
+
     return (
-        <Table.Row>
-            <ActionsCell index={rowIndex} />
+        <Table.Row style={hasChanges ? { backgroundColor: '#B5B4D9' } : {}}>
+            {
+                hasChanges
+                    ? <Table.Cell singleLine>
+                        <Button icon='save' onClick={() => { saveChanges(gameData) }} loading={isSaving} circular basic size='mini' />
+                    </Table.Cell>
+                    : <ActionsCell index={rowIndex} />
+            }
+
             {
                 gameData && Object.keys(headers).map((key, index) => { return selectCell(index, headers[key], gameData[index]) })
             }
