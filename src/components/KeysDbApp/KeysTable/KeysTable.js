@@ -1,5 +1,5 @@
 import React, { useEffect, useState, } from "react";
-import { Table, Dimmer, Icon, Segment, Loader, Placeholder, Menu, Pagination, Dropdown, Header } from 'semantic-ui-react';
+import { Table, Dimmer, Icon, Segment, Loader, Placeholder, Menu, Pagination, Dropdown, Header, Input, Grid, } from 'semantic-ui-react';
 import _ from 'lodash';
 import { usePrevious } from "../../../utils";
 import KeyRow from "../KeyRow/KeyRow";
@@ -10,6 +10,7 @@ import { useSelector, useDispatch } from "react-redux";
 import DataFilters from "./DataFilters/DataFilters";
 import { reloadTable, setCurrentRows } from "../../../actions";
 import HeaderRow from "../HeaderRow/HeaderRow";
+import TableSettingsModal from "../Modals/TableSettingsModal/TableSettingsModal";
 
 const INITIAL_OFFSET = 0
 const INITIAL_LIMIT = 24
@@ -17,11 +18,13 @@ const INITIAL_ACTIVEPAGE = 1
 
 function KeysTable({ spreadsheetId }) {
     const [loading, setLoading] = useState(false);
+    const [isSearching, setIsSearching] = useState(false);
     const [error, setError] = useState(false);
     const [offset, setOffset] = useState(INITIAL_OFFSET);
     const [limit, setLimit] = useState(INITIAL_LIMIT);
 
-    const [newModalKey, setNewModalKey] = useState(0);
+    const [titleQuery, setTitleQuery] = useState("");
+
     const [activePage, setActivePage] = useState(INITIAL_ACTIVEPAGE);
     const [pages, setPages] = useState(0);
 
@@ -56,10 +59,27 @@ function KeysTable({ spreadsheetId }) {
         // console.log("Filters:", filters);
         // console.log("-------------------------")
 
-        loadGames(offset, limit, orderBy, filters)
+        loadGames(titleQuery, offset, limit, orderBy, filters)
+
+        // if (titleQuery !== "") {
+        //     Spreadsheets.Search(spreadsheetId, titleQuery)
+        //         .then(response => {
+        //             if (response.success) {
+        //                 console.log(response)
+        //                 dispatch(setCurrentRows(response.rows))
+        //             }
+        //         })
+        //         .finally(response => {
+        //             setIsSearching(false)
+        //         })
+        // }
+        // else {
+        //     loadGames(titleQuery, offset, limit, orderBy, filters)
+        // }
+
         dispatch(reloadTable(false))
 
-    }, [filters, offset, limit, orderBy, reload, newModalKey]);
+    }, [titleQuery, filters, offset, limit, orderBy, reload]);
 
     function handleLimitChange(e, { value }) {
         console.log("Changing limit: ", value)
@@ -68,21 +88,24 @@ function KeysTable({ spreadsheetId }) {
         setLimit(value)
     }
 
-    function loadGames(offset, limit, orderBy, filters) {
+    function loadGames(titleQuery, offset, limit, orderBy, filters) {
         setLoading(true)
-        Spreadsheets.GetFilteredData(offset, limit, orderBy, filters)
-            .then(games => {
-                console.log("Got filtered games:", games)
-                games.count && setPages(Math.floor(games.count / limit));
-                dispatch(setCurrentRows(games.rows))
-                setLoading(false);
+        Spreadsheets.GetFilteredData(titleQuery, offset, limit, orderBy, filters)
+            .then(response => {
+                if (response.success) {
+                    // console.log("Got filtered games:", games)
+                    response.data.count && setPages(Math.floor(response.data.count / limit));
+                    dispatch(setCurrentRows(response.data.rows))
+                    setLoading(false);
+                }
+                else {
+                    console.log(response.errors)
+                }
             })
-    }
-
-    function addGame(value) {
-        // console.log("Finished adding...", value)
-        setNewModalKey(newModalKey + 1)
-        dispatch(reloadTable(true))
+            .finally(response => {
+                setLoading(false)
+                if (isSearching) setIsSearching(false)
+            })
     }
 
     function handlePaginationChange(e, { activePage }) {
@@ -94,6 +117,14 @@ function KeysTable({ spreadsheetId }) {
             left: 0,
             behavior: 'smooth'
         });
+    }
+
+    function searchByTitle(e, { value }) {
+        if (value.length >= 3 || (titleQuery.length > 0 && value.length === 0)) {
+            setTitleQuery(value)
+            setIsSearching(true)
+            dispatch(reloadTable(true))
+        }
     }
 
     return (
@@ -132,23 +163,33 @@ function KeysTable({ spreadsheetId }) {
                                 </Menu.Item>
 
                                 <Menu.Menu position='right'>
-                                    <React.Fragment key={newModalKey}>
-                                        <NewModal
-                                            onComplete={addGame}
-                                            initialValue={Object.keys(headers).reduce((acc, header) => ({ ...acc, [header]: '' }), {})}
-                                            isEdit={false}
-                                        >
-                                            <Menu.Item name='add-new'>
-                                                <Icon name='plus' />
-                                            </Menu.Item>
-                                        </NewModal>
-                                    </React.Fragment>
+                                    <NewModal
+                                        initialValue={Object.keys(headers).reduce((acc, header) => ({ ...acc, [header]: '' }), {})}
+                                        isEdit={false}
+                                    >
+                                        <Menu.Item name='add-new'>
+                                            <Icon name='plus' className={"no-margin"} />
+                                        </Menu.Item>
+                                    </NewModal>
+                                    <TableSettingsModal
+                                        headers={headers}
+                                    />
                                 </Menu.Menu>
 
                             </Menu>
                         </Segment>
-                        <Segment size="mini" key={`filters-segment`}>
-                            <DataFilters />
+                        <Segment size="mini" key={`filters-segment`} style={{ minHeight: '5.5em', alignItems: 'center', display: 'flex' }}>
+                            <Grid celled='internally'>
+                                <Grid.Row columns={2}>
+                                    <div style={{ height: '100%', alignItems: 'center', display: 'flex' }}>
+                                        <Input size={'small'} loading={isSearching} icon='search' placeholder='Search...' onChange={searchByTitle} />
+                                    </div>
+                                    &nbsp;&nbsp;&nbsp;
+                                    <div style={{ height: '100%', alignItems: 'center', display: 'flex' }}>
+                                        Filters:&nbsp;&nbsp;&nbsp;<DataFilters />
+                                    </div>
+                                </Grid.Row>
+                            </Grid>
                         </Segment>
                         <Segment size="mini" key={`table-segment`}>
                             <Table celled striped compact>

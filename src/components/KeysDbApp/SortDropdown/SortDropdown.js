@@ -19,7 +19,7 @@ function SortDropdown() {
                     <Dropdown.Menu>
                         {
                             Object.keys(headers)
-                                .filter(header => header !== "ID")
+                                .filter(header => header !== "ID" && headers[header].sortable)
                                 .map((key, index) => (
                                     <Dropdown.Item
                                         active={orderBy.sort === key}
@@ -37,12 +37,14 @@ function SortDropdown() {
                                                         size='medium'
                                                         onClick={() => { dispatch(changeOrderby({ sort: key, asc: true })) }}
                                                     >
-                                                        <Icon size='massive' name={`sort ${headers[key].type === 'string'
-                                                            ? 'alphabet ascending'
-                                                            : headers[key].type === 'number'
-                                                                ? 'numeric ascending'
-                                                                : 'content ascending'
-                                                            }`}
+                                                        <Icon
+                                                            size='massive'
+                                                            name={`sort ${headers[key].type === 'string' || 'text'
+                                                                ? 'alphabet ascending'
+                                                                : headers[key].type === 'number'
+                                                                    ? 'numeric ascending'
+                                                                    : 'content ascending'
+                                                                }`}
                                                         />
                                                     </Button>
                                                     <Button.Or />
@@ -51,12 +53,14 @@ function SortDropdown() {
                                                         size='medium'
                                                         onClick={() => { dispatch(changeOrderby({ sort: key, asc: false })) }}
                                                     >
-                                                        <Icon size='massive' name={`sort ${headers[key].type === 'string'
-                                                            ? 'alphabet descending'
-                                                            : headers[key].type === 'number'
-                                                                ? 'numeric descending'
-                                                                : 'content descending'
-                                                            }`}
+                                                        <Icon
+                                                            size='massive'
+                                                            name={`sort ${headers[key].type === 'string' || 'text'
+                                                                ? 'alphabet descending'
+                                                                : headers[key].type === 'number'
+                                                                    ? 'numeric descending'
+                                                                    : 'content descending'
+                                                                }`}
                                                         />
                                                     </Button>
                                                 </Button.Group>

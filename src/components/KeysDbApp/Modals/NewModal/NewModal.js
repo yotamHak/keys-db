@@ -1,70 +1,82 @@
 import React, { useState } from "react";
-import { Modal, Search, Segment, Header, Item, Icon, Container, Form } from "semantic-ui-react";
+import { useSelector, useDispatch } from "react-redux";
+import { Modal, Search, Segment, Header, Item, Icon, Container, Form, } from "semantic-ui-react";
+import _ from 'lodash';
+
+import { reloadTable } from "../../../../actions";
 import useFormValidation from '../../../Authentication/useFormValidation';
 import validateNewKey from '../../../Authentication/validateNewKey';
-import itadApi from "../../../../itad";
-import _ from 'lodash';
-import { parseSpreadsheetDate } from "../../../../utils";
-import Spreadsheets from "../../../../google/Spreadsheets";
-import steamApi from "../../../../steam/steam";
-import { useSelector } from "react-redux";
+import { parseSpreadsheetDate, parseOptions, genericSort } from "../../../../utils";
 import ErrorBox from "../../../Authentication/ErrorBox/ErrorBox";
 
-function NewModal({ onComplete, initialValue, children, isEdit }) {
+import itadApi from "../../../../itad";
+import Spreadsheets from "../../../../google/Spreadsheets";
+import steamApi from "../../../../steam/steam";
+import spreadsheets from "../../../../google/Spreadsheets";
+
+function NewModal({ initialValue, isEdit, children }) {
     const headers = useSelector((state) => state.table.headers)
+    const spreadsheetId = useSelector((state) => state.authentication.spreadsheetId)
     const INITIAL_STATE = initialValue
 
-    const [showModal, setShowModal] = useState(false)
+    const [modalOpen, setModalOpen] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const [isSubmittinError, setIsSubmittinError] = useState(false)
     const [isSearching, setIsSearching] = useState(false)
     const [searchResults, setSearchResults] = useState(null)
-    const { handleSubmit, handleChange, updateValues, values, errors } = useFormValidation(INITIAL_STATE, validateNewKey, handleCreate);
+    const { handleSubmit, handleChange, updateValues, reset, values, errors } = useFormValidation(INITIAL_STATE, validateNewKey, handleCreate)
+
+    const handleOpen = () => setModalOpen(true)
+    const handleClose = () => setModalOpen(false)
+
+    const dispatch = useDispatch()
 
     function handleCreate() {
-        setIsLoading(true);
+        setIsLoading(true)
 
         const sortedArray = Object.keys(values)
             .reduce((acc, key) => (_.concat(acc, [{ key: [key], value: values[key] }])), [])
-            .sort((a, b) => headers[a.key].id < headers[b.key].id ? -1 : headers[a.key].id > headers[b.key].id ? 1 : 0)
+            .sort((a, b) => genericSort(headers[a.key].id, headers[b.key].id))
             .reduce((acc, item) => _.concat(acc, [item.value]), [])
 
         if (isEdit) {
-            Spreadsheets.Update(sortedArray, INITIAL_STATE["ID"])
+            Spreadsheets.Update(spreadsheets, sortedArray, INITIAL_STATE["ID"])
                 .then(response => {
                     if (response.updatedRows === 1) {
-                        onComplete(true);
+                        reset()
+                        dispatch(reloadTable(true))
                     }
                 })
                 .catch(reason => { console.error(reason); setIsSubmittinError(true); })
                 .finally(() => {
-                    closeModal();
+                    handleClose();
                     setIsLoading(false);
                 })
         }
         else {
-            Spreadsheets.Insert(sortedArray)
+            Spreadsheets.Insert(spreadsheetId, sortedArray)
                 .then(response => {
                     if (response.updates.updatedRows === 1) {
-                        onComplete(true);
+                        reset()
+                        dispatch(reloadTable(true))
                     }
                 })
-                .catch(reason => { console.error(reason); setIsSubmittinError(true); })
+                .catch(reason => {
+                    console.error(reason);
+                    setIsSubmittinError(true);
+                })
                 .finally(() => {
-                    closeModal();
+                    handleClose();
                     setIsLoading(false);
                 })
         }
     }
 
     const Child = React.Children.only(children);
-    const newChildren = React.cloneElement(Child, { onClick: openModal });
-
-    function openModal() { setShowModal(true) }
-    function closeModal() { setShowModal(false) }
+    const newChildren = React.cloneElement(Child, { onClick: handleOpen });
 
     async function handleSearchResultSelect(e, { result }) {
-        handleChange(e, { name: 'Name', value: result.title })
+        handleChange(e, { name: 'Title', value: result.title })
 
         const newRowValues = Object.keys(headers)
             .reduce((result, header) => ({
@@ -76,7 +88,7 @@ function NewModal({ onComplete, initialValue, children, isEdit }) {
                 }
             }), [])
 
-        newRowValues['Name'].value = result.title;
+        newRowValues['Title'].value = result.title;
         newRowValues['AppId'].value = parseInt(result.appid);
         newRowValues['Steam URL'].value = result.urls.steam;
         newRowValues['isthereanydeal URL'].value = result.urls.itad;
@@ -94,7 +106,7 @@ function NewModal({ onComplete, initialValue, children, isEdit }) {
     function handleSearchChange(e, { value }) {
         if (e.type === "focus" && searchResults !== null) return
 
-        handleChange(e, { name: "Name", value: value })
+        handleChange(e, { name: "Title", value: value })
 
         if (isSearching || !value || value.length < 3) return
 
@@ -134,7 +146,7 @@ function NewModal({ onComplete, initialValue, children, isEdit }) {
                     }
             }, {})
 
-            console.log("filteredResults", filteredResults);
+            // console.log("filteredResults", filteredResults);
 
             setIsSearching(false);
             setSearchResults(filteredResults);
@@ -166,8 +178,16 @@ function NewModal({ onComplete, initialValue, children, isEdit }) {
     )
 
     function selectInput(header) {
-        switch (header.label) {
-            case 'Note':
+        switch (header.type) {
+            case 'date':
+                return <Form.Input
+                    name={header.label}
+                    label={header.label}
+                    onChange={handleChange}
+                    value={values[header.label]}
+                    key={header.label}
+                />
+            case 'text':
                 return <Form.TextArea
                     name={header.label}
                     label={header.label}
@@ -176,82 +196,57 @@ function NewModal({ onComplete, initialValue, children, isEdit }) {
                     value={values[header.label]}
                     key={header.label}
                 />
-            case 'Date Added':
-                return <Form.Input
-                    name={header.label}
-                    label={header.label}
-                    onChange={handleChange}
-                    value={values[header.label]}
-                    key={header.label}
-                />
-            case 'Key':
-                return <Form.Input
-                    inline fluid
-                    name={header.label}
-                    label={header.label}
-                    onChange={handleChange}
-                    placeholder={`Add ${header.label}...`}
-                    value={values[header.label]}
-                    key={header.label}
-                />
+            case 'dropdown':
+                const options = parseOptions(header.options)
 
-            default:
-                if (header.options && header.options.length > 0) {
-                    const options = header.options.reduce((result, option) => (
-                        _.concat(result,
-                            [{
-                                key: option,
-                                text: option,
-                                value: option,
-                            }])), []
-                    )
-
-                    return (
-                        <Form.Field key={header.label}>
-                            <Form.Select
-                                fluid search
-                                name={header.label}
-                                label={header.label}
-                                onChange={handleChange}
-                                placeholder={`Add ${header.label}...`}
-                                options={options}
-                                value={values[header.label]}
-                                key={header.label}
-                            />
-                        </Form.Field>
-                    )
-                } else {
-                    return (
-                        <Form.Input
-                            fluid
+                return (
+                    <Form.Field key={header.label}>
+                        <Form.Select
+                            fluid search
                             name={header.label}
                             label={header.label}
                             onChange={handleChange}
                             placeholder={`Add ${header.label}...`}
+                            options={options}
                             value={values[header.label]}
                             key={header.label}
                         />
-                    )
-                }
+                    </Form.Field>
+                )
+            case 'string':
+            case 'key':
+            default:
+                return (
+                    <Form.Input
+                        fluid
+                        name={header.label}
+                        label={header.label}
+                        onChange={handleChange}
+                        placeholder={`Add ${header.label}...`}
+                        value={values[header.label]}
+                        key={header.label}
+                    />
+                )
         }
     }
 
     return (
         <Modal
-            closeIcon={<Icon name="close" onClick={closeModal} />}
             trigger={newChildren}
+            open={modalOpen}
+            onClose={handleClose}
+            closeIcon={<Icon name="close" onClick={handleClose} />}
             centered={false}
             size="small"
-            open={showModal}
         >
             <Modal.Header>Add Key</Modal.Header>
             <Modal.Content>
                 <Modal.Description>
-                    <Form onSubmit={handleSubmit}>
+                    <Form onSubmit={handleSubmit} autoComplete="off">
                         {
                             initialValue && (
-                                <Form.Field width='16' key="Name">
-                                    <label>Name</label>
+                                <Form.Field width='16'>
+                                    <label>Title</label>
                                     <Search
                                         category fluid
                                         categoryLayoutRenderer={categoryLayoutRenderer}
@@ -272,7 +267,7 @@ function NewModal({ onComplete, initialValue, children, isEdit }) {
                             )
                         }
                         {
-                            _.chunk(_.pull(Object.keys(headers), "ID", "Name"), 2)
+                            _.chunk(Object.keys(headers).filter(key => key !== "ID" && headers[key].type !== 'primary'), 2)
                                 .map(group => {
                                     return (
                                         <Form.Group widths='equal' key={_.flatten(group)}>

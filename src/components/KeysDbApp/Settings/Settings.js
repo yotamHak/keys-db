@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button, Form, Grid, Header, Message, Segment, Label } from 'semantic-ui-react'
 
 import validateSettings from '../../Authentication/validateSettings';

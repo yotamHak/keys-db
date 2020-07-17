@@ -2,9 +2,9 @@ export default function validateNewKey(values) {
     let errors = {};
 
     // Title Errors
-    if (!values["Name"]) {
-        errors["Name"] = "Title is required";
-    } else if (values["Name"].length < 3) {
+    if (!values['Title']) {
+        errors['Title'] = "Title is required";
+    } else if (values['Title'].length < 3) {
         errors.title = "Title must be at least 3 characters";
     }
 

@@ -1,6 +1,5 @@
 import React from "react";
 import { Table, Dropdown, Grid, } from "semantic-ui-react";
-import _ from 'lodash';
 import { useDispatch, useSelector } from "react-redux";
 import { addFilter, resetTableParams } from "../../../../actions";
 import { parseOptions, usePrevious } from "../../../../utils";
@@ -15,17 +14,26 @@ function HeaderCell({ title }) {
             : { key: title, values: [] }
     })
     const headers = useSelector((state) => state.table.headers)
-    const headerData = headers[title]
 
-    const [options, setOptions] = React.useState(headerData ? initOptions(headerData.options) : false);
+    const [options, setOptions] = React.useState(headers[title] ? initOptions(headers[title].options) : false);
 
     const prevFilters = usePrevious(filters);
+    const prevHeaders = usePrevious(headers);
 
     React.useEffect(() => {
         if (prevFilters && (prevFilters.values.length !== filters.values.length)) {
             setOptions(initOptions(headers[title].options))
         }
-    }, [filters])
+
+        if (prevHeaders && prevHeaders !== headers) {
+            if (headers[title] && headers[title].type) {
+                if (headers[title].type === 'dropdown') {
+                    setOptions(initOptions(headers[title].options))
+                }
+            }
+        }
+
+    }, [filters, headers])
 
     function initOptions(options) {
         if (!options) return
@@ -46,11 +54,11 @@ function HeaderCell({ title }) {
             <Grid>
                 <Grid.Row>
                     <Grid.Column floated='left' width="8">
-                        {title}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        {(headers[title] && headers[title].label) || title}
                     </Grid.Column>
                     <Grid.Column floated='right' width="8" textAlign="right" verticalAlign="middle">
                         {
-                            headerData && headerData.isFilter && headerData.options && (
+                            headers[title] && headers[title].isFilter && headers[title].options && (
                                 <Dropdown icon='filter' compact>
                                     <Dropdown.Menu>
                                         <Dropdown.Menu scrolling>

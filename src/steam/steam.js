@@ -2,23 +2,23 @@ import axios from 'axios';
 import dateFns from 'date-fns';
 import _ from 'lodash';
 import steamConfig from './config';
-import { corsAnywhereLink, corsAllOriginsLink, corsLink } from '../utils';
+import { corsLink } from '../utils';
 
 // https://developer.valvesoftware.com/wiki/Steam_Web_API
 
-const urlVanityNameSearch = 'https://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/'
-const urlSearchUserGameList = 'https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/'
-const urlGameAchivements = 'http://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v0001/'
-const urlUserInfo = 'https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/'
-const urlGetGameInfo = 'https://api.steampowered.com/ISteamUserStats/GetSchemaForGame/v2/'
-const urlGetFriendList = 'http://api.steampowered.com/ISteamUser/GetFriendList/v0001/'
-const urlGetPlayerBans = 'http://api.steampowered.com/ISteamUser/GetPlayerBans/v1/'
+// const urlVanityNameSearch = 'https://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/'
+// const urlSearchUserGameList = 'https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/'
+// const urlGameAchivements = 'http://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v0001/'
+// const urlUserInfo = 'https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/'
+// const urlGetGameInfo = 'https://api.steampowered.com/ISteamUserStats/GetSchemaForGame/v2/'
+// const urlGetFriendList = 'http://api.steampowered.com/ISteamUser/GetFriendList/v0001/'
+// const urlGetPlayerBans = 'http://api.steampowered.com/ISteamUser/GetPlayerBans/v1/'
 
 class SteamApi {
     constructor() {
-        const steam = JSON.parse(localStorage.getItem("steam"))
-        this.steamApiKey = steam.apiKey;
-        this.steamId = steam.id;
+        const steam = JSON.parse(localStorage.getItem("steam")) || {}
+        this.steamApiKey = steam.apiKey || '';
+        this.steamId = steam.id || '';
         this.ownedGames = localStorage.getItem('ownedGames');
     }
 

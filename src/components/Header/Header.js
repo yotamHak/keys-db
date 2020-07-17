@@ -1,11 +1,8 @@
 import React, { useEffect, } from "react"
-import { Menu, Dropdown, Icon, Image, Grid, Placeholder } from "semantic-ui-react";
-import { gapi } from 'gapi-script';
+import { Menu, Dropdown, Image, Grid, Placeholder } from "semantic-ui-react";
 import { useSelector, useDispatch } from "react-redux";
-import steamApi from "../../steam";
-import SteamLogin from "../auth/SteamLogin/SteamLogin";
 import { NavLink } from "react-router-dom";
-import { spreadsheetSetId, steamLoggedIn, steamLoad, } from "../../actions";
+import { spreadsheetSetId, steamLoad, } from "../../actions";
 import GoogleAuthentication from "../../google/GoogleAuthentication";
 
 function Header() {
@@ -22,14 +19,6 @@ function Header() {
         if (!spreadsheetId && localStorage.getItem('spreadsheetId')) {
             dispatch(spreadsheetSetId(localStorage.getItem('spreadsheetId')))
         }
-
-        // if (localStorage.getItem('spreadsheetId') && localStorage.getItem('steamApiKey')) {
-        //     // dispatch(steamApiKeySet(localStorage.getItem('steamApiKey')))
-        //     dispatch(spreadsheetSetId(localStorage.getItem('spreadsheetId')))
-        // }
-        // if (localStorage.getItem('steamId')) {
-        //     // dispatch(steamLoggedIn(true))
-        // }
     }, [google, steam, spreadsheetId,])
 
     return <React.Fragment>

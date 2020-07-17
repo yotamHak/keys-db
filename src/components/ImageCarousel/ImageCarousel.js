@@ -1,4 +1,4 @@
-import { CarouselProvider, ImageWithZoom, Slide, Slider, Dot, ButtonFirst, ButtonBack, ButtonNext, ButtonLast, ButtonPlay } from "pure-react-carousel";
+import { CarouselProvider, ImageWithZoom, Slide, Slider, ButtonFirst, ButtonBack, ButtonNext, ButtonLast, ButtonPlay } from "pure-react-carousel";
 import React from "react";
 import { Divider, Container, Button } from "semantic-ui-react";
 
@@ -23,15 +23,15 @@ function CustomDotGroup({ slides, size, }) {
 function ImageCarousel({ images }) {
     return images && images.length > 0 && <CarouselProvider
         isPlaying={true}
-        naturalSlideWidth={100}
-        naturalSlideHeight={125}
+        naturalSlideWidth={16}
+        naturalSlideHeight={9}
         totalSlides={images.length}
     >
         <Slider>
             {
                 images.map((image, index) => (
                     <Slide tag="a" index={index} key={index}>
-                        <ImageWithZoom src={image} onClick={() => { console.log("clicked on image", image) }} />
+                        <ImageWithZoom src={image} onClick={() => { console.log("clicked on image", image) }} className={"contained-image"}/>
                     </Slide>
                 ))
             }

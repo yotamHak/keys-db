@@ -1,6 +1,5 @@
 import axios from 'axios';
 import itadConfig from './config';
-import { corsLink } from '../utils';
 
 class ItadApi {
     constructor() {

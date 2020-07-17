@@ -1,11 +1,7 @@
 import React, { useEffect, useState } from "react";
-import querystring from 'querystring'
 
 import { useDispatch, useSelector } from "react-redux";
-import { steamLoggedIn, steamSetId } from "../../../actions";
-import steamApi from "../../../steam";
-import steamConfig from "../../../steam/config";
-import axios from "axios";
+import {  steamSetId } from "../../../actions";
 import { Container } from "semantic-ui-react";
 
 function SteamLogin() {

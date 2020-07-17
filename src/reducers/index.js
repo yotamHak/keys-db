@@ -5,14 +5,15 @@ import _ from 'lodash';
 const initialTableState = {
     headers: {},
     rows: [],
+    changes: {},
     reset: {
         limit: false,
         offset: false,
         filters: false,
         orderBy: false,
     },
-    reload: false,
     orderBy: { sort: 'Date Added', asc: false },
+    reload: false,
     pageSize: 24,
 }
 
@@ -57,6 +58,84 @@ const table_reducer = (state = initialTableState, action) => {
             return {
                 ...state,
                 headers: {}
+            }
+        case actionTypes.INIT_OPTIONS_CHANGE:
+            return {
+                ...state,
+                changes: {
+                    ...state.changes,
+                    headers: {
+                        ...state.changes.headers,
+                        [action.payload]: {
+                            ...state.changes.headers[action.payload],
+                            type: 'dropdown',
+                            options: {
+                                allowEdit: true,
+                                values: []
+                            }
+                        }
+                    }
+                },
+            }
+        case actionTypes.RESET_OPTIONS_CHANGE:
+            let newHeader = {
+                ...state.changes.headers[action.payload.id],
+                type: action.payload.type
+            }
+
+            _.unset(newHeader, 'options')
+
+            return {
+                ...state,
+                changes: {
+                    ...state.changes,
+                    headers: {
+                        ...state.changes.headers,
+                        [action.payload.id]: newHeader
+                    }
+                }
+            }
+        case actionTypes.SET_NEW_OPTIONS_CHANGE:
+            return {
+                ...state,
+                changes: {
+                    ...state.changes,
+                    headers: {
+                        ...state.changes.headers,
+                        [action.payload.header]: {
+                            ...state.changes.headers[action.payload.header],
+                            options: {
+                                ...state.changes.headers[action.payload.header].options,
+                                values: _.concat(state.changes.headers[action.payload.header].options.values, action.payload.newOption)
+                            }
+                        }
+                    }
+                },
+            }
+        case actionTypes.REMOVE_NEW_OPTIONS_CHANGE:
+            return {
+                ...state,
+                changes: {
+                    ...state.changes,
+                    headers: {
+                        ...state.changes.headers,
+                        [action.payload.header]: {
+                            ...state.changes.headers[action.payload.header],
+                            options: {
+                                ...state.changes.headers[action.payload.header].options,
+                                values: state.changes.headers[action.payload.header].options.values.filter(option => option.value !== action.payload.option.value)
+                            }
+                        }
+                    }
+                },
+            }
+        case actionTypes.SET_NEW_ROW_CHANGE:
+            return {
+                ...state,
+                changes: {
+                    ...state.changes,
+                    [action.payload.id]: action.payload.row
+                }
             }
         default:
             return state;
@@ -128,10 +207,6 @@ const initialAuthenticationState = {
         profile: null,
     },
     setupComplete: false,
-    steamApiKey: {
-        key: null,
-        isSet: false,
-    },
     spreadsheetId: null,
 }
 

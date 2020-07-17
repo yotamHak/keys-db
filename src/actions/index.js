@@ -30,8 +30,6 @@ export const steamLoad = steam => {
         payload: steam
     }
 }
-
-
 export const spreadsheetSetId = id => {
     return {
         type: actionTypes.SPREADSHEET_SET_ID,
@@ -88,17 +86,57 @@ export const reloadTable = state => {
         payload: state
     }
 }
-
 export const addHeaders = headers => {
     return {
         type: actionTypes.ADD_HEADERS,
         payload: headers
     }
 }
-
 export const removeHeaders = () => {
     return {
         type: actionTypes.REMOVE_HEADERS
+    }
+}
+export const initOptionsChange = id => {
+    return {
+        type: actionTypes.INIT_OPTIONS_CHANGE,
+        payload: id
+    }
+}
+export const resetOptionsChange = (id, type) => {
+    return {
+        type: actionTypes.RESET_OPTIONS_CHANGE,
+        payload: {
+            id: id,
+            type: type || "string"
+        }
+    }
+}
+export const setNewRowChange = (id, row) => {
+    return {
+        type: actionTypes.SET_NEW_ROW_CHANGE,
+        payload: {
+            id: id,
+            row: row
+        }
+    }
+}
+export const setNewOptionsChange = (header, newOption) => {
+    return {
+        type: actionTypes.SET_NEW_OPTIONS_CHANGE,
+        payload: {
+            header: header,
+            newOption: newOption
+        }
+    }
+}
+export const removeNewOptionsChange = (header, option) => {
+    return {
+        type: actionTypes.REMOVE_NEW_OPTIONS_CHANGE,
+        payload: {
+            header: header,
+            option: option
+        }
     }
 }
 

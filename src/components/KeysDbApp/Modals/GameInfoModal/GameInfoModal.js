@@ -1,14 +1,13 @@
 // https://steamdb.info/app/730/
 
-import React, { useState, useEffect } from "react";
-import { Modal, Icon, Grid, Item, Placeholder, Statistic, Segment, Header, Message, Container } from "semantic-ui-react";
+import React, { useState, } from "react";
+import { Modal, Icon, Grid, Placeholder, Statistic, Segment, Header, Message, Container, Dropdown } from "semantic-ui-react";
 import steamApi from '../../../../steam'
 import ImageCarousel from "../../../ImageCarousel/ImageCarousel";
 import _ from 'lodash';
 import itadApi from "../../../../itad";
 
-function GameInfoModal({ appId, children, }) {
-    const [showModal, setShowModal] = useState(false)
+function GameInfoModal({ appId, }) {
     const [appData, setAppData] = useState(null)
     const [gameBundles, setGameBundles] = useState({ success: false })
 
@@ -17,43 +16,32 @@ function GameInfoModal({ appId, children, }) {
 
     const [extendedDescription, setExtendedDescription] = useState(false)
 
-    const Child = React.Children.only(children);
-    const newChildren = React.cloneElement(Child, { onClick: openModal });
-
-    function openModal() { setShowModal(true) }
-    function closeModal() { setShowModal(false) }
-
-    useEffect(() => {
-        if (showModal) {
-            steamApi.AppDetails(appId)
+    const loadGameData = (id) => steamApi.AppDetails(id).then(response => {
+        if (response) {
+            itadApi.GetInfoAboutBundles(response.name)
                 .then(response => {
-                    if (response) {
-                        itadApi.GetInfoAboutBundles(response.name)
-                            .then(response => {
-                                if (response.success) {
-                                    console.log("ITAD Bundled data:", response)
-                                    setGameBundles(response)
-                                } else {
-                                    setErrorGettingItadData(true)
-                                }
-                            })
-
-                        console.log("Steam data:", response)
-                        setAppData(response)
+                    if (response.success) {
+                        // console.log("ITAD Bundled data:", response)
+                        setGameBundles(response)
                     } else {
-                        setErrorGettingSteamData(true)
+                        setErrorGettingItadData(true)
                     }
                 })
+
+            // console.log("Steam data:", response)
+            setAppData(response)
+        } else {
+            setErrorGettingSteamData(true)
         }
-    }, [showModal])
+    })
 
     return (
         <Modal
-            closeIcon={<Icon name="close" onClick={closeModal} />}
-            trigger={newChildren}
+            onOpen={() => { loadGameData(appId) }}
+            closeIcon={<Icon name="close" />}
+            trigger={<Dropdown.Item text="Info" />}
             centered={false}
             size={errorGettingSteamData ? 'small' : 'large'}
-            open={showModal}
         >
             {
                 errorGettingSteamData
@@ -115,7 +103,7 @@ function GameInfoModal({ appId, children, }) {
                                                                     {
                                                                         gameBundles.success && (
                                                                             <Statistic horizontal
-                                                                                color={gameBundles.times_bundled == 0 ? 'green' : gameBundles.times_bundled <= 3 ? 'yellow' : 'red'}
+                                                                                color={gameBundles.times_bundled === 0 ? 'green' : gameBundles.times_bundled <= 3 ? 'yellow' : 'red'}
                                                                                 as='a'
                                                                                 target='_blank'
                                                                                 rel='noopener noreferrer'
@@ -233,10 +221,3 @@ function GameInfoModal({ appId, children, }) {
 }
 
 export default GameInfoModal;
-
-
-{/* <Modal.Description>
-    <ImageCarousel images={appData.screenshots.reduce((result, item) => (
-        _.concat(result, [item.path_full])
-    ), [])} />
-</Modal.Description> */}

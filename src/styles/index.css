@@ -30,7 +30,7 @@ body {
   display: flex;
   width: 100%;
   align-items: center;
-  justify-content: start;
+  justify-content: flex-start;
 }
 .__dropdown > .dropdown > input{
   cursor: pointer !important;
@@ -50,4 +50,33 @@ body {
 
 .__dropdown > .dropdown > .menu{
   width: 100%;
+}
+
+.contained-image .carousel__image{
+  background-size: contain !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
+.ui.fullscreen.modal{
+      left: auto!important;
+}
+
+.segment-no-last-child-bottom-margin.ui.segment:last-child{
+  /* margin-bottom: 1rem; */
+}
+
+.no-margin{
+  margin: 0 !important;
+}
+
+.show-messages > .ui.error.message{
+display: block !important;
+}
+
+.filters-search-column{
+  width: 25% !important;
+  height: 100%;
+  display: flex;
+  justify-content: center;
 }

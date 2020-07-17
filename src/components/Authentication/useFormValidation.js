@@ -1,11 +1,11 @@
-import React from "react";
+import { useState, useEffect } from "react";
 
 function useFormValidation(initialState, validate, authenticate) {
-    const [values, setValues] = React.useState(initialState);
-    const [errors, setErrors] = React.useState({});
-    const [isSubmitting, setSubmitting] = React.useState(false);
+    const [values, setValues] = useState(initialState);
+    const [errors, setErrors] = useState({});
+    const [isSubmitting, setSubmitting] = useState(false);
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (isSubmitting) {
             const noErrors = Object.keys(errors).length === 0;
 
@@ -18,23 +18,42 @@ function useFormValidation(initialState, validate, authenticate) {
         }
     }, [errors])
 
-    function updateValues(event, values) {        
+    function reset() {
+        setValues(initialState)
+    }
+
+    function updateValues(event, values) {
         event.persist();
         setValues(previousValues => ({
             ...previousValues,
             ...Object.keys(values).reduce((result, item) => ({
                 ...result,
-                [values[item].header]: values[item].value
+                [values[item].header]: values[item].value || values[item].checked
             }), {})
         }))
     }
 
-    function handleChange(event, { name, value }) {
+    function handleChange(event, data, key = null) {
         event.persist();
-        setValues(previousValues => ({
-            ...previousValues,
-            [name]: value
-        }));
+
+        if (key) {
+            setValues(previousValues => ({
+                ...previousValues,
+                [key]: {
+                    ...previousValues[key],
+                    [data.name]: data.value || data.checked,
+                    // values: {
+                    //     ...previousValues[key].values,
+                    //     [data.name]: data.value || data.checked,                        
+                    // }
+                }
+            }));
+        } else {
+            setValues(previousValues => ({
+                ...previousValues,
+                [data.name]: data.value || data.checked
+            }));
+        }
     }
 
     function handleBlur() {
@@ -49,7 +68,17 @@ function useFormValidation(initialState, validate, authenticate) {
         setSubmitting(true);
     }
 
-    return { handleSubmit, handleBlur, handleChange, updateValues, values, errors, isSubmitting }
+    function updateOptions(key, options) {
+        setValues(previousValues => ({
+            ...previousValues,
+            [key]: {
+                ...previousValues[key],
+                options: options
+            }
+        }))
+    }
+
+    return { handleSubmit, handleBlur, handleChange, updateValues, updateOptions, reset, values, errors, isSubmitting }
 }
 
 export default useFormValidation;

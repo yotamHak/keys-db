@@ -1,14 +1,10 @@
 import React, { useState } from "react";
 import { Table, Button, } from 'semantic-ui-react';
-import _ from 'lodash';
 
-import StatusCell from "../Cells/StatusCell/StatusCell";
-import OwnStatusCell from "../Cells/OwnStatusCell/OwnStatusCell";
 import KeyCell from "../Cells/KeyCell/KeyCell";
 import DateCell from "../Cells/DateCell/DateCell";
 import NoteCell from "../Cells/NoteCell/NoteCell";
 import UrlCell from "../Cells/UrlCell/UrlCell";
-import CardsCell from "../Cells/CardsCell/CardsCell";
 import AppIdCell from "../Cells/AppIdCell/AppIdCell";
 import NameCell from "../Cells/NameCell/NameCell";
 import OptionsCell from "../Cells/OptionsCell/OptionsCell";
@@ -21,6 +17,7 @@ function KeyRow({ rowIndex }) {
     const [hasChanges, setHasChanges] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
+    const spreadsheetId = useSelector((state) => state.authentication.spreadsheetId)
     const headers = useSelector((state) => state.table.headers)
     const gameData = useSelector((state) => state.table.rows[rowIndex])
 
@@ -45,8 +42,8 @@ function KeyRow({ rowIndex }) {
         }
         if (urlsInGameData.find(item => item.index === index)) { return }
 
-        switch (header.label) {
-            case "Name":
+        switch (header.type) {
+            case 'primary':
                 return <NameCell
                     rowIndex={rowIndex}
                     onChange={changeCallback}
@@ -54,10 +51,7 @@ function KeyRow({ rowIndex }) {
                     name={gameHeaderValue}
                     key={rKey}
                 />
-            case "Status":
-            case "Own Status":
-            case "From":
-            case "Cards":
+            case "dropdown":
                 return <OptionsCell
                     rowIndex={rowIndex}
                     onChange={changeCallback}
@@ -65,27 +59,7 @@ function KeyRow({ rowIndex }) {
                     title={gameHeaderValue}
                     key={rKey}
                 />
-            // return <StatusCell
-            //     rowIndex={rowIndex}
-            //     onChange={changeCallback}
-            //     header={header}
-            //     status={gameHeaderValue}
-            //     key={rKey}
-            // />
-            // return <CardsCell
-            //     rowIndex={rowIndex}
-            //     onChange={changeCallback}
-            //     header={header}
-            //     cards={gameHeaderValue}
-            //     key={rKey} />
-            // return <OwnStatusCell
-            //     rowIndex={rowIndex}
-            //     onChange={changeCallback}
-            //     header={header}
-            //     status={gameHeaderValue}
-            //     key={rKey}
-            // />
-            case "Key":
+            case "key":
                 return <KeyCell
                     rowIndex={rowIndex}
                     onChange={changeCallback}
@@ -93,7 +67,7 @@ function KeyRow({ rowIndex }) {
                     gameKey={gameHeaderValue}
                     key={rKey}
                 />
-            case "Date Added":
+            case "date":
                 return <DateCell
                     rowIndex={rowIndex}
                     onChange={changeCallback}
@@ -101,7 +75,7 @@ function KeyRow({ rowIndex }) {
                     dateAdded={gameHeaderValue}
                     key={rKey}
                 />
-            case "Note":
+            case "text":
                 return <NoteCell
                     rowIndex={rowIndex}
                     onChange={changeCallback}
@@ -109,7 +83,7 @@ function KeyRow({ rowIndex }) {
                     note={gameHeaderValue}
                     key={rKey}
                 />
-            case "AppId":
+            case "number":
                 return <AppIdCell
                     rowIndex={rowIndex}
                     onChange={changeCallback}
@@ -117,6 +91,14 @@ function KeyRow({ rowIndex }) {
                     appId={gameHeaderValue}
                     key={rKey}
                 />
+            case 'string':
+                return <Table.Cell
+                    rowIndex={rowIndex}
+                    onChange={changeCallback}
+                    header={header}
+                    key={rKey}>
+                    {gameHeaderValue}
+                </Table.Cell>
             default:
                 return <Table.Cell
                     rowIndex={rowIndex}
@@ -131,7 +113,7 @@ function KeyRow({ rowIndex }) {
     function saveChanges(gameData) {
         setIsSaving(true)
 
-        Spreadsheets.Update(gameData, gameData[0])
+        Spreadsheets.Update(spreadsheetId, gameData, gameData[0])
             .then(response => {
                 console.log(response)
                 setHasChanges(false)

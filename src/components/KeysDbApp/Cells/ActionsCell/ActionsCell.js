@@ -30,11 +30,12 @@ function ActionsCell({ index }) {
             <Dropdown
                 icon='ellipsis vertical'
                 compact
+                simple
             >
                 <Dropdown.Menu>
-                    <GameInfoModal appId={getValueByLabel("AppId", headers, gameData)}>
-                        <Dropdown.Item text="Info" />
-                    </GameInfoModal>
+                    <GameInfoModal
+                        appId={getValueByLabel("AppId", headers, gameData)}
+                    />
 
                     <NewModal
                         onComplete={() => dispatch(reloadTable(true))}

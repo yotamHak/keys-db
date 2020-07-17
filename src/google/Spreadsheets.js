@@ -36,7 +36,35 @@ class Spreashsheets {
         // }, {})
     }
 
+    _spreadsheetUrlPrefix = (spreadsheetId) => `https://docs.google.com/a/google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tq=`
+
+    _handleError = (response) => {
+        console.error(response.errors);
+        return response
+    }
+
     _get = async (url) => axios.get(url, { headers: { 'Content-Type': 'application/json; charset=UTF-8', Authorization: _.concat('Bearer ', this.token) } })
+        .then(response => {
+            const parsedResponse = JSON.parse(response.data.slice(response.data.indexOf("{"), response.data.length - 2));
+
+            return parsedResponse.status === 'ok'
+                ? {
+                    success: true,
+                    data: parsedResponse
+                }
+                : {
+                    success: false,
+                    errors: parsedResponse.errors
+                }
+        })
+        .catch(reason => {
+            const parsedResponse = JSON.parse(reason.data.slice(reason.data.indexOf("{"), reason.data.length - 2));
+
+            return {
+                success: false,
+                errors: parsedResponse.errors
+            }
+        })
 
     _getColumn = key => this.columns[key].id
 
@@ -51,11 +79,11 @@ class Spreashsheets {
         return _.join(filtersArray.map(group => `(${_.join(group.map(item => `${Object.keys(item)[0]} = ${item[Object.keys(item)[0]]}`), ' or ')})`), ' and ')
     }
 
-    _createQueryString(offset = 0, limit = 24, orderBy = { sort: "Date Added", asc: false }, filters = [], range = "*", countOnly = false) {
+    _createQueryString(textQuery = "", offset = 0, limit = 24, orderBy = { sort: "Date Added", asc: false }, filters = [], range = "*", countOnly = false) {
         const select = `select ${range}`
         const where = _.isEmpty(filters)
-            ? ``
-            : `where ${this._parseFilters(filters)}`
+            ? `${textQuery !== "" ? `where lower(B) contains lower('${textQuery}')` : ``}`
+            : `where ${textQuery !== "" ? `lower(B) contains lower('${textQuery}') and` : ``} ${this._parseFilters(filters)}`
         const order = orderBy
             ? `order by ${orderBy.sort && !_.isEmpty(this.columns) ? this._getColumn(orderBy.sort) : "G"} ${orderBy.asc ? "asc" : "desc"}`
             : ``
@@ -126,43 +154,34 @@ class Spreashsheets {
     }
 
     // https://developers.google.com/chart/interactive/docs/querylanguage
-    _query = async (offset, limit, orderBy, filters) => {
-        return this._get(`https://docs.google.com/a/google.com/spreadsheets/d/${this._spreadsheetId}/gviz/tq?tq=${this._createQueryString(offset, limit, orderBy, filters)}`)
-            .then(response => {
-                const parsedQuery = JSON.parse(response.data.slice(response.data.indexOf("{"), response.data.length - 2));
+    _query = async (titleQuery, offset, limit, orderBy, filters) => this._get(`${this._spreadsheetUrlPrefix(this._spreadsheetId)}${this._createQueryString(titleQuery, offset, limit, orderBy, filters)}`)
 
-                if (parsedQuery.status === 'error') {
-                    return Promise.reject(parsedQuery.errors);
-                }
-                else {
-                    return parsedQuery
-                }
+    _queryCount = async (titleQuery, offset, limit, orderBy, filters) => {
+        return this._get(`${this._spreadsheetUrlPrefix(this._spreadsheetId)}${this._createQueryString(titleQuery, offset, limit, orderBy, filters, '*', true)}`)
+            .then(response => {
+                return response.success
+                    ? response.data.table.rows.length === 0 ? 0 : response.data.table.rows[0]['c'][0]['v']
+                    : response.errors
             })
     }
 
-    _queryCount = async (offset, limit, orderBy, filters) => {
-        return this._get(`https://docs.google.com/a/google.com/spreadsheets/d/${this._spreadsheetId}/gviz/tq?tq=${this._createQueryString(offset, limit, orderBy, filters, '*', true)}`)
-            .then(response => {
-                const parsedQuery = JSON.parse(response.data.slice(response.data.indexOf("{"), response.data.length - 2));
-
-                if (parsedQuery.status === 'error') {
-                    return Promise.reject(parsedQuery.errors);
-                }
-                else {
-                    return parsedQuery.table.rows.length === 0 ? 0 : parsedQuery.table.rows[0]['c'][0]['v']
-                }
-            })
+    async _getHeadersAndSettings(spreadsheetId) {
+        return gapi.client.sheets.spreadsheets.values.get({
+            "spreadsheetId": spreadsheetId,
+            "range": "A1:Z2",
+            "majorDimension": "ROWS"
+        })
+            .then(response => response)
+            .catch(reason => console.log(reason))
     }
 
-    _combineHeadersAndSettings(headersArray, settings) {
-        return Object.keys(settings).reduce((result, key) => ({
-            ...result,
-            [key]: {
-                ...headersArray.find(item => item.label === key),
-                ...settings[key],
-            }
-        }), {})
-    }
+    _combineHeadersAndSettings = (headersArray, settings) => Object.keys(settings).reduce((result, key) => ({
+        ...result,
+        [key]: {
+            ...headersArray.find(item => item.label === key),
+            ...settings[key],
+        }
+    }), {})
 
     _getSettings(headersArray, settingsValuesArray) {
         return headersArray.reduce((result, key, index) => {
@@ -187,10 +206,10 @@ class Spreashsheets {
 
     // https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/update
     // https://any-api.com/googleapis_com/sheets/docs/spreadsheets/sheets_spreadsheets_values_append
-    async Insert(value) {
+    async Insert(spreadsheetId, value) {
         const params = {
-            spreadsheetId: this._spreadsheetId,
-            range: "Keys!B2",
+            spreadsheetId: spreadsheetId,
+            range: "Keys!B:Z",
             valueInputOption: 'USER_ENTERED',
             insertDataOption: "INSERT_ROWS"
         };
@@ -208,9 +227,9 @@ class Spreashsheets {
     }
 
     // https://any-api.com/googleapis_com/sheets/docs/spreadsheets/sheets_spreadsheets_values_batchUpdate
-    async Update(value, range) {
+    async Update(spreadsheetId, value, range) {
         const params = {
-            spreadsheetId: this._spreadsheetId,
+            spreadsheetId: spreadsheetId,
             range: `Keys!B${range}`,
             valueInputOption: 'USER_ENTERED',
         };
@@ -253,16 +272,6 @@ class Spreashsheets {
             });
     }
 
-    async _getHeadersAndSettings(spreadsheetId) {
-        return gapi.client.sheets.spreadsheets.values.get({
-            "spreadsheetId": spreadsheetId,
-            "range": "A1:Z2",
-            "majorDimension": "ROWS"
-        })
-            .then(response => response)
-            .catch(reason => console.log(reason))
-    }
-
     async SaveSettings(spreadsheetId, settings) {
         const newValues = Object.keys(settings)
             .filter(header => header !== "ID")
@@ -289,27 +298,37 @@ class Spreashsheets {
         })
             .then(response => {
                 if (response.status === 200) {
-                    return response.result
+                    return {
+                        success: true,
+                        result: response.result
+                    }
                 } else {
-
+                    return {
+                        success: false,
+                        result: response.errors
+                    }
                 }
             })
-            .catch(reason => console.log(reason))
+            .catch(reason => {
+                console.error(reason)
+                return {
+                    success: false,
+                    result: reason.errors
+                }
+            })
     }
 
     async ImportAllOptions(spreadsheetId) {
         return this._query(0, 10000).then(response => {
-            if (response.errors) {
-                console.error(response);
-                return response
-            }
+            if (response.success) {
+                const table = this._parseTable(response.data);
+                const options = this._initOptions(this._columns, table.rows);
 
-            const table = this._parseTable(response);
-            const options = this._initOptions(this._columns, table.rows);
-
-
-            return {
-                headers: options
+                return {
+                    headers: options
+                }
+            } else {
+                this._handleError(response)
             }
         })
     }
@@ -330,8 +349,9 @@ class Spreashsheets {
                         }
                     } else {
                         return this._query(0, 1).then(response => {
-                            if (!response.errors) {
-                                const combinedHeadersAndSettings = this._combineHeadersAndSettings(response.table.cols, headersWithSettings)
+                            if (response.success) {
+                                const data = response.data
+                                const combinedHeadersAndSettings = this._combineHeadersAndSettings(data.table.cols, headersWithSettings)
                                 this.columns = combinedHeadersAndSettings
 
                                 this.SaveSettings(spreadsheetId, combinedHeadersAndSettings)
@@ -340,8 +360,7 @@ class Spreashsheets {
                                     headers: combinedHeadersAndSettings
                                 }
                             } else {
-                                console.error(response);
-                                return response
+                                this._handleError(response)
                             }
                         })
                     }
@@ -349,33 +368,47 @@ class Spreashsheets {
             })
     }
 
-    async GetFilteredData(offset, limit, orderBy, filters) {
+    async GetFilteredData(titleQuery, offset, limit, orderBy, filters) {
         return offset > 0
-            ? this._query(offset, limit, orderBy, filters)
+            ? this._query(titleQuery, offset, limit, orderBy, filters)
                 .then(response => {
-                    this.rows = this._parseTable(response).rows
-                    return { headers: this._columns, rows: this.rows }
+                    if (response.success) {
+                        this.rows = this._parseTable(response.data).rows
+                        return { headers: this._columns, rows: this.rows }
+                    } else {
+                        this._handleError(response)
+                    }
                 })
-            : this._queryCount(offset, limit, orderBy, filters)
+            : this._queryCount(titleQuery, offset, limit, orderBy, filters)
                 .then(count => {
-                    return this._query(offset, limit, orderBy, filters)
+                    return this._query(titleQuery, offset, limit, orderBy, filters)
                         .then(response => {
-                            this.rows = this._parseTable(response).rows
-                            return { headers: this._columns, rows: this.rows, count: count - 1 }
+                            if (response.success) {
+                                this.rows = this._parseTable(response.data).rows
+                                return {
+                                    ...response,
+                                    data: { headers: this._columns, rows: this.rows, count: count - 1 }
+                                }
+                            }
+                            else {
+                                this._handleError(response)
+                            }
                         })
                 })
-
-
     }
 
     async LoadMore(offset, limit, orderBy, filters) {
         return this._query(offset, limit, orderBy, filters)
             .then(response => {
-                this.rows = _.concat(this.rows, this._parseTable(response).rows)
-                return { headers: this._columns, rows: this.rows }
+                if (response.success) {
+                    this.rows = _.concat(this.rows, this._parseTable(response.data).rows)
+                    return { headers: this._columns, rows: this.rows }
+                } else {
+                    this._handleError(response)
+                }
             })
     }
 }
 
-const spreadsheets = new Spreashsheets();
-export default spreadsheets;
+const Spreadsheets = new Spreashsheets();
+export default Spreadsheets;
