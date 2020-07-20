@@ -92,18 +92,11 @@ function KeyRow({ rowIndex }) {
                     key={rKey}
                 />
             case 'string':
-                return <Table.Cell
-                    rowIndex={rowIndex}
-                    onChange={changeCallback}
-                    header={header}
-                    key={rKey}>
-                    {gameHeaderValue}
-                </Table.Cell>
             default:
                 return <Table.Cell
-                    rowIndex={rowIndex}
-                    onChange={changeCallback}
-                    header={header}
+                    // rowIndex={rowIndex}
+                    // onChange={changeCallback}
+                    // header={header}
                     key={rKey}>
                     {gameHeaderValue}
                 </Table.Cell>

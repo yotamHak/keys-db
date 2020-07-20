@@ -32,7 +32,7 @@ function ActionsCell({ index }) {
                 compact
                 simple
             >
-                <Dropdown.Menu>
+                <Dropdown.Menu className="actions-menu">
                     <GameInfoModal
                         appId={getValueByLabel("AppId", headers, gameData)}
                     />

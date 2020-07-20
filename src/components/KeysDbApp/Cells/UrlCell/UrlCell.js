@@ -1,7 +1,7 @@
 import React from "react";
 import { Table, Grid, Icon } from "semantic-ui-react";
 
-function UrlCell({ urls }) {
+function UrlCell({ urls, rowIndex }) {
     return (
         <Table.Cell>
             <Grid columns={urls.length}>

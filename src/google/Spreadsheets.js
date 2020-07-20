@@ -160,8 +160,16 @@ class Spreashsheets {
         return this._get(`${this._spreadsheetUrlPrefix(this._spreadsheetId)}${this._createQueryString(titleQuery, offset, limit, orderBy, filters, '*', true)}`)
             .then(response => {
                 return response.success
-                    ? response.data.table.rows.length === 0 ? 0 : response.data.table.rows[0]['c'][0]['v']
-                    : response.errors
+                    ? {
+                        success: true,
+                        data: {
+                            count: response.data.table.rows.length === 0 ? 0 : response.data.table.rows[0]['c'][0]['v']
+                        }
+                    }
+                    : {
+                        success: false,
+                        errors: response.errors
+                    }
             })
     }
 
@@ -244,6 +252,120 @@ class Spreashsheets {
                 // console.error('error: ' + reason.result.error.message);
                 return reason.result.error.message
             });
+    }
+
+    // DeveloperMetadata Related
+    async CreateDeveloperMetadata(spreadsheetId, key, value) {
+        gapi.client.sheets.spreadsheets.batchUpdate({
+            "spreadsheetId": spreadsheetId,
+            "requests": [
+                {
+                    "createDeveloperMetadata": {
+                        "developerMetadata": {
+                            "metadataId": 0,
+                            "metadataKey": key,
+                            "metadataValue": value,
+                            "visibility": "DOCUMENT",
+                            "location": {
+                                "spreadsheet": true,
+                            }
+                        }
+                    }
+                }
+            ],
+        }).then(response => {
+            console.log(response)
+            debugger
+        })
+    }
+
+    async UpdateDeveloperMetadata(spreadsheetId, key = "headers", value) {
+        gapi.client.sheets.spreadsheets.batchUpdate({
+            "spreadsheetId": spreadsheetId,
+            "requests": [
+                {
+                    "updateDeveloperMetadata": {
+                        "dataFilters": [
+                            {
+                                "developerMetadataLookup": {
+                                    "metadataKey": key
+                                }
+                            }
+                        ],
+                        "developerMetadata": {
+                            "metadataKey": key,
+                            "metadataValue": value,
+                            "visibility": "DOCUMENT",
+                            "location": {
+                                "spreadsheet": true,
+                            }
+                        },
+                        "fields": "*"
+                    }
+                }
+            ],
+        }).then(response => {
+            console.log(response)
+            debugger
+        })
+    }
+
+    async DeleteDeveloperMetadata(spreadsheetId, key = "headers") {
+        gapi.client.sheets.spreadsheets.batchUpdate({
+            "spreadsheetId": spreadsheetId,
+            "requests": [
+                {
+                    "deleteDeveloperMetadata": {
+                        "dataFilter": {
+                            "developerMetadataLookup": {
+                                "metadataKey": key
+                            }
+                        }
+                    }
+                }
+            ],
+        }).then(response => {
+            console.log(response)
+            debugger
+        })
+    }
+
+    async SearchDeveloperMetadata(spreadsheetId, searchKey) {
+        gapi.client.sheets.spreadsheets.batchUpdate({
+            "spreadsheetId": spreadsheetId,
+            "resource": {
+                "dataFilters": [
+                    {
+                        "developerMetadataLookup": {
+                            "metadataKey": searchKey
+                        }
+                    }
+                ]
+            },
+        }).then(response => {
+            console.log(response)
+            debugger
+        })
+    }
+
+    async GetDeveloperMetadata(spreadsheetId, id = 1986) {
+        gapi.client.sheets.spreadsheets.developerMetadata.get({
+            "spreadsheetId": spreadsheetId,
+            "metadataId": id
+        }).then(response => {
+            debugger
+            if (response.status === 200) {
+                return {
+                    success: true,
+                    result: response.result
+                }
+            } else {
+                return {
+                    success: false,
+                    result: response.errors
+                }
+            }
+        })
     }
 
     async Delete(range) {
@@ -373,42 +495,317 @@ class Spreashsheets {
             ? this._query(titleQuery, offset, limit, orderBy, filters)
                 .then(response => {
                     if (response.success) {
-                        this.rows = this._parseTable(response.data).rows
-                        return { headers: this._columns, rows: this.rows }
+                        return {
+                            ...response,
+                            data: { headers: this._columns, rows: this._parseTable(response.data).rows }
+                        }
                     } else {
                         this._handleError(response)
                     }
                 })
             : this._queryCount(titleQuery, offset, limit, orderBy, filters)
-                .then(count => {
-                    return this._query(titleQuery, offset, limit, orderBy, filters)
-                        .then(response => {
-                            if (response.success) {
-                                this.rows = this._parseTable(response.data).rows
-                                return {
-                                    ...response,
-                                    data: { headers: this._columns, rows: this.rows, count: count - 1 }
+                .then(response => {
+                    if (response.success) {
+                        const count = response.data.count
+
+                        return this._query(titleQuery, offset, limit, orderBy, filters)
+                            .then(response => {
+                                if (response.success) {
+                                    if (response.data.table.cols.every(item => item.label === '')) {
+                                        return {
+                                            ...response,
+                                            data: { headers: this._columns, rows: [], count: 0 }
+                                        }
+                                    } else {
+                                        this.rows = this._parseTable(response.data).rows
+
+                                        return {
+                                            ...response,
+                                            data: { headers: this._columns, rows: this.rows, count: count - 1 }
+                                        }
+                                    }
                                 }
-                            }
-                            else {
-                                this._handleError(response)
-                            }
-                        })
+                                else {
+                                    this._handleError(response)
+                                }
+                            })
+                    } else {
+                        return response
+                    }
                 })
     }
 
-    async LoadMore(offset, limit, orderBy, filters) {
-        return this._query(offset, limit, orderBy, filters)
+    async _createNewSpreadsheet(title) {
+        return gapi.client.sheets.spreadsheets.create({
+            "resource": {
+                "properties": {
+                    "title": title
+                }
+            }
+        })
+            .then(response => {
+                return response.status === 200
+                    ? {
+                        success: true,
+                        data: response.result
+                    }
+                    : {
+                        success: false,
+                        errors: response.errors
+                    }
+            })
+            .catch(response => ({
+                success: false,
+                errors: response.errors
+            }))
+    }
+
+    async _deleteColumns(spreadsheetId, sheetId, rangeArray) {
+        const params = {
+            spreadsheetId: spreadsheetId,
+            requests: rangeArray.reduce((result, id) => (_.concat(result, [{
+                deleteDimension: {
+                    range: {
+                        sheetId: sheetId,
+                        dimension: "COLUMNS",
+                        startIndex: id,
+                        endIndex: id + 1
+                    }
+                }
+            }])), []),
+        }
+
+        return gapi.client.sheets.spreadsheets.batchUpdate(params)
+            .then(response => {
+                return response.status === 200
+                    ? {
+                        success: true,
+                        data: response.result
+                    }
+                    : {
+                        success: false,
+                        errors: response.errors
+                    }
+            })
+            .catch(response => ({
+                success: false,
+                errors: response.errors
+            }))
+    }
+
+    async _copyCleanSheet(spreadsheetId) {
+        return gapi.client.sheets.spreadsheets.sheets.copyTo({
+            "spreadsheetId": spreadsheetId,
+            "sheetId": 0,
+            "resource": {
+                "destinationSpreadsheetId": spreadsheetId
+            }
+        })
+            .then(response => {
+                return response.status === 200
+                    ? {
+                        success: true,
+                        data: response.result
+                    }
+                    : {
+                        success: false,
+                        errors: response.errors
+                    }
+            })
+            .catch(response => ({
+                success: false,
+                errors: response.errors
+            }))
+    }
+
+    async _copySheetToSpreadsheet(fromSpreadsheet, fromSheetId, toSpreadsheet) {
+        return gapi.client.sheets.spreadsheets.sheets.copyTo({
+            "spreadsheetId": fromSpreadsheet,
+            "sheetId": fromSheetId,
+            "resource": {
+                "destinationSpreadsheetId": toSpreadsheet
+            }
+        })
+            .then(response => {
+                return response.status === 200
+                    ? {
+                        success: true,
+                        data: response.result
+                    }
+                    : {
+                        success: false,
+                        errors: response.errors
+                    }
+            })
+            .catch(response => ({
+                success: false,
+                errors: response.errors
+            }))
+    }
+
+    async _deleteSheet(spreadsheetId, sheetId) {
+        return gapi.client.sheets.spreadsheets.batchUpdate({
+            "spreadsheetId": spreadsheetId,
+            "resource": {
+                "requests": [
+                    {
+                        "deleteSheet": {
+                            "sheetId": sheetId
+                        }
+                    }
+                ]
+            }
+        })
+            .then(response => {
+                return response.status === 200
+                    ? {
+                        success: true,
+                        data: response.result
+                    }
+                    : {
+                        success: false,
+                        errors: response.errors
+                    }
+            })
+            .catch(response => ({
+                success: false,
+                errors: response.errors
+            }))
+    }
+
+    async _batchUpdate(spreadsheetId, requests) {
+        const params = {
+            spreadsheetId: spreadsheetId,
+            requests: requests,
+        }
+
+        return gapi.client.sheets.spreadsheets.batchUpdate(params)
+            .then(response => {
+                return response.status === 200
+                    ? {
+                        success: true,
+                        data: response.result
+                    }
+                    : {
+                        success: false,
+                        errors: response.errors
+                    }
+            })
+            .catch(response => ({
+                success: false,
+                errors: response.errors
+            }))
+    }
+
+    async ExportSpreadsheet(fromSpreadsheet, privateColumnsRange, username) {
+        const title = `${username}'s Collection`
+
+        return this._createNewSpreadsheet(title)
             .then(response => {
                 if (response.success) {
-                    this.rows = _.concat(this.rows, this._parseTable(response.data).rows)
-                    return { headers: this._columns, rows: this.rows }
+                    const newSpreadsheetId = response.data.spreadsheetId
+                    const newSpreadsheetUrl = response.data.spreadsheetUrl
+
+                    return this._copySheetToSpreadsheet(fromSpreadsheet, 0, newSpreadsheetId)
+                        .then(response => {
+                            if (response.success) {
+                                const deleteRequests = privateColumnsRange.reduce((result, id) => (_.concat(result, [{
+                                    deleteDimension: {
+                                        range: {
+                                            sheetId: response.data.sheetId,
+                                            dimension: "COLUMNS",
+                                            startIndex: id,
+                                            endIndex: id + 1
+                                        }
+                                    }
+                                }])), [])
+                                const deleteSheetRequest = {
+                                    "deleteSheet": {
+                                        "sheetId": 0,
+                                    }
+                                }
+
+                                return this._batchUpdate(newSpreadsheetId, _.concat(deleteRequests, [deleteSheetRequest]))
+                                    .then(response => {
+                                        return response.success
+                                            ? {
+                                                success: true,
+                                                data: {
+                                                    spreadsheetId: newSpreadsheetId,
+                                                    spreadsheetUrl: newSpreadsheetUrl
+                                                }
+                                            }
+                                            : {
+                                                success: false,
+                                                errors: "Failed exporting"
+                                            }
+                                    })
+                            } else {
+                                return response
+                            }
+                        })
+                }
+            })
+
+
+        return this._copyCleanSheet(fromSpreadsheet)
+            .then(response => {
+                if (response.success) {
+                    const newSheetId = response.data.sheetId
+
+                    this._deleteColumns(fromSpreadsheet, newSheetId, privateColumnsRange.reverse())
+                        .then(response => {
+                            if (response.success) {
+                                this._deleteSheet(fromSpreadsheet, newSheetId)
+
+                                const title = `${username}'s Collection`
+
+                                this._createNewSpreadsheet(title)
+                                    .then(response => {
+                                        if (response.success) {
+                                            const newSpreadsheetId = response.data.spreadsheetId
+                                            const newSpreadsheetUrl = response.data.spreadsheetUrl
+
+                                            this._copySheetToSpreadsheet(fromSpreadsheet, newSheetId, newSpreadsheetId)
+                                                .then(response => {
+                                                    if (response.success) {
+                                                        console.log(newSpreadsheetUrl)
+                                                    }
+                                                })
+                                        }
+                                    })
+                            }
+                        })
+                }
+            })
+
+        return
+        this._createNewSpreadsheet()
+            .then(response => {
+                if (response.status === 200) {
+                    const newSpreadsheetId = response.result.spreadsheetId
+                    const newSpreadsheetUrl = response.result.spreadsheetUrl
+
+                    gapi.client.sheets.spreadsheets.sheets.copyTo({
+                        "spreadsheetId": fromSpreadsheet,
+                        "sheetId": 0,
+                        "resource": {
+                            "destinationSpreadsheetId": newSpreadsheetId
+                        }
+                    })
+                        .then(response => {
+                            debugger
+
+                            if (response.status === 200) {
+
+                            }
+                        })
+
                 } else {
-                    this._handleError(response)
+
                 }
             })
     }
 }
-
 const Spreadsheets = new Spreashsheets();
 export default Spreadsheets;

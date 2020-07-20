@@ -26,10 +26,13 @@ function NewModal({ initialValue, isEdit, children }) {
     const [searchResults, setSearchResults] = useState(null)
     const { handleSubmit, handleChange, updateValues, reset, values, errors } = useFormValidation(INITIAL_STATE, validateNewKey, handleCreate)
 
+    const dispatch = useDispatch()
+
     const handleOpen = () => setModalOpen(true)
     const handleClose = () => setModalOpen(false)
 
-    const dispatch = useDispatch()
+    const Child = React.Children.only(children);
+    const newChildren = React.cloneElement(Child, { onClick: handleOpen });    
 
     function handleCreate() {
         setIsLoading(true)
@@ -71,9 +74,6 @@ function NewModal({ initialValue, isEdit, children }) {
                 })
         }
     }
-
-    const Child = React.Children.only(children);
-    const newChildren = React.cloneElement(Child, { onClick: handleOpen });
 
     async function handleSearchResultSelect(e, { result }) {
         handleChange(e, { name: 'Title', value: result.title })
@@ -153,30 +153,6 @@ function NewModal({ initialValue, isEdit, children }) {
         }, response => { console.error(response); setIsSearching(false); })
     }
 
-    const categoryLayoutRenderer = ({ categoryContent, resultsContent }) => (
-        <Container>
-            {categoryContent}
-            <Segment attached style={{ maxHeight: "250px", overflow: "auto" }}>
-                {resultsContent}
-            </Segment>
-        </Container>
-    )
-
-    const categoryRenderer = ({ name }) => (
-        <Header as='h3' attached='top' textAlign="left">
-            {name}
-        </Header>
-    )
-
-    const resultRenderer = ({ title, image }) => (
-        <Item.Group divided>
-            <Item>
-                {image !== "" && <Item.Image size='huge' src={image} />}
-                <Item.Content verticalAlign='middle' content={title} />
-            </Item>
-        </Item.Group>
-    )
-
     function selectInput(header) {
         switch (header.type) {
             case 'date':
@@ -230,6 +206,30 @@ function NewModal({ initialValue, isEdit, children }) {
         }
     }
 
+    const categoryLayoutRenderer = ({ categoryContent, resultsContent }) => (
+        <Container>
+            {categoryContent}
+            <Segment attached style={{ maxHeight: "250px", overflow: "auto" }}>
+                {resultsContent}
+            </Segment>
+        </Container>
+    )
+
+    const categoryRenderer = ({ name }) => (
+        <Header as='h3' attached='top' textAlign="left">
+            {name}
+        </Header>
+    )
+
+    const resultRenderer = ({ title, image }) => (
+        <Item.Group divided>
+            <Item>
+                {image !== "" && <Item.Image size='huge' src={image} />}
+                <Item.Content verticalAlign='middle' content={title} />
+            </Item>
+        </Item.Group>
+    )
+
     return (
         <Modal
             trigger={newChildren}
@@ -259,7 +259,7 @@ function NewModal({ initialValue, isEdit, children }) {
                                         minCharacters={3}
                                         showNoResults={true}
                                         loading={isSearching}
-                                        value={values.Name}
+                                        value={values.Title}
                                         style={{ width: '100%' }}
                                         className={'search-fluid-input'}
                                     />

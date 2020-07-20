@@ -1,7 +1,7 @@
 import React, { useEffect, useState, } from "react";
-import { Table, Dimmer, Icon, Segment, Loader, Placeholder, Menu, Pagination, Dropdown, Header, Input, Grid, } from 'semantic-ui-react';
+import { Table, Dimmer, Icon, Segment, Loader, Placeholder, Menu, Pagination, Dropdown, Header, Input, Grid, Button, Confirm, Modal, Message, Container, } from 'semantic-ui-react';
 import _ from 'lodash';
-import { usePrevious } from "../../../utils";
+import { usePrevious, getIndexByLabel } from "../../../utils";
 import KeyRow from "../KeyRow/KeyRow";
 import Spreadsheets from '../../../google/Spreadsheets';
 import NewModal from "../Modals/NewModal/NewModal";
@@ -23,18 +23,24 @@ function KeysTable({ spreadsheetId }) {
     const [offset, setOffset] = useState(INITIAL_OFFSET);
     const [limit, setLimit] = useState(INITIAL_LIMIT);
 
+    const [exportingPrompt, setExportingPrompt] = useState(false);
+    const [isExportingSpreadsheet, setIsExportingSpreadsheet] = useState(false);
+    const [exportedSheetUrl, setExportedSheetUrl] = useState(null);
+
     const [titleQuery, setTitleQuery] = useState("");
 
     const [activePage, setActivePage] = useState(INITIAL_ACTIVEPAGE);
     const [pages, setPages] = useState(0);
 
     const dispatch = useDispatch()
+    const steamProfile = useSelector((state) => state.authentication.steam.profile)
     const headers = useSelector((state) => state.table.headers)
     const games = useSelector((state) => state.table.rows)
     const orderBy = useSelector((state) => state.table.orderBy)
     const reload = useSelector((state) => state.table.reload)
     const filters = useSelector((state) => state.filters)
 
+    const prevTitleQuery = usePrevious(titleQuery);
     const prevOffset = usePrevious(offset);
     const prevOrderBy = usePrevious(orderBy);
     const prevLimit = usePrevious(limit);
@@ -45,7 +51,7 @@ function KeysTable({ spreadsheetId }) {
         if (prevReload === true && reload === false) { return }
 
         if (prevOffset && (prevOffset !== offset)) { }
-        if ((prevLimit && (prevLimit !== limit)) || (prevOrderBy && (prevOrderBy !== orderBy)) || (prevFilters && (prevFilters !== filters))) {
+        if ((prevLimit && (prevLimit !== limit)) || (prevOrderBy && (prevOrderBy !== orderBy)) || (prevFilters && (prevFilters !== filters)) || (prevTitleQuery !== titleQuery)) {
             if (offset !== INITIAL_OFFSET) {
                 setOffset(INITIAL_OFFSET)
                 setActivePage(INITIAL_ACTIVEPAGE)
@@ -60,25 +66,7 @@ function KeysTable({ spreadsheetId }) {
         // console.log("-------------------------")
 
         loadGames(titleQuery, offset, limit, orderBy, filters)
-
-        // if (titleQuery !== "") {
-        //     Spreadsheets.Search(spreadsheetId, titleQuery)
-        //         .then(response => {
-        //             if (response.success) {
-        //                 console.log(response)
-        //                 dispatch(setCurrentRows(response.rows))
-        //             }
-        //         })
-        //         .finally(response => {
-        //             setIsSearching(false)
-        //         })
-        // }
-        // else {
-        //     loadGames(titleQuery, offset, limit, orderBy, filters)
-        // }
-
         dispatch(reloadTable(false))
-
     }, [titleQuery, filters, offset, limit, orderBy, reload]);
 
     function handleLimitChange(e, { value }) {
@@ -94,9 +82,16 @@ function KeysTable({ spreadsheetId }) {
             .then(response => {
                 if (response.success) {
                     // console.log("Got filtered games:", games)
+
                     response.data.count && setPages(Math.floor(response.data.count / limit));
                     dispatch(setCurrentRows(response.data.rows))
-                    setLoading(false);
+
+                    if (response.data.rows.length === 0) {
+
+                    } else {
+                        response.data.count && setPages(Math.floor(response.data.count / limit));
+                        dispatch(setCurrentRows(response.data.rows))
+                    }
                 }
                 else {
                     console.log(response.errors)
@@ -127,10 +122,30 @@ function KeysTable({ spreadsheetId }) {
         }
     }
 
+    const getPrivateColumns = headers => Object.keys(headers)
+        .filter(key => headers[key].isPrivate)
+        .reduce((result, key) => (_.concat(result, [getIndexByLabel(key, headers)])), [])
+
+    function exportSpreadsheet() {
+        setIsExportingSpreadsheet(true)
+
+        Spreadsheets.ExportSpreadsheet(spreadsheetId, getPrivateColumns(headers), steamProfile.personaname)
+            .then(response => {
+                if (response.success) {
+                    console.log(response.data)
+                    setIsExportingSpreadsheet(false)
+
+                    setExportedSheetUrl(response.data)
+                } else {
+                    setIsExportingSpreadsheet(false)
+                }
+            })
+    }
+
     return (
         error
             ? <div>Error</div>
-            : _.isEmpty(games)
+            : _.isEmpty(headers)
                 ? (
                     <Dimmer active inverted>
                         <Loader />
@@ -171,6 +186,68 @@ function KeysTable({ spreadsheetId }) {
                                             <Icon name='plus' className={"no-margin"} />
                                         </Menu.Item>
                                     </NewModal>
+
+                                    {/* <Menu.Item name='share' onClick={exportSpreadsheet} >
+                                        {
+                                            isExportingSpreadsheet
+                                                ? <Icon className={"no-margin"}><Loader size='mini' active /></Icon>
+                                                : <Icon name={'share'} className={"no-margin"} />
+                                        }
+                                    </Menu.Item> */}
+
+                                    <Confirm
+                                        size={'large'}
+                                        open={exportingPrompt}
+                                        header={"Export"}
+                                        content={
+                                            <Modal.Content>
+                                                <Modal.Description>
+                                                    {/* <Header>Modal Header</Header> */}
+                                                    <Container>
+                                                        <div>Exporting will create a new spreadsheet without Private Columns*,</div>
+                                                        <div>After exporting you will get a link to your new spreadsheet so you can share with whomever you want</div>
+                                                    </Container>
+                                                    <Message info>
+                                                        <Message.Header>Info</Message.Header>
+                                                        <Message.List>
+                                                            <Message.Item>Private Columns: You can set private columns in Settings (Keys are private by default)</Message.Item>
+                                                        </Message.List>
+                                                    </Message>
+                                                    {
+                                                        exportedSheetUrl && (
+                                                            <Message attached positive>
+                                                                <Message.Header>Exported</Message.Header>
+                                                                {
+                                                                    <div>
+                                                                        <div>
+                                                                            Spreadsheet created: <a target='_blank' rel='noopener noreferrer' href={exportedSheetUrl.spreadsheetUrl}>Spreadsheet URL</a>
+                                                                        </div>
+                                                                        <div>
+                                                                            Keys-DB Url: <a target='_blank' rel='noopener noreferrer' href={`https://keys-db.web.app/id/${exportedSheetUrl.spreadsheetId}`}>Keys-DB URL</a>
+                                                                        </div>
+                                                                    </div>
+                                                                }
+                                                            </Message>
+                                                        )
+                                                    }
+                                                </Modal.Description>
+                                            </Modal.Content>
+                                        }
+                                        onCancel={() => { setExportingPrompt(false) }}
+                                        onConfirm={exportSpreadsheet}
+                                        confirmButton={<Button positive loading={isExportingSpreadsheet}>Export</Button>}
+                                        trigger={
+                                            <Menu.Item
+                                                name='share'
+                                                onClick={() => { setExportingPrompt(true) }}>{
+                                                    isExportingSpreadsheet
+                                                        ? <Icon className={"no-margin"}><Loader size='mini' active /></Icon>
+                                                        : <Icon name={'share'} className={"no-margin"} />
+                                                }
+                                            </Menu.Item>
+                                        }
+                                    />
+
                                     <TableSettingsModal
                                         headers={headers}
                                     />
@@ -211,8 +288,8 @@ function KeysTable({ spreadsheetId }) {
                                                                 </Table.Cell>
                                                             ))
                                                     }
-                                                </Table.Row>)
-                                            )
+                                                </Table.Row>
+                                            ))
                                             : games.map((game, index) => <KeyRow
                                                 rowIndex={index}
                                                 gameData={game}
@@ -220,11 +297,27 @@ function KeysTable({ spreadsheetId }) {
                                             />)
                                     }
                                 </Table.Body>
+                                {
+                                    _.isEmpty(games) && (
+                                        <Table.Footer fullWidth>
+                                            <Table.Row>
+                                                <Table.HeaderCell colSpan={Object.keys(headers).length}>
+                                                    <Segment placeholder as='span'>
+                                                        <Header icon>
+                                                            <Icon name='frown outline' />
+                                                            Aww... Nothing found
+                                                        </Header>
+                                                    </Segment>
+                                                </Table.HeaderCell>
+                                            </Table.Row>
+                                        </Table.Footer>
+                                    )
+                                }
                             </Table>
                         </Segment>
 
                         {
-                            pages > 0 && (
+                            pages > 1 && (
                                 <Segment size="mini" key={`pagination-segment`} textAlign='center'>
                                     <Pagination
                                         onPageChange={handlePaginationChange}
@@ -244,7 +337,7 @@ function KeysTable({ spreadsheetId }) {
 
                     </Segment.Group>
                 )
-    );
+    )
 }
 
 export default KeysTable;

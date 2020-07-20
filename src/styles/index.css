@@ -80,3 +80,8 @@ display: block !important;
   display: flex;
   justify-content: center;
 }
+
+.ui.simple.active.dropdown>.menu, .ui.simple.dropdown:hover>.menu.actions-menu{
+  top: -240% !important;
+  left: 100%;
+}

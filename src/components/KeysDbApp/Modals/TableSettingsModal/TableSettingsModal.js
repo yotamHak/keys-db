@@ -8,8 +8,18 @@ import { setNewRowChange, reloadTable, addHeaders, } from "../../../../actions";
 import ErrorBox from "../../../Authentication/ErrorBox/ErrorBox";
 import OptionsEditor from "../../OptionsEditor/OptionsEditor";
 import Spreadsheets from "../../../../google/Spreadsheets";
+import { genericSort } from "../../../../utils";
 
 const typeOptions = [
+    { key: 'steam_title', text: 'Title (Steam)', value: 'steam_title' },
+    { key: 'steam_appid', text: 'App Id (Steam)', value: 'steam_appid' },
+    { key: 'steam_key', text: 'Key (Steam)', value: 'steam_key' },
+    { key: 'steam_cards', text: 'Cards (Steam)', value: 'steam_cards' },
+    { key: 'steam_achievements', text: 'Achievements (Steam)', value: 'steam_achievements' },
+    { key: 'steam_dlc', text: 'DLC (Steam)', value: 'steam_dlc' },
+    { key: 'steam_bundled', text: 'Bundled (Steam)', value: 'steam_bundled' },
+    { key: 'steam_ownership', text: 'Owned (Steam)', value: 'steam_ownership' },
+
     { key: 'string', text: 'String', value: 'string' },
     { key: 'number', text: 'Number', value: 'number' },
     { key: 'date', text: 'Date', value: 'date' },
@@ -17,7 +27,7 @@ const typeOptions = [
     { key: 'key', text: 'Key', value: 'key' },
     { key: 'dropdown', text: 'Dropdown', value: 'dropdown' },
     { key: 'url', text: 'URL', value: 'url' },
-]
+].sort((a, b) => genericSort(a.text, b.text))
 
 function TableSettingsModal({ headers }) {
     const [modalOpen, setModalOpen] = useState(false)
