@@ -146,7 +146,8 @@ export const addFilter = filter => {
         type: actionTypes.ADD_FILTER,
         payload: {
             key: filter.key,
-            values: filter.values
+            values: filter.values,
+            id: filter.id
         }
     }
 }
@@ -156,7 +157,8 @@ export const removeFilter = filter => {
         type: actionTypes.REMOVE_FILTER,
         payload: {
             key: filter.key,
-            value: filter.value
+            value: filter.value,
+            id: filter.id
         }
     }
 }

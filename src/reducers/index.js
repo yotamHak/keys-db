@@ -12,7 +12,7 @@ const initialTableState = {
         filters: false,
         orderBy: false,
     },
-    orderBy: { sort: 'Date Added', asc: false },
+    orderBy: { sort: 'ID', asc: false },
     reload: false,
     pageSize: 24,
 }
@@ -142,6 +142,7 @@ const table_reducer = (state = initialTableState, action) => {
     }
 }
 
+
 const initialFiltersState = []
 
 const filters_reducer = (state = initialFiltersState, action) => {
@@ -159,7 +160,8 @@ const filters_reducer = (state = initialFiltersState, action) => {
                         ? result
                         : result.concat([{
                             key: action.payload.key,
-                            values: filter.values.filter(filterValue => { return filterValue !== action.payload.value })
+                            values: filter.values.filter(filterValue => { return filterValue !== action.payload.value }),
+                            id: action.payload.id,
                         }])
                     : result.concat(filter)
             }, [])
@@ -167,6 +169,7 @@ const filters_reducer = (state = initialFiltersState, action) => {
             return state;
     }
 }
+
 
 const initialThemeState = {
     selected: "light",
@@ -182,6 +185,7 @@ const initialThemeState = {
     }
 }
 
+
 const theme_reducer = (state = initialThemeState, action) => {
     switch (action.type) {
         case actionTypes.CHANGE_THEME:
@@ -193,6 +197,7 @@ const theme_reducer = (state = initialThemeState, action) => {
             return state;
     }
 }
+
 
 const initialAuthenticationState = {
     steam: {

@@ -6,6 +6,7 @@ import { parseOptions, usePrevious } from "../../../../utils";
 
 function HeaderCell({ title }) {
     const dispatch = useDispatch()
+    const headers = useSelector((state) => state.table.headers)
     const filters = useSelector((state) => {
         const filter = state.filters.filter(filter => filter.key === title);
 
@@ -13,7 +14,6 @@ function HeaderCell({ title }) {
             ? filter[0]
             : { key: title, values: [] }
     })
-    const headers = useSelector((state) => state.table.headers)
 
     const [options, setOptions] = React.useState(headers[title] ? initOptions(headers[title].options) : false);
 
@@ -45,7 +45,8 @@ function HeaderCell({ title }) {
         dispatch(resetTableParams(['offset']))
         dispatch(addFilter({
             key: title,
-            values: filters.values.concat(text)
+            values: filters.values.concat(text),
+            id: headers[title].id
         }))
     }
 
@@ -63,13 +64,15 @@ function HeaderCell({ title }) {
                                     <Dropdown.Menu>
                                         <Dropdown.Menu scrolling>
                                             {
-                                                options.map((option) => (
-                                                    <Dropdown.Item
-                                                        onClick={filter}
-                                                        key={option.value}
-                                                        {...option}
-                                                    />
-                                                ))
+                                                options
+                                                    .filter(option => !filters.values.find(item => item === option.text))
+                                                    .map((option) => (
+                                                        <Dropdown.Item
+                                                            onClick={filter}
+                                                            key={option.value}
+                                                            {...option}
+                                                        />
+                                                    ))
                                             }
                                         </Dropdown.Menu>
                                     </Dropdown.Menu>

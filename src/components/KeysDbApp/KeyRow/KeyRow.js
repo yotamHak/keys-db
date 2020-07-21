@@ -12,6 +12,7 @@ import ActionsCell from "../Cells/ActionsCell/ActionsCell";
 import { useSelector } from "react-redux";
 import { getUrlsLocationAndValue, getIndexByLabel } from "../../../utils";
 import Spreadsheets from "../../../google/Spreadsheets";
+import CardsCell from "../Cells/CardsCell/CardsCell";
 
 function KeyRow({ rowIndex }) {
     const [hasChanges, setHasChanges] = useState(false);
@@ -30,7 +31,6 @@ function KeyRow({ rowIndex }) {
 
     function selectCell(index, header, gameHeaderValue) {
         if (header.label === "ID") { return }
-
         const rKey = `${rowIndex}-${header.id}-${gameHeaderValue}`;
 
         if (index === urlsInGameData[urlsInGameData.length - 1].index) {
@@ -40,10 +40,15 @@ function KeyRow({ rowIndex }) {
                 key={rKey}
             />
         }
+
         if (urlsInGameData.find(item => item.index === index)) { return }
 
         switch (header.type) {
-            case 'primary':
+            case 'steam_achievements':
+            case 'steam_dlc':
+            case 'steam_bundled':
+                return
+            case 'steam_title':
                 return <NameCell
                     rowIndex={rowIndex}
                     onChange={changeCallback}
@@ -51,6 +56,22 @@ function KeyRow({ rowIndex }) {
                     name={gameHeaderValue}
                     key={rKey}
                 />
+            case 'steam_key':
+                return <KeyCell
+                    rowIndex={rowIndex}
+                    onChange={changeCallback}
+                    header={header}
+                    gameKey={gameHeaderValue}
+                    key={rKey}
+                />
+            case 'steam_cards':
+                return <CardsCell
+                    rowIndex={rowIndex}
+                    header={header}
+                    key={rKey}
+                    cards={gameHeaderValue}
+                />
+            case 'steam_ownership':
             case "dropdown":
                 return <OptionsCell
                     rowIndex={rowIndex}
@@ -83,6 +104,7 @@ function KeyRow({ rowIndex }) {
                     note={gameHeaderValue}
                     key={rKey}
                 />
+            case 'steam_appid':
             case "number":
                 return <AppIdCell
                     rowIndex={rowIndex}

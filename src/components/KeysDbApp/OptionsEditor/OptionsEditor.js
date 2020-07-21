@@ -30,7 +30,7 @@ function OptionsEditor({ headerKey, }) {
         }
 
         return () => {
-            if (optionsObject.values.length === 0 || (headerToBeChanged.type !== 'dropdown')) {
+            if (optionsObject.values.length === 0 || (headerToBeChanged.type !== 'dropdown' && headerToBeChanged.type !== 'steam_ownership' && headerToBeChanged.type !== 'steam_cards')) {
                 dispatch(resetOptionsChange(headerKey, headerToBeChanged.type))
             }
         }

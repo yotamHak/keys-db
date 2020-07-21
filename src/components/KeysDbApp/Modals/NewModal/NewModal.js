@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { Modal, Search, Segment, Header, Item, Icon, Container, Form, } from "semantic-ui-react";
+import { Modal, Search, Segment, Header, Item, Icon, Container, Form, Label, Button, } from "semantic-ui-react";
 import _ from 'lodash';
 
 import { reloadTable } from "../../../../actions";
@@ -32,7 +32,14 @@ function NewModal({ initialValue, isEdit, children }) {
     const handleClose = () => setModalOpen(false)
 
     const Child = React.Children.only(children);
-    const newChildren = React.cloneElement(Child, { onClick: handleOpen });    
+    const newChildren = React.cloneElement(Child, { onClick: handleOpen });
+
+    const steamTitleLabel = Object.keys(headers).find(key => headers[key].type === "steam_title")
+    const steamAppIdLabel = Object.keys(headers).find(key => headers[key].type === "steam_appid")
+    const steamUrlLabel = Object.keys(headers).find(key => headers[key].type === "steam_url")
+    const steamCardsLabel = Object.keys(headers).find(key => headers[key].type === "steam_cards")
+    const steamOwnershipLabel = Object.keys(headers).find(key => headers[key].type === "steam_ownership")
+    const dateAddedLabel = Object.keys(headers).find(key => headers[key].type === "date")
 
     function handleCreate() {
         setIsLoading(true)
@@ -43,9 +50,9 @@ function NewModal({ initialValue, isEdit, children }) {
             .reduce((acc, item) => _.concat(acc, [item.value]), [])
 
         if (isEdit) {
-            Spreadsheets.Update(spreadsheets, sortedArray, INITIAL_STATE["ID"])
+            Spreadsheets.Update(spreadsheetId, sortedArray, INITIAL_STATE["ID"])
                 .then(response => {
-                    if (response.updatedRows === 1) {
+                    if (response.success) {
                         reset()
                         dispatch(reloadTable(true))
                     }
@@ -76,7 +83,7 @@ function NewModal({ initialValue, isEdit, children }) {
     }
 
     async function handleSearchResultSelect(e, { result }) {
-        handleChange(e, { name: 'Title', value: result.title })
+        handleChange(e, { name: steamTitleLabel, value: result.title })
 
         const newRowValues = Object.keys(headers)
             .reduce((result, header) => ({
@@ -88,16 +95,16 @@ function NewModal({ initialValue, isEdit, children }) {
                 }
             }), [])
 
-        newRowValues['Title'].value = result.title;
-        newRowValues['AppId'].value = parseInt(result.appid);
-        newRowValues['Steam URL'].value = result.urls.steam;
+        newRowValues[steamTitleLabel].value = result.title;
+        newRowValues[steamAppIdLabel].value = parseInt(result.appid);
+        newRowValues[steamUrlLabel].value = result.urls.steam;
         newRowValues['isthereanydeal URL'].value = result.urls.itad;
-        newRowValues['Own Status'].value = steamApi.isOwning(result.appid) ? 'Own' : 'Missing'
-        newRowValues['Date Added'].value = newRowValues['Date Added'].value ? newRowValues['Date Added'].value : parseSpreadsheetDate(new Date());
+        newRowValues[steamOwnershipLabel].value = steamApi.isOwning(result.appid) ? 'Own' : 'Missing'
+        newRowValues[dateAddedLabel].value = newRowValues[dateAddedLabel].value ? newRowValues[dateAddedLabel].value : parseSpreadsheetDate(new Date());
 
         await itadApi.GetInfoAboutGame(result.plain).then(response => {
             console.log("More Info from ITAD:", response)
-            newRowValues['Cards'].value = response.trading_cards ? 'Have' : 'Missing';
+            newRowValues[steamCardsLabel].value = response.trading_cards ? 'Have' : 'Missing';
         })
 
         updateValues(e, newRowValues)
@@ -106,7 +113,7 @@ function NewModal({ initialValue, isEdit, children }) {
     function handleSearchChange(e, { value }) {
         if (e.type === "focus" && searchResults !== null) return
 
-        handleChange(e, { name: "Title", value: value })
+        handleChange(e, { name: steamTitleLabel, value: value })
 
         if (isSearching || !value || value.length < 3) return
 
@@ -172,6 +179,8 @@ function NewModal({ initialValue, isEdit, children }) {
                     value={values[header.label]}
                     key={header.label}
                 />
+            case 'steam_ownership':
+            case 'steam_cards':
             case 'dropdown':
                 const options = parseOptions(header.options)
 
@@ -239,50 +248,74 @@ function NewModal({ initialValue, isEdit, children }) {
             centered={false}
             size="small"
         >
-            <Modal.Header>Add Key</Modal.Header>
-            <Modal.Content>
+            <Modal.Header>{isEdit ? "Edit" : "Add"} Key</Modal.Header>
+            <Modal.Content scrolling>
                 <Modal.Description>
-                    <Form onSubmit={handleSubmit} autoComplete="off">
-                        {
-                            initialValue && (
-                                <Form.Field width='16'>
-                                    <label>Title</label>
-                                    <Search
-                                        category fluid
-                                        categoryLayoutRenderer={categoryLayoutRenderer}
-                                        categoryRenderer={categoryRenderer}
-                                        resultRenderer={resultRenderer}
-                                        results={searchResults}
-                                        onSearchChange={_.debounce(handleSearchChange, 500, { leading: true, })}
-                                        onFocus={handleSearchChange}
-                                        onResultSelect={handleSearchResultSelect}
-                                        minCharacters={3}
-                                        showNoResults={true}
-                                        loading={isSearching}
-                                        value={values.Title}
-                                        style={{ width: '100%' }}
-                                        className={'search-fluid-input'}
-                                    />
-                                </Form.Field>
-                            )
-                        }
-                        {
-                            _.chunk(Object.keys(headers).filter(key => key !== "ID" && headers[key].type !== 'primary'), 2)
-                                .map(group => {
-                                    return (
-                                        <Form.Group widths='equal' key={_.flatten(group)}>
-                                            {
-                                                group.map(key => selectInput(headers[key]))
-                                            }
-                                        </Form.Group>
-                                    )
-                                })
-                        }
-                        <Form.Button type="submit" loading={isLoading}>Submit</Form.Button>
+                    <Form autoComplete="off">
+                        <Segment basic>
+                            <Label attached='top'>Steam</Label>
+                            {
+                                initialValue && (
+                                    <Form.Field width='16'>
+                                        <label>{steamTitleLabel}</label>
+                                        <Search
+                                            category fluid
+                                            categoryLayoutRenderer={categoryLayoutRenderer}
+                                            categoryRenderer={categoryRenderer}
+                                            resultRenderer={resultRenderer}
+                                            results={searchResults}
+                                            onSearchChange={_.debounce(handleSearchChange, 500, { leading: true, })}
+                                            onFocus={handleSearchChange}
+                                            onResultSelect={handleSearchResultSelect}
+                                            minCharacters={3}
+                                            showNoResults={true}
+                                            loading={isSearching}
+                                            value={values[steamTitleLabel]}
+                                            style={{ width: '100%' }}
+                                            className={'search-fluid-input'}
+                                        />
+                                    </Form.Field>
+                                )
+                            }
+                            {
+                                _.chunk(Object.keys(headers)
+                                    .filter(key => key !== "ID" && headers[key].type !== 'steam_title' && headers[key].type.indexOf('steam_') > -1), 2)
+                                    .map(group => {
+                                        return (
+                                            <Form.Group widths='equal' key={_.flatten(group)}>
+                                                {
+                                                    group.map(key => selectInput(headers[key]))
+                                                }
+                                            </Form.Group>
+                                        )
+                                    })
+                            }
+                        </Segment>
+                        <Segment basic>
+                            <Label attached='top'>General</Label>
+                            {
+                                _.chunk(Object.keys(headers).filter(key => key !== "ID" && headers[key].type.indexOf('steam_') === -1), 2)
+                                    .map(group => {
+                                        return (
+                                            <Form.Group widths='equal' key={_.flatten(group)}>
+                                                {
+                                                    group.map(key => selectInput(headers[key]))
+                                                }
+                                            </Form.Group>
+                                        )
+                                    })
+                            }
+                        </Segment>
                     </Form>
                     <ErrorBox errors={errors} />
                 </Modal.Description>
             </Modal.Content>
+
+            <Modal.Actions>
+                <Button onClick={reset}>Reset</Button>
+                <Button onClick={handleClose} negative>Cancel</Button>
+                <Button type="submit" loading={isLoading} onClick={handleSubmit} positive>Save</Button>
+            </Modal.Actions>
         </Modal >
     );
 }

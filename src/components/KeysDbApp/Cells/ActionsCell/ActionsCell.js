@@ -8,6 +8,7 @@ import Spreadsheets from "../../../../google/Spreadsheets";
 import GameInfoModal from "../../Modals/GameInfoModal/GameInfoModal";
 
 function ActionsCell({ index }) {
+    const spreadsheetId = useSelector((state) => state.authentication.spreadsheetId)
     const headers = useSelector((state) => state.table.headers)
     const gameData = useSelector((state) => state.table.rows[index])
     const dispatch = useDispatch()
@@ -16,9 +17,9 @@ function ActionsCell({ index }) {
 
     function handleDelete(e, data) {
         setPrompt(false)
-        Spreadsheets.Delete(getValueByLabel("ID", headers, gameData))
+        Spreadsheets.Delete(spreadsheetId, getValueByLabel("ID", headers, gameData))
             .then(response => {
-                if (response.replies && response.replies.length > 0) {
+                if (response.success) {
                     dispatch(reloadTable(true))
                 }
             })

@@ -9,7 +9,7 @@ import steamApi from "../../../steam/steam";
 
 function Initialization() {
     useEffect(() => {
-        steamApi.ownedGames
+        // steamApi.ownedGames
 
         Spreadsheets.Initialize(localStorage.getItem('spreadsheetId'))
             .then(response => {

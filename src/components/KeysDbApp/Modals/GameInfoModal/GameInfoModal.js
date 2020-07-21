@@ -16,24 +16,26 @@ function GameInfoModal({ appId, }) {
 
     const [extendedDescription, setExtendedDescription] = useState(false)
 
-    const loadGameData = (id) => steamApi.AppDetails(id).then(response => {
-        if (response) {
-            itadApi.GetInfoAboutBundles(response.name)
-                .then(response => {
-                    if (response.success) {
-                        // console.log("ITAD Bundled data:", response)
-                        setGameBundles(response)
-                    } else {
-                        setErrorGettingItadData(true)
-                    }
-                })
+    const loadGameData = (id) => steamApi.AppDetails(id)
+        .then(response => {
+            console.log("AppDetails data:", response)
+            if (response) {
+                itadApi.GetInfoAboutBundles(response.name)
+                    .then(response => {
+                        if (response.success) {
+                            console.log("ITAD Bundled data:", response)
+                            setGameBundles(response)
+                        } else {
+                            setErrorGettingItadData(true)
+                        }
+                    })
 
-            // console.log("Steam data:", response)
-            setAppData(response)
-        } else {
-            setErrorGettingSteamData(true)
-        }
-    })
+                // console.log("Steam data:", response)
+                setAppData(response)
+            } else {
+                setErrorGettingSteamData(true)
+            }
+        })
 
     return (
         <Modal
@@ -41,7 +43,7 @@ function GameInfoModal({ appId, }) {
             closeIcon={<Icon name="close" />}
             trigger={<Dropdown.Item text="Info" />}
             centered={false}
-            size={errorGettingSteamData ? 'small' : 'large'}
+            size={errorGettingSteamData ? 'small' : 'fullscreen'}
         >
             {
                 errorGettingSteamData

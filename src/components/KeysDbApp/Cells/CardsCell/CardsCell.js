@@ -3,7 +3,7 @@ import { Table, Icon } from "semantic-ui-react";
 import { useSelector } from "react-redux";
 import { getValueByLabel } from "../../../../utils"
 
-function CardsCell({ cards, rowIndex }) {
+function CardsCell({ cards, rowIndex, header }) {
     const headers = useSelector((state) => state.table.headers)
     const gameData = useSelector((state) => state.table.rows[rowIndex])
 

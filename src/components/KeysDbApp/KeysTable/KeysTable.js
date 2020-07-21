@@ -65,7 +65,7 @@ function KeysTable({ spreadsheetId }) {
         // console.log("Filters:", filters);
         // console.log("-------------------------")
 
-        loadGames(titleQuery, offset, limit, orderBy, filters)
+        loadGames(spreadsheetId, titleQuery, offset, limit, orderBy, filters)
         dispatch(reloadTable(false))
     }, [titleQuery, filters, offset, limit, orderBy, reload]);
 
@@ -76,9 +76,14 @@ function KeysTable({ spreadsheetId }) {
         setLimit(value)
     }
 
-    function loadGames(titleQuery, offset, limit, orderBy, filters) {
+    function loadGames(spreadsheetId, titleQuery, offset, limit, orderBy, filters) {
+        const convertedOrderBy = {
+            sort: headers[orderBy.sort].id,
+            asc: orderBy.asc
+        }
+
         setLoading(true)
-        Spreadsheets.GetFilteredData(titleQuery, offset, limit, orderBy, filters)
+        Spreadsheets.GetFilteredData(spreadsheetId, titleQuery, offset, limit, convertedOrderBy, filters)
             .then(response => {
                 if (response.success) {
                     // console.log("Got filtered games:", games)
@@ -263,7 +268,7 @@ function KeysTable({ spreadsheetId }) {
                                     </div>
                                     &nbsp;&nbsp;&nbsp;
                                     <div style={{ height: '100%', alignItems: 'center', display: 'flex' }}>
-                                        Filters:&nbsp;&nbsp;&nbsp;<DataFilters />
+                                        <DataFilters />
                                     </div>
                                 </Grid.Row>
                             </Grid>

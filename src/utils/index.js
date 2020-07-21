@@ -63,7 +63,7 @@ export const getValueByLabel = (label, headers, gameData) => gameData[getIndexBy
 export const getPrimaryId = headers => Object.keys(headers).find(key => headers[key].type === 'primary').id
 
 export const getUrlsLocationAndValue = (headers, gameData) => Object.keys(headers)
-  .filter(key => headers[key].type === 'url')
+  .filter(key => headers[key].type === 'url' || headers[key].type === 'steam_url')
   .reduce((result, key) => (_.concat(
     ...result,
     [gameData

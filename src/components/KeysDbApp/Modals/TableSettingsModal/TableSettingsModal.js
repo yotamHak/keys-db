@@ -11,14 +11,15 @@ import Spreadsheets from "../../../../google/Spreadsheets";
 import { genericSort } from "../../../../utils";
 
 const typeOptions = [
-    { key: 'steam_title', text: 'Title (Steam)', value: 'steam_title' },
-    { key: 'steam_appid', text: 'App Id (Steam)', value: 'steam_appid' },
-    { key: 'steam_key', text: 'Key (Steam)', value: 'steam_key' },
-    { key: 'steam_cards', text: 'Cards (Steam)', value: 'steam_cards' },
-    { key: 'steam_achievements', text: 'Achievements (Steam)', value: 'steam_achievements' },
-    { key: 'steam_dlc', text: 'DLC (Steam)', value: 'steam_dlc' },
-    { key: 'steam_bundled', text: 'Bundled (Steam)', value: 'steam_bundled' },
-    { key: 'steam_ownership', text: 'Owned (Steam)', value: 'steam_ownership' },
+    { key: 'steam_title', text: '(Steam) Title', value: 'steam_title' },
+    { key: 'steam_url', text: '(Steam) URL', value: 'steam_url' },
+    { key: 'steam_appid', text: '(Steam) App Id', value: 'steam_appid' },
+    { key: 'steam_key', text: '(Steam) Key', value: 'steam_key' },
+    { key: 'steam_cards', text: '(Steam) Cards', value: 'steam_cards' },
+    { key: 'steam_achievements', text: '(Steam) Achievements', value: 'steam_achievements' },
+    { key: 'steam_dlc', text: '(Steam) DLC', value: 'steam_dlc' },
+    { key: 'steam_bundled', text: '(Steam) Bundled', value: 'steam_bundled' },
+    { key: 'steam_ownership', text: '(Steam) Owned', value: 'steam_ownership' },
 
     { key: 'string', text: 'String', value: 'string' },
     { key: 'number', text: 'Number', value: 'number' },
@@ -42,7 +43,7 @@ function TableSettingsModal({ headers }) {
             dispatch(setNewRowChange('headers', tableHeaders))
         } else {
             Object.keys(values).forEach(key => {
-                if (values[key].type === 'dropdown' && values[key].options !== tableHeadersChanges[key].options) {
+                if ((values[key].type === 'dropdown' || values[key].type === 'steam_ownership' || values[key].type === 'steam_cards') && values[key].options !== tableHeadersChanges[key].options) {
                     updateOptions(key, tableHeadersChanges[key].options)
                 }
             })
@@ -66,7 +67,7 @@ function TableSettingsModal({ headers }) {
     const handleClose = () => setModalOpen(false)
 
     const cleanRedundentOptions = (headers) => Object.keys(headers).reduce((result, key) => {
-        if (headers[key].type !== 'dropdown' && headers[key].options) {
+        if ((headers[key].type !== 'dropdown' && headers[key].type !== 'steam_ownership' && headers[key].type !== 'steam_cards') && headers[key].options) {
             let newHeader = { ...headers[key] }
 
             _.unset(newHeader, 'options')
@@ -164,7 +165,7 @@ function TableSettingsModal({ headers }) {
                                                     />
                                                 </Form.Field>
                                                 {
-                                                    values[headerKey]["type"] === 'dropdown' && <OptionsEditor headerKey={headerKey} />
+                                                    (values[headerKey]["type"] === 'steam_ownership' || values[headerKey]["type"] === 'steam_cards' || values[headerKey]["type"] === 'dropdown') && <OptionsEditor headerKey={headerKey} />
                                                 }
                                             </Grid.Column>
                                         </Grid.Row>

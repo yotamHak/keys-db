@@ -4,46 +4,14 @@ import _ from "lodash";
 import { isUrl, isSteamKey, genericSort, parseSpreadsheetDate } from '../utils';
 
 class Spreashsheets {
-    constructor() {
-        this._spreadsheetId = '';
-        this._token = '';
-        this._columns = {};
-        this._columnsWithOptions = {};
-        this._rows = [];
-        this._count = 0;
-    }
+    _queryUrl = (spreadsheetId, queryString) => `https://docs.google.com/a/google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tq=${queryString}`
 
-    get token() {
-        if (this._token === '') { this._token = localStorage.getItem('gTokenId') }
-
-        return this._token
-    }
-
-    set spreadsheetId(id) { this._spreadsheetId = id; }
-
-    get rows() { return this._rows }
-    set rows(rows) { this._rows = rows; }
-
-    get columns() { return this._columns }
-    set columns(columns) {
-        this._columns = columns
-        // .filter(column => column.label)
-        // .reduce((result, column) => {
-        //     return {
-        //         ...result,
-        //         ...{ [column.label]: column }
-        //     }
-        // }, {})
-    }
-
-    _spreadsheetUrlPrefix = (spreadsheetId) => `https://docs.google.com/a/google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tq=`
-
-    _handleError = (response) => {
+    _handleError = response => {
         console.error(response.errors);
         return response
     }
 
-    _get = async (url) => axios.get(url, { headers: { 'Content-Type': 'application/json; charset=UTF-8', Authorization: _.concat('Bearer ', this.token) } })
+    _get = async url => axios.get(url, { headers: { 'Content-Type': 'application/json; charset=UTF-8', Authorization: _.concat('Bearer ', localStorage.getItem('gTokenId')) } })
         .then(response => {
             const parsedResponse = JSON.parse(response.data.slice(response.data.indexOf("{"), response.data.length - 2));
 
@@ -58,34 +26,31 @@ class Spreashsheets {
                 }
         })
         .catch(reason => {
-            const parsedResponse = JSON.parse(reason.data.slice(reason.data.indexOf("{"), reason.data.length - 2));
-
+            debugger
             return {
                 success: false,
-                errors: parsedResponse.errors
+                errors: reason.errors
             }
         })
 
-    _getColumn = key => this.columns[key].id
-
-    // { key: 'From', values: ['Humblebundle'] }, { key: 'Status', values: ['Unused', 'Given'] }
     _parseFilters(filters = []) {
         if (_.isEmpty(filters)) { return "" }
 
         const filtersArray = filters.reduce((result, filter) => _.concat(
             result,
-            [filter.values.map(value => ({ [this._getColumn(filter.key)]: `'${value}'` }))]
+            [filter.values.map(value => ({ [filter.id]: `'${value}'` }))]
         ), [])
+
         return _.join(filtersArray.map(group => `(${_.join(group.map(item => `${Object.keys(item)[0]} = ${item[Object.keys(item)[0]]}`), ' or ')})`), ' and ')
     }
 
-    _createQueryString(textQuery = "", offset = 0, limit = 24, orderBy = { sort: "Date Added", asc: false }, filters = [], range = "*", countOnly = false) {
+    _createQueryString(textQuery = "", offset = 0, limit = 24, orderBy = { sort: "A", asc: false }, filters = [], range = "*", countOnly = false) {
         const select = `select ${range}`
         const where = _.isEmpty(filters)
             ? `${textQuery !== "" ? `where lower(B) contains lower('${textQuery}')` : ``}`
             : `where ${textQuery !== "" ? `lower(B) contains lower('${textQuery}') and` : ``} ${this._parseFilters(filters)}`
         const order = orderBy
-            ? `order by ${orderBy.sort && !_.isEmpty(this.columns) ? this._getColumn(orderBy.sort) : "G"} ${orderBy.asc ? "asc" : "desc"}`
+            ? `order by ${orderBy.sort} ${orderBy.asc ? "asc" : "desc"}`
             : ``
         const offsetAndLimit = `limit ${limit} offset ${offset}`
 
@@ -154,33 +119,49 @@ class Spreashsheets {
     }
 
     // https://developers.google.com/chart/interactive/docs/querylanguage
-    _query = async (titleQuery, offset, limit, orderBy, filters) => this._get(`${this._spreadsheetUrlPrefix(this._spreadsheetId)}${this._createQueryString(titleQuery, offset, limit, orderBy, filters)}`)
+    _query = async (spreadsheetId, titleQuery, offset, limit, orderBy, filters) => this._get(this._queryUrl(spreadsheetId, this._createQueryString(titleQuery, offset, limit, orderBy, filters)))
 
-    _queryCount = async (titleQuery, offset, limit, orderBy, filters) => {
-        return this._get(`${this._spreadsheetUrlPrefix(this._spreadsheetId)}${this._createQueryString(titleQuery, offset, limit, orderBy, filters, '*', true)}`)
-            .then(response => {
-                return response.success
-                    ? {
-                        success: true,
-                        data: {
-                            count: response.data.table.rows.length === 0 ? 0 : response.data.table.rows[0]['c'][0]['v']
-                        }
+    _queryCount = async (spreadsheetId, titleQuery, offset, limit, orderBy, filters) => this._get(this._queryUrl(spreadsheetId, this._createQueryString(titleQuery, offset, limit, orderBy, filters, '*', true)))
+        .then(response => {
+            return response.success
+                ? {
+                    success: true,
+                    data: {
+                        count: response.data.table.rows.length === 0 ? 0 : response.data.table.rows[0]['c'][0]['v']
                     }
-                    : {
-                        success: false,
-                        errors: response.errors
-                    }
-            })
-    }
+                }
+                : {
+                    success: false,
+                    errors: response.errors
+                }
+        })
 
     async _getHeadersAndSettings(spreadsheetId) {
         return gapi.client.sheets.spreadsheets.values.get({
             "spreadsheetId": spreadsheetId,
-            "range": "A1:Z2",
-            "majorDimension": "ROWS"
+            "range": "A1:Z1",
+            "majorDimension": "COLUMNS",
+            "valueRenderOption": "FORMULA"
         })
-            .then(response => response)
-            .catch(reason => console.log(reason))
+            .then(response => {
+                if (response.status === 200) {
+                    return {
+                        success: true,
+                        data: response.result
+                    }
+                } else {
+                    return {
+                        success: false,
+                        errors: response.errors
+                    }
+                }
+            })
+            .catch(response => {
+                return {
+                    success: false,
+                    errors: response.errors
+                }
+            })
     }
 
     _combineHeadersAndSettings = (headersArray, settings) => Object.keys(settings).reduce((result, key) => ({
@@ -212,329 +193,6 @@ class Spreashsheets {
         }, {})
     }
 
-    // https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/update
-    // https://any-api.com/googleapis_com/sheets/docs/spreadsheets/sheets_spreadsheets_values_append
-    async Insert(spreadsheetId, value) {
-        const params = {
-            spreadsheetId: spreadsheetId,
-            range: "Keys!B:Z",
-            valueInputOption: 'USER_ENTERED',
-            insertDataOption: "INSERT_ROWS"
-        };
-
-        const valueRangeBody = { "values": [_.drop(value, 1)] };
-
-        return gapi.client.sheets.spreadsheets.values.append(params, valueRangeBody)
-            .then(response => {
-                console.log(response.result);
-                return response.result
-            }, reason => {
-                console.error('error: ' + reason.result.error.message);
-                return reason.result.error.message
-            });
-    }
-
-    // https://any-api.com/googleapis_com/sheets/docs/spreadsheets/sheets_spreadsheets_values_batchUpdate
-    async Update(spreadsheetId, value, range) {
-        const params = {
-            spreadsheetId: spreadsheetId,
-            range: `Keys!B${range}`,
-            valueInputOption: 'USER_ENTERED',
-        };
-
-        const valueRangeBody = { "values": [_.drop(value, 1)] };
-
-        return gapi.client.sheets.spreadsheets.values.update(params, valueRangeBody)
-            .then(response => {
-                // console.log(response.result);
-                return response.result
-            }, reason => {
-                // console.error('error: ' + reason.result.error.message);
-                return reason.result.error.message
-            });
-    }
-
-    // DeveloperMetadata Related
-    async CreateDeveloperMetadata(spreadsheetId, key, value) {
-        gapi.client.sheets.spreadsheets.batchUpdate({
-            "spreadsheetId": spreadsheetId,
-            "requests": [
-                {
-                    "createDeveloperMetadata": {
-                        "developerMetadata": {
-                            "metadataId": 0,
-                            "metadataKey": key,
-                            "metadataValue": value,
-                            "visibility": "DOCUMENT",
-                            "location": {
-                                "spreadsheet": true,
-                            }
-                        }
-                    }
-                }
-            ],
-        }).then(response => {
-            console.log(response)
-            debugger
-        })
-    }
-
-    async UpdateDeveloperMetadata(spreadsheetId, key = "headers", value) {
-        gapi.client.sheets.spreadsheets.batchUpdate({
-            "spreadsheetId": spreadsheetId,
-            "requests": [
-                {
-                    "updateDeveloperMetadata": {
-                        "dataFilters": [
-                            {
-                                "developerMetadataLookup": {
-                                    "metadataKey": key
-                                }
-                            }
-                        ],
-                        "developerMetadata": {
-                            "metadataKey": key,
-                            "metadataValue": value,
-                            "visibility": "DOCUMENT",
-                            "location": {
-                                "spreadsheet": true,
-                            }
-                        },
-                        "fields": "*"
-                    }
-                }
-            ],
-        }).then(response => {
-            console.log(response)
-            debugger
-        })
-    }
-
-    async DeleteDeveloperMetadata(spreadsheetId, key = "headers") {
-        gapi.client.sheets.spreadsheets.batchUpdate({
-            "spreadsheetId": spreadsheetId,
-            "requests": [
-                {
-                    "deleteDeveloperMetadata": {
-                        "dataFilter": {
-                            "developerMetadataLookup": {
-                                "metadataKey": key
-                            }
-                        }
-                    }
-                }
-            ],
-        }).then(response => {
-            console.log(response)
-            debugger
-        })
-    }
-
-    async SearchDeveloperMetadata(spreadsheetId, searchKey) {
-        gapi.client.sheets.spreadsheets.batchUpdate({
-            "spreadsheetId": spreadsheetId,
-            "resource": {
-                "dataFilters": [
-                    {
-                        "developerMetadataLookup": {
-                            "metadataKey": searchKey
-                        }
-                    }
-                ]
-            },
-        }).then(response => {
-            console.log(response)
-            debugger
-        })
-    }
-
-    async GetDeveloperMetadata(spreadsheetId, id = 1986) {
-        gapi.client.sheets.spreadsheets.developerMetadata.get({
-            "spreadsheetId": spreadsheetId,
-            "metadataId": id
-        }).then(response => {
-            debugger
-            if (response.status === 200) {
-                return {
-                    success: true,
-                    result: response.result
-                }
-            } else {
-                return {
-                    success: false,
-                    result: response.errors
-                }
-            }
-        })
-    }
-
-    async Delete(range) {
-        const params = {
-            spreadsheetId: this._spreadsheetId,
-            requests: [
-                {
-                    deleteDimension: {
-                        range: {
-                            dimension: "ROWS",
-                            startIndex: range - 1,
-                            endIndex: range
-                        }
-                    }
-                }
-            ],
-        }
-
-        return gapi.client.sheets.spreadsheets.batchUpdate(params)
-            .then(response => {
-                // console.log(response.result);
-                return response.result
-            }, reason => {
-                // console.error('error: ' + reason.result.error.message);
-                return reason.result.error.message
-            });
-    }
-
-    async SaveSettings(spreadsheetId, settings) {
-        const newValues = Object.keys(settings)
-            .filter(header => header !== "ID")
-            .sort((a, b) => a.id > b.id)
-            .reduce((result, key) => {
-                return _.concat(
-                    result,
-                    ...[JSON.stringify(settings[key])]
-                )
-            }, [])
-
-        return gapi.client.sheets.spreadsheets.values.update({
-            "spreadsheetId": spreadsheetId,
-            "range": "Keys!A2:Z2",
-            "valueInputOption": "USER_ENTERED",
-            "resource": {
-                "values": [
-                    [
-                        "=ArrayFormula(ROW(A2:A))",
-                        ...newValues
-                    ]
-                ]
-            }
-        })
-            .then(response => {
-                if (response.status === 200) {
-                    return {
-                        success: true,
-                        result: response.result
-                    }
-                } else {
-                    return {
-                        success: false,
-                        result: response.errors
-                    }
-                }
-            })
-            .catch(reason => {
-                console.error(reason)
-                return {
-                    success: false,
-                    result: reason.errors
-                }
-            })
-    }
-
-    async ImportAllOptions(spreadsheetId) {
-        return this._query(0, 10000).then(response => {
-            if (response.success) {
-                const table = this._parseTable(response.data);
-                const options = this._initOptions(this._columns, table.rows);
-
-                return {
-                    headers: options
-                }
-            } else {
-                this._handleError(response)
-            }
-        })
-    }
-
-    async Initialize(spreadsheetId) {
-        this.spreadsheetId = spreadsheetId
-
-        return this._getHeadersAndSettings(spreadsheetId)
-            .then(response => {
-                if (response.status === 200) {
-                    const headersWithSettings = this._getSettings(response.result.values[0], response.result.values[1])
-
-                    if (headersWithSettings[Object.keys(headersWithSettings)[1]].id) {
-                        this.columns = headersWithSettings;
-
-                        return {
-                            headers: headersWithSettings
-                        }
-                    } else {
-                        return this._query(0, 1).then(response => {
-                            if (response.success) {
-                                const data = response.data
-                                const combinedHeadersAndSettings = this._combineHeadersAndSettings(data.table.cols, headersWithSettings)
-                                this.columns = combinedHeadersAndSettings
-
-                                this.SaveSettings(spreadsheetId, combinedHeadersAndSettings)
-
-                                return {
-                                    headers: combinedHeadersAndSettings
-                                }
-                            } else {
-                                this._handleError(response)
-                            }
-                        })
-                    }
-                } else { console.error('GetHeadersAndSettings Error', response) }
-            })
-    }
-
-    async GetFilteredData(titleQuery, offset, limit, orderBy, filters) {
-        return offset > 0
-            ? this._query(titleQuery, offset, limit, orderBy, filters)
-                .then(response => {
-                    if (response.success) {
-                        return {
-                            ...response,
-                            data: { headers: this._columns, rows: this._parseTable(response.data).rows }
-                        }
-                    } else {
-                        this._handleError(response)
-                    }
-                })
-            : this._queryCount(titleQuery, offset, limit, orderBy, filters)
-                .then(response => {
-                    if (response.success) {
-                        const count = response.data.count
-
-                        return this._query(titleQuery, offset, limit, orderBy, filters)
-                            .then(response => {
-                                if (response.success) {
-                                    if (response.data.table.cols.every(item => item.label === '')) {
-                                        return {
-                                            ...response,
-                                            data: { headers: this._columns, rows: [], count: 0 }
-                                        }
-                                    } else {
-                                        this.rows = this._parseTable(response.data).rows
-
-                                        return {
-                                            ...response,
-                                            data: { headers: this._columns, rows: this.rows, count: count - 1 }
-                                        }
-                                    }
-                                }
-                                else {
-                                    this._handleError(response)
-                                }
-                            })
-                    } else {
-                        return response
-                    }
-                })
-    }
-
     async _createNewSpreadsheet(title) {
         return gapi.client.sheets.spreadsheets.create({
             "resource": {
@@ -561,36 +219,18 @@ class Spreashsheets {
     }
 
     async _deleteColumns(spreadsheetId, sheetId, rangeArray) {
-        const params = {
-            spreadsheetId: spreadsheetId,
-            requests: rangeArray.reduce((result, id) => (_.concat(result, [{
-                deleteDimension: {
-                    range: {
-                        sheetId: sheetId,
-                        dimension: "COLUMNS",
-                        startIndex: id,
-                        endIndex: id + 1
-                    }
+        const requests = rangeArray.reduce((result, id) => (_.concat(result, [{
+            deleteDimension: {
+                range: {
+                    sheetId: sheetId,
+                    dimension: "COLUMNS",
+                    startIndex: id,
+                    endIndex: id + 1
                 }
-            }])), []),
-        }
+            }
+        }])), [])
 
-        return gapi.client.sheets.spreadsheets.batchUpdate(params)
-            .then(response => {
-                return response.status === 200
-                    ? {
-                        success: true,
-                        data: response.result
-                    }
-                    : {
-                        success: false,
-                        errors: response.errors
-                    }
-            })
-            .catch(response => ({
-                success: false,
-                errors: response.errors
-            }))
+        return this._batchUpdate(spreadsheetId, requests)
     }
 
     async _copyCleanSheet(spreadsheetId) {
@@ -691,10 +331,327 @@ class Spreashsheets {
                         errors: response.errors
                     }
             })
-            .catch(response => ({
-                success: false,
-                errors: response.errors
-            }))
+            .catch(response => {
+                debugger
+
+                return {
+                    success: false,
+                    errors: response.errors
+                }
+            })
+    }
+
+    // https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/update
+    // https://any-api.com/googleapis_com/sheets/docs/spreadsheets/sheets_spreadsheets_values_append
+    async Insert(spreadsheetId, value) {
+        const params = {
+            spreadsheetId: spreadsheetId,
+            range: "Keys!B:Z",
+            valueInputOption: 'USER_ENTERED',
+            insertDataOption: "INSERT_ROWS"
+        };
+
+        const valueRangeBody = { "values": [_.drop(value, 1)] };
+
+        return gapi.client.sheets.spreadsheets.values.append(params, valueRangeBody)
+            .then(response => {
+                console.log(response.result);
+                return response.result
+            }, reason => {
+                console.error('error: ' + reason.result.error.message);
+                return reason.result.error.message
+            });
+    }
+
+    // https://any-api.com/googleapis_com/sheets/docs/spreadsheets/sheets_spreadsheets_values_batchUpdate
+    async Update(spreadsheetId, value, range) {
+        const params = {
+            spreadsheetId: spreadsheetId,
+            range: `Keys!B${range}`,
+            valueInputOption: 'USER_ENTERED',
+        };
+
+        const valueRangeBody = { "values": [_.drop(value, 1)] };
+
+        return gapi.client.sheets.spreadsheets.values.update(params, valueRangeBody)
+            .then(response => {
+                if (response.status === 200) {
+                    return {
+                        success: true,
+                        data: response.result
+                    }
+                } else {
+                    return {
+                        success: false,
+                        data: response.result
+                    }
+                }
+            }, reason => {
+                return {
+                    success: false,
+                    data: reason.result.error.message
+                }
+            });
+    }
+
+    async Delete(spreadsheetId, range) {
+        const requests = {
+            deleteDimension: {
+                range: {
+                    dimension: "ROWS",
+                    startIndex: range - 1,
+                    endIndex: range
+                }
+            }
+        }
+
+        return this._batchUpdate(spreadsheetId, [requests])
+    }
+
+    // DeveloperMetadata Related
+    async CreateDeveloperMetadata(spreadsheetId, key, value) {
+        const requests = {
+            "createDeveloperMetadata": {
+                "developerMetadata": {
+                    "metadataId": 1986,
+                    "metadataKey": key,
+                    "metadataValue": value,
+                    "visibility": "DOCUMENT",
+                    "location": {
+                        "spreadsheet": true,
+                    }
+                }
+            }
+        }
+
+        return this._batchUpdate(spreadsheetId, [requests])
+    }
+
+    async UpdateDeveloperMetadata(spreadsheetId, key = "headers", value) {
+        const requests = {
+            "updateDeveloperMetadata": {
+                "dataFilters": [
+                    {
+                        "developerMetadataLookup": {
+                            "metadataKey": key
+                        }
+                    }
+                ],
+                "developerMetadata": {
+                    "metadataKey": key,
+                    "metadataValue": value,
+                    "visibility": "DOCUMENT",
+                    "location": {
+                        "spreadsheet": true,
+                    }
+                },
+                "fields": "*"
+            }
+        }
+
+        return this._batchUpdate(spreadsheetId, [requests])
+    }
+
+    async DeleteDeveloperMetadata(spreadsheetId, key = "headers") {
+        const requests = {
+            "deleteDeveloperMetadata": {
+                "dataFilter": {
+                    "developerMetadataLookup": {
+                        "metadataKey": key
+                    }
+                }
+            }
+        }
+
+        return this._batchUpdate(spreadsheetId, [requests])
+    }
+
+    async SearchDeveloperMetadata(spreadsheetId, searchKey) {
+        gapi.client.sheets.spreadsheets.batchUpdate({
+            "spreadsheetId": spreadsheetId,
+            "resource": {
+                "dataFilters": [
+                    {
+                        "developerMetadataLookup": {
+                            "metadataKey": searchKey
+                        }
+                    }
+                ]
+            },
+        }).then(response => {
+            console.log(response)
+            debugger
+        })
+    }
+
+    async GetDeveloperMetadata(spreadsheetId, id = 1986) {
+        return gapi.client.sheets.spreadsheets.developerMetadata.get({
+            "spreadsheetId": spreadsheetId,
+            "metadataId": id
+        })
+            .then(response => {
+                if (response.status === 200) {
+                    return {
+                        success: true,
+                        data: response.result
+                    }
+                } else {
+                    return {
+                        success: false,
+                        data: response.errors
+                    }
+                }
+            })
+            .catch(response => {
+                return {
+                    success: false,
+                    errors: response.result.error
+                }
+            })
+    }
+
+    async SaveSettings(spreadsheetId, settings) {
+        return this.UpdateDeveloperMetadata(spreadsheetId, "headers", JSON.stringify(settings))
+    }
+
+    async ImportAllOptions(spreadsheetId) {
+        return this._query(spreadsheetId, 0, 10000).then(response => {
+            if (response.success) {
+                const table = this._parseTable(response.data);
+                const options = this._initOptions(this._columns, table.rows);
+
+                return {
+                    headers: options
+                }
+            } else {
+                return this._handleError(response)
+            }
+        })
+    }
+
+    async _createDefaultDeveloperMetadata(spreadsheetId) {
+        const defaultSettings = { "ID": { "id": "A", "label": "ID", "type": "number", "pattern": "General", "display": false }, "Title": { "id": "B", "label": "Title", "type": "steam_title", "isPrivate": false, "display": true, "isFilter": false, "sortable": false }, "Status": { "id": "C", "label": "Status", "type": "dropdown", "isPrivate": false, "options": { "allowEdit": false, "values": [{ "value": "Used", "color": "red" }, { "value": "Unused", "color": "green" }, { "value": "Traded", "color": "yellow" }, { "value": "Gifted", "color": "orange" }] }, "display": true, "isFilter": true, "sortable": true }, "Key": { "id": "D", "label": "Key", "type": "key", "isPrivate": true, "display": true, "isFilter": false, "sortable": false }, "From": { "id": "E", "label": "From", "type": "dropdown", "isPrivate": false, "options": { "allowEdit": true, "values": [{ "value": "Fanatical", "color": "green" }, { "value": "Indiegala", "color": "red" }, { "value": "Other", "color": "grey" }, { "value": "Amazon", "color": "brown" }, { "value": "Alienware", "color": "blue" }, { "value": "AMD", "color": "orange" }, { "value": "Indiegamestand", "color": "pink" }, { "value": "Sega", "color": "blue" }, { "value": "DigitalHomicide", "color": "brown" }, { "value": "Humblebundle", "color": "blue" }] }, "display": true, "isFilter": true, "sortable": true }, "Own Status": { "id": "F", "label": "Own Status", "type": "steam_ownership", "isPrivate": false, "options": { "allowEdit": false, "values": [{ "value": "Own", "color": "green" }, { "value": "Missing", "color": "red" }] }, "display": true, "isFilter": true, "sortable": true }, "Date Added": { "id": "G", "label": "Date Added", "type": "date", "pattern": "dd-mm-yyyy", "isPrivate": true, "display": true, "isFilter": true, "sortable": true }, "Note": { "id": "H", "label": "Note", "type": "text", "isPrivate": true, "display": true, "isFilter": false, "sortable": false }, "isthereanydeal URL": { "id": "I", "label": "isthereanydeal URL", "type": "url", "isPrivate": false, "display": true, "isFilter": false, "sortable": false }, "Steam URL": { "id": "J", "label": "Steam URL", "type": "steam_url", "isPrivate": false, "display": true, "isFilter": false, "sortable": false }, "Cards": { "id": "K", "label": "Cards", "type": "steam_cards", "isPrivate": false, "options": { "allowEdit": false, "values": [{ "value": "Have", "color": "green" }, { "value": "Missing", "color": "red" }] }, "display": true, "isFilter": true, "sortable": true }, "AppId": { "id": "L", "label": "AppId", "type": "steam_appid", "pattern": "General", "isPrivate": false, "display": true, "isFilter": false, "sortable": false } }
+
+        return this._query(spreadsheetId, "", 0, 1)
+            .then(response => {
+                if (response.success) {
+                    const columnSettings = response.data.table.cols
+
+                    return this._getHeadersAndSettings(spreadsheetId)
+                        .then(response => {
+                            if (response.success) {
+                                const newSettings = response.data.values.reduce((result, label, index) => {
+                                    const parsedLabel = index === 0 ? 'ID' : label[0]
+                                    return {
+                                        ...result,
+                                        [parsedLabel]: {
+                                            ...columnSettings[index],
+                                            label: parsedLabel
+                                        }
+                                    }
+                                }, {})
+
+                                return this.CreateDeveloperMetadata(spreadsheetId, "headers", JSON.stringify(defaultSettings))
+                                    .then(response => {
+                                        if (response.success) {
+                                            return {
+                                                headers: defaultSettings
+                                            }
+                                        }
+                                    })
+                            }
+                        })
+                }
+            })
+    }
+
+    async _getMetadata(spreadsheetId) {
+        return this.GetDeveloperMetadata(spreadsheetId)
+            .then(response => {
+                if (response.success) {
+                    // console.log(response.data.metadataValue)
+                    return {
+                        success: true,
+                        headers: JSON.parse(response.data.metadataValue)
+                    }
+                } else {
+                    return this._createDefaultDeveloperMetadata(spreadsheetId)
+                }
+            })
+            .catch(response => {
+                return this._createDefaultDeveloperMetadata(spreadsheetId)
+            })
+    }
+
+    async Initialize(spreadsheetId) {
+        return this._getMetadata(spreadsheetId)
+
+        // return this._getHeadersAndSettings(spreadsheetId)
+        //     .then(response => {
+        //         if (response.status === 200) {
+        //             const headersWithSettings = this._getSettings(response.result.values[0], response.result.values[1])
+
+        //             if (headersWithSettings[Object.keys(headersWithSettings)[1]].id) {
+        //                 this.columns = headersWithSettings;
+
+        //                 return {
+        //                     headers: headersWithSettings
+        //                 }
+        //             } else {
+        //                 return this._query(spreadsheetId, 0, 1).then(response => {
+        //                     if (response.success) {
+        //                         const data = response.data
+        //                         const combinedHeadersAndSettings = this._combineHeadersAndSettings(data.table.cols, headersWithSettings)
+        //                         this.columns = combinedHeadersAndSettings
+
+        //                         this.SaveSettings(spreadsheetId, combinedHeadersAndSettings)
+
+        //                         return {
+        //                             headers: combinedHeadersAndSettings
+        //                         }
+        //                     } else {
+        //                         this._handleError(response)
+        //                     }
+        //                 })
+        //             }
+        //         } else { console.error('GetHeadersAndSettings Error', response) }
+        //     })
+    }
+
+    async GetFilteredData(spreadsheetId, titleQuery, offset, limit, orderBy, filters) {
+        return offset > 0
+            ? this._query(spreadsheetId, titleQuery, offset, limit, orderBy, filters)
+                .then(response => {
+                    if (response.success) {
+                        return {
+                            ...response,
+                            data: { rows: this._parseTable(response.data).rows }
+                        }
+                    } else {
+                        return this._handleError(response)
+                    }
+                })
+            : this._queryCount(spreadsheetId, titleQuery, offset, limit, orderBy, filters)
+                .then(response => {
+                    if (response.success) {
+                        const count = response.data.count
+
+                        return this._query(spreadsheetId, titleQuery, offset, limit, orderBy, filters)
+                            .then(response => {
+                                if (response.success) {
+                                    return {
+                                        ...response,
+                                        data: { rows: this._parseTable(response.data).rows, count: count - 1 }
+                                    }
+                                }
+                                else {
+                                    return this._handleError(response)
+                                }
+                            })
+                    } else {
+                        return response
+                    }
+                })
     }
 
     async ExportSpreadsheet(fromSpreadsheet, privateColumnsRange, username) {
@@ -746,66 +703,8 @@ class Spreashsheets {
                         })
                 }
             })
-
-
-        return this._copyCleanSheet(fromSpreadsheet)
-            .then(response => {
-                if (response.success) {
-                    const newSheetId = response.data.sheetId
-
-                    this._deleteColumns(fromSpreadsheet, newSheetId, privateColumnsRange.reverse())
-                        .then(response => {
-                            if (response.success) {
-                                this._deleteSheet(fromSpreadsheet, newSheetId)
-
-                                const title = `${username}'s Collection`
-
-                                this._createNewSpreadsheet(title)
-                                    .then(response => {
-                                        if (response.success) {
-                                            const newSpreadsheetId = response.data.spreadsheetId
-                                            const newSpreadsheetUrl = response.data.spreadsheetUrl
-
-                                            this._copySheetToSpreadsheet(fromSpreadsheet, newSheetId, newSpreadsheetId)
-                                                .then(response => {
-                                                    if (response.success) {
-                                                        console.log(newSpreadsheetUrl)
-                                                    }
-                                                })
-                                        }
-                                    })
-                            }
-                        })
-                }
-            })
-
-        return
-        this._createNewSpreadsheet()
-            .then(response => {
-                if (response.status === 200) {
-                    const newSpreadsheetId = response.result.spreadsheetId
-                    const newSpreadsheetUrl = response.result.spreadsheetUrl
-
-                    gapi.client.sheets.spreadsheets.sheets.copyTo({
-                        "spreadsheetId": fromSpreadsheet,
-                        "sheetId": 0,
-                        "resource": {
-                            "destinationSpreadsheetId": newSpreadsheetId
-                        }
-                    })
-                        .then(response => {
-                            debugger
-
-                            if (response.status === 200) {
-
-                            }
-                        })
-
-                } else {
-
-                }
-            })
     }
 }
+
 const Spreadsheets = new Spreashsheets();
 export default Spreadsheets;
