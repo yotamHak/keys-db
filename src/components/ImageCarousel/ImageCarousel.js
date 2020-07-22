@@ -1,6 +1,6 @@
 import { CarouselProvider, ImageWithZoom, Slide, Slider, ButtonFirst, ButtonBack, ButtonNext, ButtonLast, ButtonPlay, CarouselContext } from "pure-react-carousel";
 import React, { useContext, useState, useEffect } from "react";
-import { Divider, Container, Button, Modal, Image } from "semantic-ui-react";
+import { Container, Button, Modal, Image } from "semantic-ui-react";
 
 // https://github.com/express-labs/pure-react-carousel#examples
 
@@ -17,7 +17,7 @@ function CustomDotGroup({ slides, size, }) {
     }, [carouselContext]);
 
     return (
-        <Container textAlign="center">
+        <Container textAlign="center" style={{ position: 'relative', top: '-3em', opacity: '0.5' }}>
             <Button.Group size={size} basic>
                 <Modal
                     basic
@@ -48,18 +48,19 @@ function ImageCarousel({ images }) {
         naturalSlideHeight={9}
         totalSlides={images.length}
     >
-        <Slider>
-            {
-                images.map((image, index) => (
-                    <Slide tag="a" index={index} key={index}>
-                        <ImageWithZoom src={image} className={"contained-image"} />
-                    </Slide>
-                ))
-            }
-        </Slider>
+        <div style={{ position: 'relative' }}>
+            <Slider>
+                {
+                    images.map((image, index) => (
+                        <Slide tag="a" index={index} key={index}>
+                            <ImageWithZoom src={image} className={"contained-image"} />
+                        </Slide>
+                    ))
+                }
+            </Slider>
 
-        <Divider />
-        <CustomDotGroup slides={images} />
+            <CustomDotGroup slides={images} />
+        </div>
     </CarouselProvider>
 }
 

@@ -12,7 +12,6 @@ import ErrorBox from "../../../Authentication/ErrorBox/ErrorBox";
 import itadApi from "../../../../itad";
 import Spreadsheets from "../../../../google/Spreadsheets";
 import steamApi from "../../../../steam/steam";
-import spreadsheets from "../../../../google/Spreadsheets";
 
 function NewModal({ initialValue, isEdit, children }) {
     const headers = useSelector((state) => state.table.headers)
@@ -187,7 +186,8 @@ function NewModal({ initialValue, isEdit, children }) {
                 return (
                     <Form.Field key={header.label}>
                         <Form.Select
-                            fluid search
+                            fluid
+                            search
                             name={header.label}
                             label={header.label}
                             onChange={handleChange}

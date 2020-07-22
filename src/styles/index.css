@@ -85,3 +85,19 @@ display: block !important;
   top: -225% !important;
   left: 100%;
 }
+
+.gameinfo-with-background > .header,
+.gameinfo-with-background > .content{
+  background-color: rgb(29, 40, 57) !important;
+}
+.gameinfo-with-background.ui.modal>.header,
+.gameinfo-with-background.ui.modal .header,
+.gameinfo-with-background .ui.statistic>.label, .ui.statistics .statistic>.label,
+.gameinfo-with-background .ui.vertical.segment,
+.gameinfo-with-background i.close.icon {
+  color: white !important;
+}
+
+.gameinfo-with-background .carousel .ui.basic.buttons .button{
+  background-color: white !important;
+}

@@ -28,7 +28,7 @@ function HeaderRow() {
 
     return (
         <Table.Row>
-            <Table.HeaderCell style={{ minWidth: '3.6em' }} />
+            <Table.HeaderCell style={{ width: '40px', minWidth: '40px', maxWidth: '40px' }} />
             {
                 headersToDisplay.map((headerKey, index) => {
                     return <HeaderCell
