@@ -170,35 +170,6 @@ const filters_reducer = (state = initialFiltersState, action) => {
     }
 }
 
-
-const initialThemeState = {
-    selected: "light",
-    light: {
-        name: "light",
-        foreground: "#000000",
-        background: "#eeeeee"
-    },
-    dark: {
-        name: "dark",
-        foreground: "#ffffff",
-        background: "#222222"
-    }
-}
-
-
-const theme_reducer = (state = initialThemeState, action) => {
-    switch (action.type) {
-        case actionTypes.CHANGE_THEME:
-            return {
-                ...state,
-                selected: state.selected === "light" ? "dark" : "light"
-            }
-        default:
-            return state;
-    }
-}
-
-
 const initialAuthenticationState = {
     steam: {
         loggedIn: null,
@@ -213,6 +184,7 @@ const initialAuthenticationState = {
     },
     setupComplete: false,
     spreadsheetId: null,
+    permission: null,
 }
 
 const authentication_reducer = (state = initialAuthenticationState, action) => {
@@ -259,8 +231,6 @@ const authentication_reducer = (state = initialAuthenticationState, action) => {
                 ...state,
                 steam: action.payload
             }
-
-
         case actionTypes.GOOGLE_LOGGED_IN:
             return {
                 ...state,
@@ -278,8 +248,6 @@ const authentication_reducer = (state = initialAuthenticationState, action) => {
                     googleClientReady: action.payload,
                 }
             }
-
-
         case actionTypes.SPREADSHEET_SET_ID:
             newState = {
                 ...state,
@@ -293,6 +261,37 @@ const authentication_reducer = (state = initialAuthenticationState, action) => {
             return {
                 ...state,
                 setupComplete: true
+            }
+        case actionTypes.SET_SPREADSHEET_PERMISSION:
+            return {
+                ...state,
+                permission: action.payload
+            }
+        default:
+            return state;
+    }
+}
+
+const initialThemeState = {
+    selected: "light",
+    light: {
+        name: "light",
+        foreground: "#000000",
+        background: "#eeeeee"
+    },
+    dark: {
+        name: "dark",
+        foreground: "#ffffff",
+        background: "#222222"
+    }
+}
+
+const theme_reducer = (state = initialThemeState, action) => {
+    switch (action.type) {
+        case actionTypes.CHANGE_THEME:
+            return {
+                ...state,
+                selected: state.selected === "light" ? "dark" : "light"
             }
         default:
             return state;

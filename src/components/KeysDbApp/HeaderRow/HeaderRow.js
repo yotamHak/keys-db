@@ -2,12 +2,11 @@ import React from "react";
 import _ from 'lodash'
 import { Table, } from 'semantic-ui-react';
 import { useSelector } from "react-redux";
-import { getUrlsLocationAndValue } from "../../../utils";
+import { getUrlsLocationAndValue, } from "../../../utils";
 import HeaderCell from "../Cells/HeaderCell/HeaderCell";
 
 function HeaderRow() {
     const headers = useSelector((state) => state.table.headers)
-
     const urlsInGameData = getUrlsLocationAndValue(headers);
 
     const headersToDisplay = Object.keys(headers).reduce((result, headerKey, index) => {

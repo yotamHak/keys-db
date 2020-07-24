@@ -11,6 +11,7 @@ export const STEAM_LOAD = 'STEAM_LOAD';
 
 export const SPREADSHEET_SET_ID = 'SPREADSHEET_SET_ID';
 export const SET_UP_COMPLETE = 'SET_UP_COMPLETE';
+export const SET_SPREADSHEET_PERMISSION = 'SET_SPREADSHEET_PERMISSION';
 
 // Table Action Types
 export const ADD_HEADERS = 'ADD_HEADERS';

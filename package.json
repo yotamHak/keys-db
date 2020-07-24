@@ -15,6 +15,7 @@
     "pure-react-carousel": "^1.27.1",
     "querystring": "^0.2.0",
     "react": "^16.13.1",
+    "react-awesome-slider": "^4.1.0",
     "react-dom": "^16.13.1",
     "react-google-login": "^5.1.20",
     "react-google-sheets": "^0.4.0",

@@ -7,6 +7,7 @@ import Settings from "./KeysDbApp/Settings/Settings"
 import SetupPage from "./KeysDbApp/SetupPage/SetupPage";
 import Header from "./Header/Header";
 import Home from "../components/Home/Home";
+import ErrorPage from "./KeysDbApp/ErrorPage/ErrorPage";
 
 function App() {
     return (
@@ -18,6 +19,7 @@ function App() {
                         {/* <Route exact path="/" render={() => <Redirect to={`/id/${spreadsheetId.id}`} />} /> */}
                         <Route path="/login" component={SetupPage} />
                         <Route path="/settings" component={Settings} />
+                        <Route path="/error/:error" component={ErrorPage} />
                         <Route path="/id/:spreadsheetId" component={KeysDBWrapper} />
                         <Route exact path="/" component={Home} />
                     </Switch>

@@ -65,7 +65,7 @@ function NewModal({ initialValue, isEdit, children }) {
         else {
             Spreadsheets.Insert(spreadsheetId, sortedArray)
                 .then(response => {
-                    if (response.updates.updatedRows === 1) {
+                    if (response.success) {
                         reset()
                         dispatch(reloadTable(true))
                     }

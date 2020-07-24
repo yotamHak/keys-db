@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import KeysTable from "./KeysTable/KeysTable";
 import Spreadsheets from "../../google/Spreadsheets";
 import { useDispatch, useSelector, } from "react-redux";
-import { addHeaders, } from "../../actions";
-import { useHistory } from "react-router-dom";
+import { addHeaders, spreadsheetSetPermission, } from "../../actions";
+import { useHistory, Redirect } from "react-router-dom";
 import { Dimmer, Loader } from "semantic-ui-react";
 import { usePrevious } from "../../utils";
 
@@ -14,6 +14,7 @@ function KeysDBWrapper(props) {
 
     const [initSpreadsheet, setInitSpreadsheet] = useState(true)
     const [spreadsheetReady, setSpreadsheetReady] = useState(false)
+    const [error, setError] = useState({ hasError: false })
     const prevSpreadsheetId = usePrevious(spreadsheetId)
 
     const dispatch = useDispatch()
@@ -21,8 +22,7 @@ function KeysDBWrapper(props) {
 
     useEffect(() => {
         if (google.googleClientReady && (!google.loggedIn || !steam.loggedIn)) {
-            history.push(`/`)
-            return
+            history.push(`/login`)
         }
 
         if (prevSpreadsheetId && spreadsheetId) {
@@ -32,32 +32,46 @@ function KeysDBWrapper(props) {
             }
         }
 
+        if(error.hasError){
+            return
+        }
+
         if (google.googleClientReady && initSpreadsheet) {
             Spreadsheets.Initialize(spreadsheetId)
                 .then(response => {
-                    dispatch(addHeaders(response.headers))
-                    setSpreadsheetReady(true)
-                    setInitSpreadsheet(false)
-                })
-                .catch(reason => {
-                    console.error(reason)
-                    history.push(`/`)
+                    if (response.success) {
+                        dispatch(spreadsheetSetPermission(response.permissions))
+                        dispatch(addHeaders(response.headers))
+
+                        setSpreadsheetReady(true)
+                        setInitSpreadsheet(false)
+                    } else {
+                        if (response.error === "PERMISSION_DENIED") {
+                            dispatch(spreadsheetSetPermission("unauthorized"))
+                            setError({ hasError: true, code: "unauthorized" })
+                        } else {
+                            dispatch(spreadsheetSetPermission("RESOURCE_EXHAUSTED"))
+                            setError({ hasError: true, code: "RESOURCE_EXHAUSTED" })
+                        }
+                    }
                 })
         }
-    }, [google, steam, spreadsheetId, initSpreadsheet])
+    }, [google, steam, spreadsheetId, initSpreadsheet, error])
 
     return (
-        !google.googleClientReady || !spreadsheetId || !spreadsheetReady
-            ? (
-                <Dimmer inverted active>
-                    <Loader indeterminate />
-                </Dimmer>
-            )
-            : (
-                <KeysTable
-                    spreadsheetId={spreadsheetId}
-                />
-            )
+        error.hasError
+            ? (<Redirect to={`/error/${error.code}`} />)
+            : !google.googleClientReady || !spreadsheetId || !spreadsheetReady
+                ? (
+                    <Dimmer inverted active>
+                        <Loader indeterminate />
+                    </Dimmer>
+                )
+                : (
+                    <KeysTable
+                        spreadsheetId={spreadsheetId}
+                    />
+                )
     )
 }
 

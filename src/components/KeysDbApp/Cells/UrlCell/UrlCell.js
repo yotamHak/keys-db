@@ -4,7 +4,7 @@ import { Table, Grid, Icon } from "semantic-ui-react";
 function UrlCell({ urls, rowIndex }) {
     return (
         <Table.Cell>
-            <Grid columns={urls.length}>
+            <Grid columns={"equal"}>
                 <Grid.Row>
                     {
                         urls.map((url, index) => url.url && (

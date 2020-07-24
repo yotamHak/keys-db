@@ -30,15 +30,22 @@ export const steamLoad = steam => {
         payload: steam
     }
 }
+
+export const setupComplete = () => {
+    return {
+        type: actionTypes.SET_UP_COMPLETE
+    }
+}
 export const spreadsheetSetId = id => {
     return {
         type: actionTypes.SPREADSHEET_SET_ID,
         payload: id
     }
 }
-export const setupComplete = () => {
+export const spreadsheetSetPermission = permission => {
     return {
-        type: actionTypes.SET_UP_COMPLETE
+        type: actionTypes.SET_SPREADSHEET_PERMISSION,
+        payload: permission
     }
 }
 

@@ -86,6 +86,9 @@ display: block !important;
   left: 100%;
 }
 
+.gameinfo-with-background{
+  background: transparent !important;
+}
 .gameinfo-with-background > .header,
 .gameinfo-with-background > .content{
   background-color: rgb(29, 40, 57) !important;
@@ -100,4 +103,20 @@ display: block !important;
 
 .gameinfo-with-background .carousel .ui.basic.buttons .button{
   background-color: white !important;
+}
+
+.aws-btn {
+  --slider-height-percentage: 60%;
+  --slider-transition-duration: 700ms;
+  --organic-arrow-thickness: 6px;
+  --organic-arrow-border-radius: 0px;
+  --organic-arrow-height: 40px;
+  --organic-arrow-color: #ffffff;
+  --control-button-width: 10%;
+  --control-button-height: 25%;
+  --control-button-background: transparent;
+  --control-bullet-color: #ffffff;
+  --control-bullet-active-color: #c0c0c0;
+  --loader-bar-color: #8000ff;
+  --loader-bar-height: 6px;
 }

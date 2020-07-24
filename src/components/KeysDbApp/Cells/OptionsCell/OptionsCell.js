@@ -2,10 +2,12 @@ import React from "react";
 import { Table, Dropdown } from "semantic-ui-react";
 import _ from 'lodash';
 
-import { parseOptions } from "../../../../utils";
+import { parseOptions, hasWritePermission } from "../../../../utils";
+import { useSelector } from "react-redux";
 
 function OptionsCell({ rowIndex, title, header, onChange }) {
     const options = parseOptions(header.options);
+    const permission = useSelector((state) => state.authentication.permission)
     const [currentlySelected, setCurrentlySelected] = React.useState(options.filter(option => option.text === title)[0] || 0);
 
     function handleChange(e, { value }) {
@@ -26,7 +28,7 @@ function OptionsCell({ rowIndex, title, header, onChange }) {
         <Table.Cell style={{ color: `${currentlySelected.color}` }} className="__dropdown">
             <Dropdown
                 search
-                // allowAdditions
+                disabled={!hasWritePermission(permission)}
                 onChange={handleChange}
                 value={currentlySelected.value}
                 options={options.reduce((result, option) => (
@@ -42,7 +44,7 @@ function OptionsCell({ rowIndex, title, header, onChange }) {
                             }]
                     )
                 ), [])}
-            ></Dropdown>
+            />
         </Table.Cell>
     );
 }

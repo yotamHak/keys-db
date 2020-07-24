@@ -1,42 +1,16 @@
-// https://steamdb.info/app/730/
-
 import React, { useState, } from "react";
-import { Modal, Icon, Grid, Placeholder, Statistic, Segment, Header, Message, Container, Dropdown, List, Divider, Image, Popup } from "semantic-ui-react";
+import { Modal, Icon, Grid, Placeholder, Statistic, Segment, Header, Message, Container, Dropdown, List, Divider, Image, Popup, Tab } from "semantic-ui-react";
 import steamApi from '../../../../steam'
 import ImageCarousel from "../../../ImageCarousel/ImageCarousel";
 import _ from 'lodash';
-import itadApi from "../../../../itad";
 
-const steamCategories = {
-    "Single-player": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_singlePlayer.png",
-    "Multi-player": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_multiPlayer.png",
-    "Co-op": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_coop.png",
-    "Additional High-Quality Audio": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_hdaudio.png",
-    "Shared/Split Screen Co-op": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_coop.png",
-    "Steam Achievements": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_achievements.png",
-    "Full controller support": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_controller.png",
-    "Partial Controller Support": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_partial_controller.png",
-    "Steam Trading Cards": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_cards.png",
-    "Captions available": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_cc.png",
-    "Steam Workshop": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_workshop.png",
-    "Steam Cloud": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_cloud.png",
-    "Steam Leaderboards": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_leaderboards.png",
-    "Includes level editor": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_editor.png",
-    "Remote Play on Phone": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_remote_play.png",
-    "Remote Play on Tablet": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_remote_play.png",
-    "Remote Play on TV": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_remote_play.png",
-    "Remote Play Together": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_remote_play_together.png",
-    "SteamVR Collectibles": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_collectibles.png",
-    "In-App Purchases": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_cart.png",
-    "Valve Anti-Cheat enabled": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_vac.png",
-    "Stats": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_stats.png",
-    "Includes Source SDK": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_sdk.png",
-    "Commentary available": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_commentary.png",
-    "Cross-Platform Multiplayer": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_multiPlayer.png",
-    "Online PvP": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_multiPlayer.png",
-    "Online Co-op": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_coop.png",
-    "Shared/Split Screen PvP": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_multiPlayer.png",
-}
+import AwesomeSlider from 'react-awesome-slider';
+import 'react-awesome-slider/dist/styles.css';
+import withAutoplay from 'react-awesome-slider/dist/autoplay';
+
+import itadApi from "../../../../itad";
+import { STEAM_CATEGORIES } from "../../../../utils";
+
 
 function GameInfoModal({ appId, trigger = <Dropdown.Item text="Info" /> }) {
     const [appData, setAppData] = useState(null)
@@ -45,7 +19,9 @@ function GameInfoModal({ appId, trigger = <Dropdown.Item text="Info" /> }) {
     const [errorGettingSteamData, setErrorGettingSteamData] = useState(false)
     const [errorGettingItadData, setErrorGettingItadData] = useState(false)
 
-    const [extendedDescription, setExtendedDescription] = useState(false)
+    // const [extendedDescription, setExtendedDescription] = useState(false)
+
+    const AutoplaySlider = withAutoplay(AwesomeSlider);
 
     const loadGameData = (id) => steamApi.AppDetails(id)
         .then(response => {
@@ -67,6 +43,75 @@ function GameInfoModal({ appId, trigger = <Dropdown.Item text="Info" /> }) {
                 setErrorGettingSteamData(true)
             }
         })
+
+    const styles = {
+        "--slider-height-percentage": "60%",
+
+        "--organic-arrow-color": "#ffffff",
+    }
+
+    const panes = [
+        {
+            menuItem: 'Screenshots',
+            render: () => <Tab.Pane as='div'>
+                <AutoplaySlider
+                    play={true}
+                    cancelOnInteraction={true}
+                    interval={6000}
+                    cssModule={styles}
+                    media={
+                        appData.screenshots.reduce((result, item) => (
+                            _.concat(result,
+                                [{
+                                    source: item.path_full,
+                                    onClick: () => { fullscreenModal(item.path_full) }
+                                }]
+                            )
+                        ), [])
+                    }
+                />
+            </Tab.Pane>,
+        },
+        {
+            menuItem: 'Trailers',
+            render: () => <Tab.Pane as='div'>
+                <AutoplaySlider
+                    media={
+                        appData.movies.reduce((result, item) => (
+                            _.concat(result,
+                                [{
+                                    caption: "item.name",
+                                    source: item.mp4.max,
+                                }]
+                            )
+                        ), [])
+                    }
+                />
+            </Tab.Pane>,
+        },
+    ]
+
+    function fullscreenModal(imageUrl) {
+        console.log(imageUrl)
+    }
+
+    const renderMedia = () => {
+        return (
+            <Grid.Column width={10} textAlign='center'>
+                <Grid>
+                    <Grid.Row centered>
+                        <Grid.Column width={14} style={{ marginBottom: '40px' }}>
+                            {
+                                appData.movies
+                                    ? <Tab menu={{ secondary: true, pointing: true }} panes={panes} />
+                                    : <ImageCarousel images={appData.screenshots.reduce((result, item) => (_.concat(result, [item.path_full])), [])} />
+                            }
+                        </Grid.Column>
+                    </Grid.Row>
+                </Grid>
+            </Grid.Column>
+        )
+    }
 
     return (
         <Modal
@@ -103,15 +148,13 @@ function GameInfoModal({ appId, trigger = <Dropdown.Item text="Info" /> }) {
                                             <Modal.Content scrolling style={{ backgroundImage: `url(${appData.background})`, backgroundPositionY: "-62px", backgroundPositionX: 'center' }}>
                                                 <Grid stackable columns={2}>
                                                     <Grid.Row>
-                                                        <Grid.Column width={8}>
-                                                            <ImageCarousel images={appData.screenshots.reduce((result, item) => (_.concat(result, [item.path_full])), [])} />
-                                                        </Grid.Column>
-                                                        <Grid.Column width={8}>
+                                                        <Grid.Column width={6}>
                                                             <Grid.Row>
                                                                 <Statistic.Group widths='3'>
                                                                     {
                                                                         appData.metacritic && (
                                                                             <Statistic
+                                                                                size='small'
                                                                                 style={{ justifyContent: 'center' }}
                                                                                 horizontal
                                                                                 color={appData.metacritic.score > 80 ? 'green' : appData.metacritic.score < 50 ? 'red' : 'yellow'}
@@ -127,6 +170,7 @@ function GameInfoModal({ appId, trigger = <Dropdown.Item text="Info" /> }) {
                                                                     }
 
                                                                     <Statistic
+                                                                        size='small'
                                                                         color="grey"
                                                                         style={{ justifyContent: 'center' }}
                                                                         horizontal
@@ -142,6 +186,7 @@ function GameInfoModal({ appId, trigger = <Dropdown.Item text="Info" /> }) {
                                                                     {
                                                                         gameBundles.success && (
                                                                             <Statistic
+                                                                                size='small'
                                                                                 style={{ justifyContent: 'center' }}
                                                                                 horizontal
                                                                                 color={gameBundles.times_bundled === 0 ? 'green' : gameBundles.times_bundled <= 3 ? 'yellow' : 'red'}
@@ -164,7 +209,7 @@ function GameInfoModal({ appId, trigger = <Dropdown.Item text="Info" /> }) {
                                                                         <Segment inverted color='black'>
                                                                             <Image.Group size='mini'>
                                                                                 {
-                                                                                    appData.categories.map(category => <Popup content={category.description} position='top center' trigger={<Image className="no-margin" src={steamCategories[category.description]} size='mini' key={category.id} />} key={category.id} />)
+                                                                                    appData.categories.map(category => <Popup content={category.description} position='top center' trigger={<Image className="no-margin" src={STEAM_CATEGORIES[category.description]} size='mini' key={category.id} />} key={category.id} />)
                                                                                 }
                                                                             </Image.Group>
                                                                         </Segment>
@@ -191,6 +236,7 @@ function GameInfoModal({ appId, trigger = <Dropdown.Item text="Info" /> }) {
                                                                 )
                                                             }
                                                         </Grid.Column>
+                                                        {renderMedia()}
                                                     </Grid.Row>
                                                     <Grid.Row>
                                                         <Grid.Column width={16}>
@@ -228,6 +274,28 @@ function GameInfoModal({ appId, trigger = <Dropdown.Item text="Info" /> }) {
                                                             </Segment> */}
                                                         </Grid.Column>
                                                     </Grid.Row>
+                                                    {
+                                                        appData.reviews && (
+                                                            <Grid.Row>
+                                                                <Grid.Column width={16}>
+                                                                    <Segment vertical>
+                                                                        <Header as='h2'>
+                                                                            <Grid width={16}>
+                                                                                <Grid.Column textAlign='center'>
+                                                                                    Reviews
+                                                                            </Grid.Column>
+                                                                            </Grid>
+                                                                        </Header>
+                                                                        <Grid centered>
+                                                                            <Grid.Column>
+                                                                                <div dangerouslySetInnerHTML={{ __html: appData.reviews }} />
+                                                                            </Grid.Column>
+                                                                        </Grid>
+                                                                    </Segment>
+                                                                </Grid.Column>
+                                                            </Grid.Row>
+                                                        )
+                                                    }
                                                 </Grid>
                                             </Modal.Content>
                                         </React.Fragment>
@@ -244,11 +312,6 @@ function GameInfoModal({ appId, trigger = <Dropdown.Item text="Info" /> }) {
                                             <Modal.Content scrolling>
                                                 <Grid columns={16}>
                                                     <Grid.Row>
-                                                        <Grid.Column width={8}>
-                                                            <Placeholder>
-                                                                <Placeholder.Image rectangular />
-                                                            </Placeholder>
-                                                        </Grid.Column>
                                                         <Grid.Column width={8}>
                                                             <Segment vertical>
                                                                 <Grid columns={3}>
@@ -301,6 +364,11 @@ function GameInfoModal({ appId, trigger = <Dropdown.Item text="Info" /> }) {
                                                                     </Placeholder>
                                                                 </Container>
                                                             </Segment>
+                                                        </Grid.Column>
+                                                        <Grid.Column width={8}>
+                                                            <Placeholder>
+                                                                <Placeholder.Image rectangular />
+                                                            </Placeholder>
                                                         </Grid.Column>
                                                     </Grid.Row>
                                                 </Grid>

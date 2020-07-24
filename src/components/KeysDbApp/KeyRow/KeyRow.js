@@ -10,7 +10,7 @@ import NameCell from "../Cells/NameCell/NameCell";
 import OptionsCell from "../Cells/OptionsCell/OptionsCell";
 import ActionsCell from "../Cells/ActionsCell/ActionsCell";
 import { useSelector } from "react-redux";
-import { getUrlsLocationAndValue, getIndexByLabel } from "../../../utils";
+import { getUrlsLocationAndValue, getIndexByLabel, } from "../../../utils";
 import Spreadsheets from "../../../google/Spreadsheets";
 import CardsCell from "../Cells/CardsCell/CardsCell";
 
@@ -31,6 +31,7 @@ function KeyRow({ rowIndex }) {
 
     function selectCell(index, header, gameHeaderValue) {
         if (header.label === "ID") { return }
+
         const rKey = `${rowIndex}-${header.id}-${gameHeaderValue}`;
 
         if (index === urlsInGameData[urlsInGameData.length - 1].index) {
