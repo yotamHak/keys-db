@@ -422,7 +422,7 @@ class Spreashsheets {
 
     // https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/update
     // https://any-api.com/googleapis_com/sheets/docs/spreadsheets/sheets_spreadsheets_values_append
-    async Insert(spreadsheetId, value) {
+    async Insert(spreadsheetId, values) {
         const params = {
             spreadsheetId: spreadsheetId,
             range: "B:Z",
@@ -430,7 +430,7 @@ class Spreashsheets {
             insertDataOption: "INSERT_ROWS"
         };
 
-        const valueToAppend = _.isArray(value) && value.length === 1 ? [_.drop(value, 1)] : value.reduce((result, row) => _.concat(result, [_.drop(row)]), [])
+        const valueToAppend = values.reduce((result, row) => _.concat(result, [_.drop(row)]), [])
         const valueRangeBody = { "values": valueToAppend };
 
         return gapi.client.sheets.spreadsheets.values.append(params, valueRangeBody)

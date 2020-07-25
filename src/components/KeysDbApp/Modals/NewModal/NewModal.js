@@ -63,7 +63,7 @@ function NewModal({ initialValue, isEdit, children }) {
                 })
         }
         else {
-            Spreadsheets.Insert(spreadsheetId, sortedArray)
+            Spreadsheets.Insert(spreadsheetId, [sortedArray])
                 .then(response => {
                     if (response.success) {
                         reset()
