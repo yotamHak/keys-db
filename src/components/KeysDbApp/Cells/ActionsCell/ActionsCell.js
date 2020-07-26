@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import { Table, Dropdown, Confirm, } from "semantic-ui-react";
 import NewModal from "../../Modals/NewModal/NewModal";
 import { useSelector, useDispatch } from "react-redux";
-import { parseSpreadsheetDate, getValueByLabel, hasWritePermission } from "../../../../utils";
+import { parseSpreadsheetDate, getValueByLabel, hasWritePermission, getIdByType, getLabelByType, getIndexByLabel } from "../../../../utils";
 import { reloadTable } from "../../../../actions";
 import Spreadsheets from "../../../../google/Spreadsheets";
 import GameInfoModal from "../../Modals/GameInfoModal/GameInfoModal";
 
 function ActionsCell({ index }) {
-    const spreadsheetId = useSelector((state) => state.authentication.spreadsheetId)
+    const spreadsheetId = useSelector((state) => state.authentication.currentSpreadsheetId)
     const permission = useSelector((state) => state.authentication.permission)
     const headers = useSelector((state) => state.table.headers)
     const gameData = useSelector((state) => state.table.rows[index])
@@ -27,6 +27,9 @@ function ActionsCell({ index }) {
             .catch(reason => console.error(reason))
     }
 
+    const steamAppId = gameData[getIndexByLabel(getLabelByType(headers, "steam_appid"), headers)]
+    const steamTitle = gameData[getIndexByLabel(getLabelByType(headers, "steam_title"), headers)]
+
     return (
         <Table.Cell singleLine textAlign='center' verticalAlign='middle'>
             <Dropdown
@@ -35,9 +38,14 @@ function ActionsCell({ index }) {
                 simple
             >
                 <Dropdown.Menu className={hasWritePermission(permission) ? "actions-menu" : ""}>
-                    <GameInfoModal
-                        appId={getValueByLabel("AppId", headers, gameData)}
-                    />
+                    {
+                        steamAppId && steamTitle && (
+                            <GameInfoModal
+                                appId={gameData[getLabelByType(headers, "steam_appid")]}
+                                title={gameData[getLabelByType(headers, "steam_title")]}
+                            />
+                        )
+                    }
 
                     {
                         hasWritePermission(permission) && (

@@ -15,7 +15,8 @@ import steamApi from "../../../../steam/steam";
 
 function NewModal({ initialValue, isEdit, children }) {
     const headers = useSelector((state) => state.table.headers)
-    const spreadsheetId = useSelector((state) => state.authentication.spreadsheetId)
+    const spreadsheetId = useSelector((state) => state.authentication.currentSpreadsheetId)
+    const isTableEmpty = useSelector((state) => state.table.isEmpty)
     const INITIAL_STATE = initialValue
 
     const [modalOpen, setModalOpen] = useState(false)
@@ -40,6 +41,21 @@ function NewModal({ initialValue, isEdit, children }) {
     const steamOwnershipLabel = Object.keys(headers).find(key => headers[key].type === "steam_ownership")
     const dateAddedLabel = Object.keys(headers).find(key => headers[key].type === "date")
 
+    function afterResponse() {
+        handleClose();
+        setIsLoading(false);
+    }
+
+    function onResponse(response) {
+        if (response.success) {
+            reset()
+            dispatch(reloadTable(true))
+        } else {
+            console.error(response);
+            setIsSubmittinError(true);
+        }
+    }
+
     function handleCreate() {
         setIsLoading(true)
 
@@ -50,34 +66,13 @@ function NewModal({ initialValue, isEdit, children }) {
 
         if (isEdit) {
             Spreadsheets.Update(spreadsheetId, sortedArray, INITIAL_STATE["ID"])
-                .then(response => {
-                    if (response.success) {
-                        reset()
-                        dispatch(reloadTable(true))
-                    }
-                })
-                .catch(reason => { console.error(reason); setIsSubmittinError(true); })
-                .finally(() => {
-                    handleClose();
-                    setIsLoading(false);
-                })
+                .then(onResponse)
+                .finally(afterResponse)
         }
         else {
-            Spreadsheets.Insert(spreadsheetId, [sortedArray])
-                .then(response => {
-                    if (response.success) {
-                        reset()
-                        dispatch(reloadTable(true))
-                    }
-                })
-                .catch(reason => {
-                    console.error(reason);
-                    setIsSubmittinError(true);
-                })
-                .finally(() => {
-                    handleClose();
-                    setIsLoading(false);
-                })
+            Spreadsheets.Insert(spreadsheetId, [sortedArray], isTableEmpty ? "B3:Z3" : "B:Z")
+                .then(onResponse)
+                .finally(afterResponse)
         }
     }
 

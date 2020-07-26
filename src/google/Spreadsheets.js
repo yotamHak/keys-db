@@ -422,10 +422,10 @@ class Spreashsheets {
 
     // https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/update
     // https://any-api.com/googleapis_com/sheets/docs/spreadsheets/sheets_spreadsheets_values_append
-    async Insert(spreadsheetId, values) {
+    async Insert(spreadsheetId, values, range = "B:Z") {
         const params = {
             spreadsheetId: spreadsheetId,
-            range: "B:Z",
+            range: range,
             valueInputOption: 'USER_ENTERED',
             insertDataOption: "INSERT_ROWS"
         };
@@ -444,22 +444,21 @@ class Spreashsheets {
 
                 console.log(response.result);
                 return response.result
-            }, reason => {
-                return {
-                    "success": false,
-                    "errors": reason.result.error
-                }
-            });
+            })
+            .catch(reason => ({
+                "success": false,
+                "errors": reason.result.error
+            }))
     }
 
-    async Update(spreadsheetId, value, range) {
+    async Update(spreadsheetId, values, range) {
         const params = {
             spreadsheetId: spreadsheetId,
             range: `Keys!B${range}`,
             valueInputOption: 'USER_ENTERED',
         };
 
-        const valueRangeBody = { "values": [_.drop(value, 1)] };
+        const valueRangeBody = { "values": [_.drop(values, 1)] };
 
         return gapi.client.sheets.spreadsheets.values.update(params, valueRangeBody)
             .then(response => {
@@ -474,12 +473,13 @@ class Spreashsheets {
                         data: response.result
                     }
                 }
-            }, reason => {
+            })
+            .catch(reason => {
                 return {
                     success: false,
                     data: reason.result.error.message
                 }
-            });
+            })
     }
 
     async Delete(spreadsheetId, range) {
@@ -671,39 +671,6 @@ class Spreashsheets {
                 }
             })
             .catch(response => ({ success: false, error: response.result.error.status }))
-
-        return this._getMetadata(spreadsheetId)
-
-        // return this._getHeadersAndSettings(spreadsheetId)
-        //     .then(response => {
-        //         if (response.status === 200) {
-        //             const headersWithSettings = this._getSettings(response.result.values[0], response.result.values[1])
-
-        //             if (headersWithSettings[Object.keys(headersWithSettings)[1]].id) {
-        //                 this.columns = headersWithSettings;
-
-        //                 return {
-        //                     headers: headersWithSettings
-        //                 }
-        //             } else {
-        //                 return this._query(spreadsheetId, 0, 1).then(response => {
-        //                     if (response.success) {
-        //                         const data = response.data
-        //                         const combinedHeadersAndSettings = this._combineHeadersAndSettings(data.table.cols, headersWithSettings)
-        //                         this.columns = combinedHeadersAndSettings
-
-        //                         this.SaveSettings(spreadsheetId, combinedHeadersAndSettings)
-
-        //                         return {
-        //                             headers: combinedHeadersAndSettings
-        //                         }
-        //                     } else {
-        //                         this._handleError(response)
-        //                     }
-        //                 })
-        //             }
-        //         } else { console.error('GetHeadersAndSettings Error', response) }
-        //     })
     }
 
     async GetFilteredData(spreadsheetId, titleQuery, offset, limit, orderBy, filters) {
@@ -727,9 +694,16 @@ class Spreashsheets {
                         return this._query(spreadsheetId, titleQuery, offset, limit, orderBy, filters)
                             .then(response => {
                                 if (response.success) {
+                                    if (count === 1 && response.data.table.parsedNumHeaders === 0) {
+                                        return {
+                                            ...response,
+                                            data: { rows: [], count: 0 }
+                                        }
+                                    }
+
                                     return {
                                         ...response,
-                                        data: { rows: this._parseTable(response.data).rows, count: count - 1 }
+                                        data: { rows: this._parseTable(response.data).rows, count: count }
                                     }
                                 }
                                 else {

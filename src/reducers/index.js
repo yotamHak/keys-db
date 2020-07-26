@@ -15,6 +15,7 @@ const initialTableState = {
     orderBy: { sort: 'ID', asc: false },
     reload: false,
     pageSize: 24,
+    isEmpty: true,
 }
 
 const table_reducer = (state = initialTableState, action) => {
@@ -137,6 +138,11 @@ const table_reducer = (state = initialTableState, action) => {
                     [action.payload.id]: action.payload.row
                 }
             }
+        case actionTypes.SET_IS_TABLE_EMPTY:
+            return {
+                ...state,
+                isEmpty: action.payload
+            }
         default:
             return state;
     }
@@ -184,6 +190,7 @@ const initialAuthenticationState = {
     },
     setupComplete: false,
     spreadsheetId: null,
+    currentSpreadsheetId: null,
     permission: null,
 }
 
@@ -256,7 +263,12 @@ const authentication_reducer = (state = initialAuthenticationState, action) => {
 
             localStorage.setItem('spreadsheetId', action.payload)
             return newState
-
+        case actionTypes.SET_CURRENT_SPREADSHEET_ID:
+            newState = {
+                ...state,
+                currentSpreadsheetId: action.payload
+            }
+            return newState
         case actionTypes.SET_UP_COMPLETE:
             return {
                 ...state,

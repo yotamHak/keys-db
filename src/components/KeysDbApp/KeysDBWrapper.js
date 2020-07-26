@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import KeysTable from "./KeysTable/KeysTable";
 import Spreadsheets from "../../google/Spreadsheets";
 import { useDispatch, useSelector, } from "react-redux";
-import { addHeaders, spreadsheetSetPermission, } from "../../actions";
+import { addHeaders, spreadsheetSetPermission, setCurrentSpreadsheetId, } from "../../actions";
 import { useHistory, Redirect } from "react-router-dom";
 import { Dimmer, Loader } from "semantic-ui-react";
 import { usePrevious } from "../../utils";
@@ -32,7 +32,7 @@ function KeysDBWrapper(props) {
             }
         }
 
-        if(error.hasError){
+        if (error.hasError) {
             return
         }
 
@@ -42,6 +42,8 @@ function KeysDBWrapper(props) {
                     if (response.success) {
                         dispatch(spreadsheetSetPermission(response.permissions))
                         dispatch(addHeaders(response.headers))
+
+                        dispatch(setCurrentSpreadsheetId(spreadsheetId))
 
                         setSpreadsheetReady(true)
                         setInitSpreadsheet(false)
@@ -68,9 +70,7 @@ function KeysDBWrapper(props) {
                     </Dimmer>
                 )
                 : (
-                    <KeysTable
-                        spreadsheetId={spreadsheetId}
-                    />
+                    <KeysTable />
                 )
     )
 }

@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { Table, Icon, Grid, Popup, GridColumn, Input, Button } from "semantic-ui-react";
+import { Table, Icon, Grid, Popup, Input, Button } from "semantic-ui-react";
 import { isSteamKey, useInterval, isUrl } from "../../../../utils";
 import { useState } from "react";
 

@@ -33,7 +33,7 @@ const typeOptions = [
 function TableSettingsModal({ headers }) {
     const [modalOpen, setModalOpen] = useState(false)
     const [isSaving, setIsSaving] = useState(false)
-    const spreadsheetId = useSelector((state) => state.authentication.spreadsheetId)
+    const spreadsheetId = useSelector((state) => state.authentication.currentSpreadsheetId)
     const tableHeaders = useSelector((state) => state.table.headers)
     const tableHeadersChanges = useSelector((state) => state.table.changes.headers)
     const dispatch = useDispatch()

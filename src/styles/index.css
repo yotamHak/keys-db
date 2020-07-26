@@ -94,7 +94,6 @@ display: block !important;
   background-color: rgb(29, 40, 57) !important;
 }
 .gameinfo-with-background.ui.modal>.header,
-.gameinfo-with-background.ui.modal .header,
 .gameinfo-with-background .ui.statistic>.label, .ui.statistics .statistic>.label,
 .gameinfo-with-background .ui.vertical.segment,
 .gameinfo-with-background i.close.icon {
@@ -105,18 +104,12 @@ display: block !important;
   background-color: white !important;
 }
 
-.aws-btn {
-  --slider-height-percentage: 60%;
-  --slider-transition-duration: 700ms;
-  --organic-arrow-thickness: 6px;
-  --organic-arrow-border-radius: 0px;
-  --organic-arrow-height: 40px;
-  --organic-arrow-color: #ffffff;
-  --control-button-width: 10%;
-  --control-button-height: 25%;
-  --control-button-background: transparent;
-  --control-bullet-color: #ffffff;
-  --control-bullet-active-color: #c0c0c0;
-  --loader-bar-color: #8000ff;
-  --loader-bar-height: 6px;
+.white-tabs > .ui.menu > .item{
+  color: rgba(255,255,255, 0.50) !important;;
 }
+
+.white-tabs > .ui.menu > .active.item{
+  color: rgba(255,255,255, 0.95) !important;
+  border-color:rgba(255,255,255, 0.95) !important;
+}
+

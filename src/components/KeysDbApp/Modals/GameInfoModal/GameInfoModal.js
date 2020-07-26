@@ -1,8 +1,9 @@
 import React, { useState, } from "react";
-import { Modal, Icon, Grid, Placeholder, Statistic, Segment, Header, Message, Container, Dropdown, List, Divider, Image, Popup, Tab } from "semantic-ui-react";
+import { Modal, Icon, Grid, Placeholder, Statistic, Segment, Header, Message, Container, Dropdown, List, Divider, Image, Popup, Tab, Label, Button } from "semantic-ui-react";
 import steamApi from '../../../../steam'
 import ImageCarousel from "../../../ImageCarousel/ImageCarousel";
 import _ from 'lodash';
+import dateFns from 'date-fns';
 
 import AwesomeSlider from 'react-awesome-slider';
 import 'react-awesome-slider/dist/styles.css';
@@ -11,112 +12,178 @@ import withAutoplay from 'react-awesome-slider/dist/autoplay';
 import itadApi from "../../../../itad";
 import { STEAM_CATEGORIES } from "../../../../utils";
 
-
-function GameInfoModal({ appId, trigger = <Dropdown.Item text="Info" /> }) {
+function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }) {
     const [appData, setAppData] = useState(null)
-    const [gameBundles, setGameBundles] = useState({ success: false })
+    const [itadData, setItadData] = useState(null)
 
     const [errorGettingSteamData, setErrorGettingSteamData] = useState(false)
     const [errorGettingItadData, setErrorGettingItadData] = useState(false)
 
-    // const [extendedDescription, setExtendedDescription] = useState(false)
+    const [showScreenshotsTab, setShowScreenshotsTab] = useState(true)
+    const [showMoviesTab, setShowMoviesTab] = useState(false)
+    const [showYoutubeTab, setShowYoutubeTab] = useState(false)
 
     const AutoplaySlider = withAutoplay(AwesomeSlider);
 
-    const loadGameData = (id) => steamApi.AppDetails(id)
-        .then(response => {
-            console.log("AppDetails data:", response)
-            if (response) {
-                itadApi.GetInfoAboutBundles(response.name)
-                    .then(response => {
-                        if (response.success) {
-                            console.log("ITAD Bundled data:", response)
-                            setGameBundles(response)
-                        } else {
-                            setErrorGettingItadData(true)
-                        }
-                    })
+    function loadGameData(id, title) {
+        if (appData && itadData) return
 
-                // console.log("Steam data:", response)
-                setAppData(response)
-            } else {
-                setErrorGettingSteamData(true)
-            }
-        })
+        steamApi.AppDetails(id)
+            .then(response => {
+                console.log("AppDetails data:", response)
+                if (response) {
+                    setAppData(response)
+                } else {
+                    setErrorGettingSteamData(true)
+                }
+            })
 
-    const styles = {
-        "--slider-height-percentage": "60%",
-
-        "--organic-arrow-color": "#ffffff",
+        itadApi.GetOverview(title)
+            .then(response => {
+                console.log("ITAD data:", response.data)
+                if (response.success) {
+                    setItadData(response.data)
+                } else {
+                    setErrorGettingItadData(true)
+                }
+            })
     }
 
     const panes = [
         {
             menuItem: 'Screenshots',
-            render: () => <Tab.Pane as='div'>
-                <AutoplaySlider
-                    play={true}
-                    cancelOnInteraction={true}
-                    interval={6000}
-                    cssModule={styles}
-                    media={
-                        appData.screenshots.reduce((result, item) => (
-                            _.concat(result,
-                                [{
-                                    source: item.path_full,
-                                    onClick: () => { fullscreenModal(item.path_full) }
-                                }]
-                            )
-                        ), [])
+            render: () => (
+                <Tab.Pane as='div'>
+                    {
+                        showScreenshotsTab && (
+                            <AutoplaySlider
+                                play={true}
+                                cancelOnInteraction={true}
+                                interval={6000}
+                                media={appData.screenshots.reduce((result, item) => (
+                                    _.concat(result,
+                                        [{
+                                            source: item.path_full,
+                                            onClick: () => { fullscreenModal(item.path_full) }
+                                        }]
+                                    )
+                                ), [])}
+                            />
+                        )
                     }
-                />
-            </Tab.Pane>,
+                </Tab.Pane>
+            ),
         },
         {
             menuItem: 'Trailers',
-            render: () => <Tab.Pane as='div'>
-                <AutoplaySlider
-                    media={
-                        appData.movies.reduce((result, item) => (
-                            _.concat(result,
-                                [{
-                                    caption: "item.name",
-                                    source: item.mp4.max,
-                                }]
-                            )
-                        ), [])
+            render: () => (
+                <Tab.Pane as='div'>
+                    {
+                        showMoviesTab && (
+                            <AutoplaySlider
+                                media={appData.movies.reduce((result, item) => (
+                                    _.concat(result,
+                                        [{
+                                            caption: "item.name",
+                                            source: item.mp4.max,
+                                        }]
+                                    )
+                                ), [])}
+                            />
+                        )
                     }
-                />
-            </Tab.Pane>,
+                </Tab.Pane>
+            ),
+        },
+        {
+            menuItem: 'Youtube',
+            render: () => (
+                <Tab.Pane as='div' style={{ height: '100%', minHeight: '470px' }}>
+                    {
+                        showYoutubeTab && (
+                            <iframe
+                                title='youtube-gameplay'
+                                id="ytplayer"
+                                type="text/html"
+                                width="100%"
+                                height="100%"
+                                src={`https://www.youtube.com/embed?listType=search&list=intitle%3A%22${title}%20Gameplay%22%20%22PC%22&origin=https://store.steampowered.com/`}
+                                frameBorder="0"
+                            />
+                        )
+                    }
+                </Tab.Pane>
+            ),
         },
     ]
 
-    function fullscreenModal(imageUrl) {
-        console.log(imageUrl)
+    function fullscreenModal(imageUrl) { console.log(imageUrl) }
+
+    function handleTabChange(e, data) {
+        switch (data.activeIndex) {
+            case 0:
+                setShowScreenshotsTab(true)
+                setShowMoviesTab(false)
+                setShowYoutubeTab(false)
+                break;
+            case 1:
+                setShowScreenshotsTab(false)
+                setShowMoviesTab(true)
+                setShowYoutubeTab(false)
+                break;
+            case 2:
+                setShowScreenshotsTab(false)
+                setShowMoviesTab(false)
+                setShowYoutubeTab(true)
+                break;
+            default:
+                break;
+        }
     }
 
     const renderMedia = () => {
         return (
             <Grid.Column width={10} textAlign='center'>
-                <Grid>
-                    <Grid.Row centered>
-                        <Grid.Column width={14} style={{ marginBottom: '40px' }}>
+                <Grid centered style={{ height: '100%' }}>
+                    <Grid.Row centered style={{ height: '100%' }}>
+                        <Grid.Column />
+                        <Grid.Column width={14} style={{ marginBottom: '40px', height: '100%' }}>
                             {
                                 appData.movies
-                                    ? <Tab menu={{ secondary: true, pointing: true }} panes={panes} />
+                                    ? <Tab menu={{ secondary: true, pointing: true }} onTabChange={handleTabChange} panes={panes} className='white-tabs' style={{ height: '100%' }} />
                                     : <ImageCarousel images={appData.screenshots.reduce((result, item) => (_.concat(result, [item.path_full])), [])} />
                             }
                         </Grid.Column>
+                        <Grid.Column />
                     </Grid.Row>
                 </Grid>
             </Grid.Column>
         )
     }
 
+    function getBundleWebsiteImage(bundleWebSiteName) {
+        switch (bundleWebSiteName) {
+            case 'Humble Bundle':
+                return <Image avatar src={require('../../../../assets/humblebundle.png')} title={bundleWebSiteName} />
+            case 'Fanatical':
+                return <Image avatar src={require('../../../../assets/fanatical.png')} title={bundleWebSiteName} />
+            case 'Indie Gala':
+                return <Image avatar src={require('../../../../assets/indiegala.ico')} title={bundleWebSiteName} />
+            case 'DailyIndieGame Bundles':
+                return <Image avatar src={require('../../../../assets/dailyindiegame.png')} title={bundleWebSiteName} />
+            case 'Groupees':
+                return <Image avatar src={require('../../../../assets/groupees.ico')} title={bundleWebSiteName} />
+            case 'MacGameStore':
+                return <Image avatar src={require('../../../../assets/macgamestore.ico')} title={bundleWebSiteName} />
+            default:
+                return ''
+        }
+    }
+
     return (
         <Modal
             className={appData && "gameinfo-with-background"}
-            onOpen={() => { loadGameData(appId) }}
+            onOpen={() => { loadGameData(appId, title) }}
             closeIcon={<Icon name="close" />}
             trigger={trigger}
             centered={false}
@@ -145,17 +212,53 @@ function GameInfoModal({ appId, trigger = <Dropdown.Item text="Info" /> }) {
                                             <Modal.Header style={appData.background && { backgroundImage: `url(${appData.background})`, backgroundPositionX: 'center' }}>
                                                 <span>{appData.name}</span>
                                             </Modal.Header>
-                                            <Modal.Content scrolling style={{ backgroundImage: `url(${appData.background})`, backgroundPositionY: "-62px", backgroundPositionX: 'center' }}>
+                                            <Modal.Content scrolling style={{ backgroundImage: `url(${appData.background})`, backgroundPositionY: "-55px", backgroundPositionX: 'center' }}>
                                                 <Grid stackable columns={2}>
                                                     <Grid.Row>
                                                         <Grid.Column width={6}>
-                                                            <Grid.Row>
-                                                                <Statistic.Group widths='3'>
+                                                            <Grid.Row columns={'equal'} textAlign='left' verticalAlign='middle'>
+                                                                {
+                                                                    itadData && (
+                                                                        <Statistic.Group widths='2'>
+                                                                            <Statistic
+                                                                                floated='left'
+                                                                                size='large'
+                                                                                horizontal
+                                                                                as='a'
+                                                                                target='_blank'
+                                                                                rel='noopener noreferrer'
+                                                                                href={`https://store.steampowered.com/app/${appId}/`}
+                                                                                color={itadData.lowest.cut > itadData.price.cut ? 'red' : 'green'}
+                                                                            >
+                                                                                <Statistic.Label>Current Price</Statistic.Label>
+                                                                                <Statistic.Value>{itadData.price.price_formatted}</Statistic.Value>
+                                                                            </Statistic>
+
+                                                                            <Statistic
+                                                                                floated='left'
+                                                                                size='large'
+                                                                                horizontal
+                                                                                as='a'
+                                                                                target='_blank'
+                                                                                rel='noopener noreferrer'
+                                                                                href={`https://store.steampowered.com/app/${appId}/`}
+                                                                                color={'grey'}
+                                                                            >
+                                                                                <Statistic.Label>Lowest Price</Statistic.Label>
+                                                                                <Statistic.Value>{itadData.lowest.price_formatted}</Statistic.Value>
+                                                                            </Statistic>
+                                                                        </Statistic.Group>
+                                                                    )
+                                                                }
+                                                                <Divider />
+                                                            </Grid.Row>
+                                                            <Grid.Row columns={'equal'} textAlign='left' verticalAlign='middle'>
+                                                                <Statistic.Group widths='2'>
                                                                     {
                                                                         appData.metacritic && (
                                                                             <Statistic
-                                                                                size='small'
-                                                                                style={{ justifyContent: 'center' }}
+                                                                                floated='left'
+                                                                                size='large'
                                                                                 horizontal
                                                                                 color={appData.metacritic.score > 80 ? 'green' : appData.metacritic.score < 50 ? 'red' : 'yellow'}
                                                                                 as='a'
@@ -168,40 +271,54 @@ function GameInfoModal({ appId, trigger = <Dropdown.Item text="Info" /> }) {
                                                                             </Statistic>
                                                                         )
                                                                     }
-
-                                                                    <Statistic
-                                                                        size='small'
-                                                                        color="grey"
-                                                                        style={{ justifyContent: 'center' }}
-                                                                        horizontal
-                                                                        as='a'
-                                                                        target='_blank'
-                                                                        rel='noopener noreferrer'
-                                                                        href={`https://store.steampowered.com/app/${appId}/`}
-                                                                    >
-                                                                        <Statistic.Label>Current Price</Statistic.Label>
-                                                                        <Statistic.Value>{appData.price_overview.final_formatted}</Statistic.Value>
-                                                                    </Statistic>
-
                                                                     {
-                                                                        gameBundles.success && (
+                                                                        itadData && (
                                                                             <Statistic
-                                                                                size='small'
-                                                                                style={{ justifyContent: 'center' }}
+                                                                                floated='left'
+                                                                                size='large'
                                                                                 horizontal
-                                                                                color={gameBundles.times_bundled === 0 ? 'green' : gameBundles.times_bundled <= 3 ? 'yellow' : 'red'}
+                                                                                color={itadData.bundles.count === 0 ? 'green' : itadData.bundles.count <= 3 ? 'yellow' : 'red'}
                                                                                 as='a'
                                                                                 target='_blank'
                                                                                 rel='noopener noreferrer'
-                                                                                href={gameBundles.bundle_url}
+                                                                                href={itadData.urls.bundles}
                                                                             >
                                                                                 <Statistic.Label>Times Bundled</Statistic.Label>
-                                                                                <Statistic.Value>{gameBundles.times_bundled}</Statistic.Value>
+                                                                                <Statistic.Value>{itadData.bundles.count}</Statistic.Value>
                                                                             </Statistic>
                                                                         )
                                                                     }
                                                                 </Statistic.Group>
                                                             </Grid.Row>
+                                                            {
+                                                                itadData && _.isArray(itadData.bundles.live) && itadData.bundles.live.length > 0 && (
+                                                                    <Message>
+                                                                        <Message.Header><Icon name='circle' color='red' /> Live bundles</Message.Header>
+                                                                        <List selection verticalAlign='middle'>
+                                                                            {
+                                                                                itadData.bundles.live.map((bundle, index) => (
+                                                                                    <List.Item key={index}>
+                                                                                        {getBundleWebsiteImage(bundle.page)}
+                                                                                        <List.Content>
+                                                                                            <List.Header
+                                                                                                as='a'
+                                                                                                target='_blank'
+                                                                                                rel='noopener noreferrer'
+                                                                                                href={`${bundle.url}`}
+                                                                                            >
+                                                                                                {bundle.title}
+                                                                                            </List.Header>
+                                                                                            <List.Description>
+                                                                                                Expires in {dateFns.distanceInWords(new Date(), new Date(bundle.expiry_rfc))}
+                                                                                            </List.Description>
+                                                                                        </List.Content>
+                                                                                    </List.Item>
+                                                                                ))
+                                                                            }
+                                                                        </List>
+                                                                    </Message>
+                                                                )
+                                                            }
                                                             {
                                                                 appData.categories && (
                                                                     <Grid.Row>
@@ -220,18 +337,82 @@ function GameInfoModal({ appId, trigger = <Dropdown.Item text="Info" /> }) {
                                                                 appData.genres && (
                                                                     <Grid.Row>
                                                                         <Divider />
-                                                                        <Header as='h3'>Genre</Header>
-                                                                        <List horizontal>
+                                                                        <Grid columns={'equal'} verticalAlign='middle'>
+                                                                            <Grid.Column verticalAlign='middle'>
+                                                                                <Header inverted as='h3'>Genre</Header>
+                                                                            </Grid.Column>
                                                                             {
-                                                                                appData.genres.map(genre => (
-                                                                                    <List.Item key={genre.id}>
-                                                                                        <List.Content>
+                                                                                appData.genres.map((genre, index) => (
+                                                                                    <Grid.Column key={index} verticalAlign='middle'>
+                                                                                        <Grid.Row style={{ display: 'flex' }}>
                                                                                             <a target='_blank' rel='noopener noreferrer' href={`https://store.steampowered.com/tags/en/${genre.description}`}>{genre.description}</a>
-                                                                                        </List.Content>
-                                                                                    </List.Item>
+                                                                                        </Grid.Row>
+                                                                                    </Grid.Column>
                                                                                 ))
                                                                             }
-                                                                        </List>
+                                                                        </Grid>
+                                                                    </Grid.Row>
+                                                                )
+                                                            }
+                                                            {
+                                                                appData.achievements && appData.achievements.total > 0 && (
+                                                                    <Grid.Row>
+                                                                        <Divider />
+                                                                        <Grid columns={'equal'} verticalAlign='middle'>
+                                                                            <Grid.Column style={{ display: 'inline-table' }}>
+                                                                                <Statistic size='small' inverted>
+                                                                                    <Statistic.Value>{appData.achievements.total}</Statistic.Value>
+                                                                                    <Statistic.Label>Achievements</Statistic.Label>
+                                                                                </Statistic>
+                                                                            </Grid.Column>
+                                                                            {
+                                                                                _.chunk(appData.achievements.highlighted, 6)[0]
+                                                                                    .map((achievement, index) => (
+                                                                                        <Grid.Column key={index} style={{ padding: '0.5em' }} title={achievement.name}>
+                                                                                            <Grid.Row style={{ display: 'flex' }}>
+                                                                                                <Image
+                                                                                                    as={'div'}
+                                                                                                    src={achievement.path}
+                                                                                                    centered
+                                                                                                />
+                                                                                            </Grid.Row>
+                                                                                        </Grid.Column>
+                                                                                    ))
+                                                                            }
+                                                                            <Grid.Column
+                                                                                style={{
+                                                                                    padding: '0.5em',
+                                                                                    cursor: 'pointer'
+                                                                                }}
+                                                                                as='a'
+                                                                                target='_blank'
+                                                                                rel='noopener noreferrer'
+                                                                                href={`https://steamcommunity.com/stats/${appData.steam_appid}/achievements`}
+                                                                                title="View all"
+                                                                            >
+                                                                                <Grid.Row
+                                                                                    style={{
+                                                                                        display: 'flex',
+                                                                                        alignItems: 'center',
+                                                                                    }}
+                                                                                >
+                                                                                    <Image
+                                                                                        as={'div'}
+                                                                                        src={"https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_achievements.png"}
+                                                                                        centered
+                                                                                    />
+                                                                                </Grid.Row>
+                                                                                <Grid.Row style={{
+                                                                                    whiteSpace: 'nowrap',
+                                                                                    overflow: 'hidden',
+                                                                                    textOverflow: 'ellipsis',
+                                                                                    color: 'white',
+                                                                                    textAlign: 'center'
+                                                                                }}>
+                                                                                    View all
+                                                                                            </Grid.Row>
+                                                                            </Grid.Column>
+                                                                        </Grid>
                                                                     </Grid.Row>
                                                                 )
                                                             }
@@ -241,7 +422,7 @@ function GameInfoModal({ appId, trigger = <Dropdown.Item text="Info" /> }) {
                                                     <Grid.Row>
                                                         <Grid.Column width={16}>
                                                             <Segment vertical>
-                                                                <Header as='h2'>
+                                                                <Header as='h2' inverted>
                                                                     <Grid width={16}>
                                                                         <Grid.Column textAlign='center'>
                                                                             About the game
@@ -279,7 +460,7 @@ function GameInfoModal({ appId, trigger = <Dropdown.Item text="Info" /> }) {
                                                             <Grid.Row>
                                                                 <Grid.Column width={16}>
                                                                     <Segment vertical>
-                                                                        <Header as='h2'>
+                                                                        <Header as='h2' inverted>
                                                                             <Grid width={16}>
                                                                                 <Grid.Column textAlign='center'>
                                                                                     Reviews

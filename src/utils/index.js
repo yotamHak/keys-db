@@ -16,6 +16,7 @@ export const STEAM_CATEGORIES = {
   "Single-player": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_singlePlayer.png",
   "Multi-player": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_multiPlayer.png",
   "Co-op": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_coop.png",
+  "PvP": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_multiPlayer.png",
   "Additional High-Quality Audio": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_hdaudio.png",
   "Shared/Split Screen": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_coop.png",
   "Shared/Split Screen Co-op": "https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_coop.png",
@@ -103,7 +104,7 @@ export const getLabelByIndex = index => _alphabet[index]
 
 export const getValueByLabel = (label, headers, gameData) => gameData[getIndexByLabel(label, headers)]
 
-export const getPrimaryId = headers => Object.keys(headers).find(key => headers[key].type === 'primary').id
+export const getLabelByType = (headers, type, gameData) => Object.keys(headers).find(key => headers[key].type === type)
 
 export const getUrlsLocationAndValue = (headers, gameData) => Object.keys(headers)
   .filter(key => headers[key].type === 'url' || headers[key].type === 'steam_url')

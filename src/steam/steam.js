@@ -1,7 +1,6 @@
 import axios from 'axios';
 import dateFns from 'date-fns';
 import _ from 'lodash';
-import steamConfig from './config';
 import { corsLink } from '../utils';
 
 // https://developer.valvesoftware.com/wiki/Steam_Web_API

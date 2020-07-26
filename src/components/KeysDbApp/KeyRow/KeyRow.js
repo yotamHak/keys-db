@@ -18,7 +18,7 @@ function KeyRow({ rowIndex }) {
     const [hasChanges, setHasChanges] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
-    const spreadsheetId = useSelector((state) => state.authentication.spreadsheetId)
+    const spreadsheetId = useSelector((state) => state.authentication.currentSpreadsheetId)
     const headers = useSelector((state) => state.table.headers)
     const gameData = useSelector((state) => state.table.rows[rowIndex])
 

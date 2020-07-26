@@ -8,11 +8,6 @@ class ItadApi {
         this.apiKey = itadConfig.apiKey;
     }
 
-    getCORSLink(url) {
-        return `${url}`;
-        // return `https://cors-anywhere.herokuapp.com/${url}`;
-    }
-
     // https://api.isthereanydeal.com/v01/game/bundles/
     async GetInfoAboutBundles(title) {
         return axios.get(`https://api.isthereanydeal.com/v01/game/bundles/?key=${this.apiKey}&plains=${_encodeName(title)}`)
@@ -63,9 +58,33 @@ class ItadApi {
     //         }
     //     }
     // }
+    async GetOverview(name, appid, type) {
+        const plainName = _encodeName(name);
+        return axios.get(`https://api.isthereanydeal.com/v01/game/overview/?key=${this.apiKey}&allowed=steam&plains=${plainName}${appid ? `&ids=${type}/${appid}` : ''}`)
+            .then(response => {
+                if (response.status === 200) {
+                    return {
+                        success: true,
+                        data: response.data.data[plainName]
+                    }
+                } else {
+                    return {
+                        success: false,
+                        data: ""
+                    }
+                }
+            })
+            .catch(response => {
+                return {
+                    success: false,
+                    data: response
+                }
+            })
+    }
+
     async GetInfoAboutGame(gameName) {
         const plainName = _encodeName(gameName);
-        return axios.get(this.getCORSLink(`https://api.isthereanydeal.com/v01/game/info/?key=${this.apiKey}&plains=${plainName}`))
+        return axios.get(`https://api.isthereanydeal.com/v01/game/info/?key=${this.apiKey}&plains=${plainName}`)
             .then(response => {
                 return response.data.data[plainName]
             })
@@ -81,13 +100,9 @@ class ItadApi {
     //         "plain": "legomovievideogame"
     //     }
     // }
-    async GetPlain(gameName) {
-        return await axios.get(this.getCORSLink(`https://api.isthereanydeal.com/v02/game/plain/?key=${this.apiKey}&title=${gameName}`));
-    }
+    async GetPlain(gameName) { return await axios.get(`https://api.isthereanydeal.com/v02/game/plain/?key=${this.apiKey}&title=${gameName}`); }
 
-    async FindGame(query) {
-        return await axios.get(this.getCORSLink(`https://api.isthereanydeal.com/v01/search/search/?key=${this.apiKey}&q=${query}&shops=steam`));
-    }
+    async FindGame(query) { return await axios.get(`https://api.isthereanydeal.com/v01/search/search/?key=${this.apiKey}&q=${query}&shops=steam`); }
 
     GetEncodedName(gameName) {
         return _encodeName(gameName);

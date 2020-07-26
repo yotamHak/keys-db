@@ -8,14 +8,13 @@ import NewModal from "../Modals/NewModal/NewModal";
 import SortDropdown from "../SortDropdown/SortDropdown";
 import { useSelector, useDispatch } from "react-redux";
 import DataFilters from "./DataFilters/DataFilters";
-import { reloadTable, setCurrentRows } from "../../../actions";
+import { reloadTable, setCurrentRows, setIsTableEmpty } from "../../../actions";
 import HeaderRow from "../HeaderRow/HeaderRow";
 import TableSettingsModal from "../Modals/TableSettingsModal/TableSettingsModal";
 
-function KeysTable({ spreadsheetId }) {
+function KeysTable() {
     const [loading, setLoading] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
-    const [error, setError] = useState(false);
     const [offset, setOffset] = useState(TABLE_DEFAULT_OFFSET);
     const [limit, setLimit] = useState(TABLE_DEFAULT_LIMIT);
 
@@ -29,6 +28,7 @@ function KeysTable({ spreadsheetId }) {
     const [pages, setPages] = useState(0);
 
     const dispatch = useDispatch()
+    const spreadsheetId = useSelector((state) => state.authentication.currentSpreadsheetId)
     const steamProfile = useSelector((state) => state.authentication.steam.profile)
     const permission = useSelector((state) => state.authentication.permission)
     const headers = useSelector((state) => state.table.headers)
@@ -88,11 +88,10 @@ function KeysTable({ spreadsheetId }) {
                     response.data.count && setPages(Math.floor(response.data.count / limit));
                     dispatch(setCurrentRows(response.data.rows))
 
-                    if (response.data.rows.length === 0) {
-
+                    if (response.data.count === 0) {
+                        dispatch(setIsTableEmpty(true))
                     } else {
-                        response.data.count && setPages(Math.floor(response.data.count / limit));
-                        dispatch(setCurrentRows(response.data.rows))
+                        dispatch(setIsTableEmpty(false))
                     }
                 }
                 else {
@@ -135,13 +134,11 @@ function KeysTable({ spreadsheetId }) {
             .then(response => {
                 if (response.success) {
                     console.log(response.data)
-                    setIsExportingSpreadsheet(false)
-
                     setExportedSheetUrl(response.data)
-                } else {
-                    setIsExportingSpreadsheet(false)
-                    console.log(response)
-                }
+                } else { }
+            })
+            .finally(response => {
+                setIsExportingSpreadsheet(false)
             })
     }
 
@@ -259,7 +256,7 @@ function KeysTable({ spreadsheetId }) {
                                 </div>
                                 &nbsp;&nbsp;&nbsp;
                                 <div style={{ height: '100%', alignItems: 'center', display: 'flex' }}>
-                                        <DataFilters />
+                                    <DataFilters />
                                 </div>
                             </Grid.Row>
                         </Grid>

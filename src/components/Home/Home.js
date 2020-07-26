@@ -1,5 +1,5 @@
 import React, { } from "react";
-import { Container, Header, Segment, Grid, Divider, Image } from "semantic-ui-react";
+import { Container, Header, Segment, Grid, Divider, Image, Icon } from "semantic-ui-react";
 
 const Home = () => (
     <Container>
@@ -50,36 +50,37 @@ const Home = () => (
         </Segment>
 
         <Segment style={{ padding: '8em 0em' }} vertical>
-            <Grid container stackable verticalAlign='middle'>
-                <Grid.Row>
-                    <Grid.Column width={8}>
+            <Grid container stackable verticalAlign='top'>
+                <Grid.Row columns={'equal'} textAlign='center'>
+                    <Grid.Column>
                         <Header as='h3' style={{ fontSize: '2em' }}>
                             Open-Source
                         </Header>
                         <p style={{ fontSize: '1.33em' }}>
                             This project is an open-source project,<br />
-                            If you want to check it out, submit bugs or even help, here's the link to <a target='_blank' rel='noopener noreferrer' href='https://github.com/yotamHak/key-db'>GitHub</a>.
+                            If you want to check it out, submit bugs or even help, here's the link <br />
+                            <a target='_blank' rel='noopener noreferrer' href='https://github.com/yotamHak/key-db'><Icon name='github' /> GitHub</a>.
                         </p>
-
+                    </Grid.Column>
+                    <Grid.Column>
                         <Header as='h3' style={{ fontSize: '2em' }}>
-                            No Users
+                            No User Needed
                         </Header>
                         <p style={{ fontSize: '1.33em' }}>
                             You don't need a user to use this tool, <br />
-                            You will need to login with your Google account to manage your spreadsheet and a Steam account to get additional data (If you own a game)
+                            But you will need a Google account to manage your spreadsheet and a Steam account to get additional data (If you own a game)
                         </p>
+                    </Grid.Column>
 
+                    <Grid.Column>
                         <Header as='h3' style={{ fontSize: '2em' }}>
                             No Database
                         </Header>
                         <p style={{ fontSize: '1.33em' }}>
                             Obviously keeping your collection of keys must be safe and private, <br />
-                            I decided to go with Google Spreadsheets and not have a dedicated database,
+                            I decided to go with Google Spreadsheets and not have a dedicated database, <br />
                             So there's no third-party database, I use your Google Spreadsheet as the database!
                         </p>
-                    </Grid.Column>
-                    <Grid.Column floated='right' width={6}>
-                        <Image bordered rounded size='large' src='/images/wireframe/white-image.png' />
                     </Grid.Column>
                 </Grid.Row>
             </Grid>
@@ -155,16 +156,15 @@ const Home = () => (
 
         <Segment style={{ padding: '8em 0em' }} vertical>
             <Grid container stackable verticalAlign='middle'>
-                <Grid.Row columns={1} textAlign='center'>
-                    <Grid.Column width={16} textAlign='center'>
+                <Grid.Row columns={1}>
+                    <Grid.Column width={16}>
                         {/* <video id="background-video" loop autoPlay width="480">
                             <source src={"https://a.pomf.cat/rehqdw.mp4"} type="video/mp4" />
                             <source src={"https://a.pomf.cat/rehqdw.mp4"} type="video/ogg" />
                             Your browser does not support the video tag.
                         </video> */}
 
-
-                        <Image size='large' src={require('../../assets/im-in.jpg')} />
+                        <Image size='large' centered src={require('../../assets/im-in.jpg')} />
                     </Grid.Column>
                 </Grid.Row>
             </Grid>

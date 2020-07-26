@@ -42,6 +42,12 @@ export const spreadsheetSetId = id => {
         payload: id
     }
 }
+export const setCurrentSpreadsheetId = id => {
+    return {
+        type: actionTypes.SET_CURRENT_SPREADSHEET_ID,
+        payload: id
+    }
+}
 export const spreadsheetSetPermission = permission => {
     return {
         type: actionTypes.SET_SPREADSHEET_PERMISSION,
@@ -144,6 +150,12 @@ export const removeNewOptionsChange = (header, option) => {
             header: header,
             option: option
         }
+    }
+}
+export const setIsTableEmpty = state => {
+    return {
+        type: actionTypes.SET_IS_TABLE_EMPTY,
+        payload: state
     }
 }
 
