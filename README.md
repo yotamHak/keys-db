@@ -4,8 +4,11 @@
 ### Introduction
 
 As a Gamer and a key hoarder I had gathered a lot of Steam\GOG\Origin\etc keys to keep,
+
 So I started saving it all into a google spreadsheet, from there I added a [https://github.com/yotamHak/Steam-Related/wiki/Google-Apps-Script](GScript) that collected some data about the key I added,
+
 Overtime the GScript turned into a chore to maintain so I decided to upgrade it a bit and add some more functionality to it,
+
 This is the result!
 
 ### What's this then?
@@ -18,6 +21,7 @@ I set out some goals when making this:
 ### Features
 
 When I started building it, I had some goals, but everytime I used it, I got more and more ideas and features I wanted to add,
+
 So this is still in-progress, but the main, working features are:
 1. It's free!
 2. It's safe!
@@ -35,10 +39,13 @@ So this is still in-progress, but the main, working features are:
 These are the primary technologies I'm using
 
 [https://reactjs.org/](ReactJS)
+
 [https://react-redux.js.org/](React-Redux)
+
 [https://react.semantic-ui.com/](Semantic-UI)
 
 # I'm also using API from
 
 [https://store.steampowered.com/](Steam)
+
 [https://itad.docs.apiary.io/](IsThereAnyDeal API)
