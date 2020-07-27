@@ -1,10 +1,10 @@
 # The TL:DR
-[https://keys-db.web.app/](KeysDB) is your **private** CD-Keys Database that is safe and easy to use with plenty of features that will make your life easy! :clap:
+[KeysDB](https://keys-db.web.app/) is your **private** CD-Keys Database that is safe and easy to use with plenty of features that will make your life easy! :clap:
 
 # Introduction
 
 As a Gamer and a key hoarder I had gathered a lot of Steam\GOG\Origin\etc keys to keep,
-So I started saving it all into a google spreadsheet, from there I added a [https://github.com/yotamHak/Steam-Related/wiki/Google-Apps-Script](GScript) that collected some data about the key I added,
+So I started saving it all into a google spreadsheet, from there I added a [GScript](https://github.com/yotamHak/Steam-Related/wiki/Google-Apps-Script) that collected some data about the key I added,
 Overtime the GScript turned into a chore to maintain so I decided to upgrade it a bit and add some more functionality to it,
 This is the result!
 
@@ -30,18 +30,18 @@ So this is still in-progress, but the main, working features are:
 
 # Technologies
 
-[https://keys-db.web.app/](KeysDB) is stored on [https://firebase.google.com/](Firebase), and is a pure client app, there's no back-end, no database and no users.
+[KeysDB](https://keys-db.web.app/) is stored on [Firebase](https://firebase.google.com/), and is a pure client app, there's no back-end, no database and no users.
 
 These are the primary technologies I'm using:
 
-[https://reactjs.org/](ReactJS)
+[ReactJS](https://reactjs.org/)
 
-[https://react-redux.js.org/](React-Redux)
+[React-Redux](https://react-redux.js.org/)
 
-[https://react.semantic-ui.com/](Semantic-UI)
+[Semantic-UI](https://react.semantic-ui.com/)
 
 ### I'm also using API from
 
-[https://store.steampowered.com/](Steam)
+[Steam](https://store.steampowered.com/)
 
-[https://itad.docs.apiary.io/](IsThereAnyDeal)
+[IsThereAnyDeal](https://itad.docs.apiary.io/)
