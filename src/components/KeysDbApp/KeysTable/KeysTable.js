@@ -1,35 +1,30 @@
 import React, { useEffect, useState, } from "react";
-import { Table, Dimmer, Icon, Segment, Loader, Placeholder, Menu, Pagination, Dropdown, Header, Input, Grid, Button, Confirm, Modal, Message, Container, } from 'semantic-ui-react';
+import { Table, Dimmer, Icon, Segment, Loader, Placeholder, Menu, Pagination, Dropdown, Header, Input, Grid, } from 'semantic-ui-react';
 import _ from 'lodash';
-import { usePrevious, getIndexByLabel, TABLE_DEFAULT_OFFSET, TABLE_DEFAULT_LIMIT, TABLE_DEFAULT_ACTIVEPAGE, hasWritePermission } from "../../../utils";
+
+import { usePrevious, TABLE_DEFAULT_OFFSET, TABLE_DEFAULT_LIMIT, TABLE_DEFAULT_ACTIVEPAGE, hasWritePermission, } from "../../../utils";
 import KeyRow from "../KeyRow/KeyRow";
 import Spreadsheets from '../../../google/Spreadsheets';
 import NewModal from "../Modals/NewModal/NewModal";
 import SortDropdown from "../SortDropdown/SortDropdown";
 import { useSelector, useDispatch } from "react-redux";
 import DataFilters from "./DataFilters/DataFilters";
-import { reloadTable, setCurrentRows, setIsTableEmpty } from "../../../actions";
+import { reloadTable, setCurrentRows, setIsTableEmpty, showShareModal } from "../../../actions";
 import HeaderRow from "../HeaderRow/HeaderRow";
 import TableSettingsModal from "../Modals/TableSettingsModal/TableSettingsModal";
+import ShareModal from "../Modals/ShareModal/ShareModal";
 
 function KeysTable() {
     const [loading, setLoading] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
     const [offset, setOffset] = useState(TABLE_DEFAULT_OFFSET);
     const [limit, setLimit] = useState(TABLE_DEFAULT_LIMIT);
-
-    const [exportingPrompt, setExportingPrompt] = useState(false);
-    const [isExportingSpreadsheet, setIsExportingSpreadsheet] = useState(false);
-    const [exportedSheetUrl, setExportedSheetUrl] = useState(null);
-
     const [titleQuery, setTitleQuery] = useState("");
-
     const [activePage, setActivePage] = useState(TABLE_DEFAULT_ACTIVEPAGE);
     const [pages, setPages] = useState(0);
 
     const dispatch = useDispatch()
     const spreadsheetId = useSelector((state) => state.authentication.currentSpreadsheetId)
-    const steamProfile = useSelector((state) => state.authentication.steam.profile)
     const permission = useSelector((state) => state.authentication.permission)
     const headers = useSelector((state) => state.table.headers)
     const games = useSelector((state) => state.table.rows)
@@ -123,25 +118,6 @@ function KeysTable() {
         }
     }
 
-    const getPrivateColumns = headers => Object.keys(headers)
-        .filter(key => headers[key].isPrivate)
-        .reduce((result, key) => (_.concat(result, [getIndexByLabel(key, headers)])), [])
-
-    function exportSpreadsheet() {
-        setIsExportingSpreadsheet(true)
-
-        Spreadsheets.ExportSpreadsheet(spreadsheetId, getPrivateColumns(headers), filters, steamProfile.personaname, headers)
-            .then(response => {
-                if (response.success) {
-                    console.log(response.data)
-                    setExportedSheetUrl(response.data)
-                } else { }
-            })
-            .finally(response => {
-                setIsExportingSpreadsheet(false)
-            })
-    }
-
     return (
         _.isEmpty(headers)
             ? (
@@ -187,62 +163,18 @@ function KeysTable() {
                                             </Menu.Item>
                                         </NewModal>
 
-                                        <Confirm
-                                            size={'large'}
-                                            open={exportingPrompt}
-                                            header={"Export"}
-                                            content={
-                                                <Modal.Content>
-                                                    <Modal.Description>
-                                                        {/* <Header>Modal Header</Header> */}
-                                                        <Container>
-                                                            <div>Exporting will create a new spreadsheet without Private Columns*,</div>
-                                                            <div>After exporting you will get a link to your new spreadsheet so you can share with whomever you want</div>
-                                                        </Container>
-                                                        <Message info>
-                                                            <Message.Header>Info</Message.Header>
-                                                            <Message.List>
-                                                                <Message.Item>Private Columns: You can set private columns in Settings (Keys are private by default)</Message.Item>
-                                                            </Message.List>
-                                                        </Message>
-                                                        {
-                                                            exportedSheetUrl && (
-                                                                <Message attached positive>
-                                                                    <Message.Header>Exported</Message.Header>
-                                                                    {
-                                                                        <div>
-                                                                            <div>
-                                                                                Spreadsheet created: <a target='_blank' rel='noopener noreferrer' href={exportedSheetUrl.spreadsheetUrl}>Spreadsheet URL</a>
-                                                                            </div>
-                                                                            <div>
-                                                                                Keys-DB Url: <a target='_blank' rel='noopener noreferrer' href={`https://keys-db.web.app/id/${exportedSheetUrl.spreadsheetId}`}>Keys-DB URL</a>
-                                                                            </div>
-                                                                        </div>
-                                                                    }
-                                                                </Message>
-                                                            )
-                                                        }
-                                                    </Modal.Description>
-                                                </Modal.Content>
-                                            }
-                                            onCancel={() => { setExportingPrompt(false) }}
-                                            onConfirm={exportSpreadsheet}
-                                            confirmButton={<Button positive loading={isExportingSpreadsheet}>Export</Button>}
-                                            trigger={
+                                        <ShareModal
+                                            triggerElement={
                                                 <Menu.Item
                                                     name='share'
-                                                    onClick={() => { setExportingPrompt(true) }}>{
-                                                        isExportingSpreadsheet
-                                                            ? <Icon className={"no-margin"}><Loader size='mini' active /></Icon>
-                                                            : <Icon name={'share'} className={"no-margin"} />
-                                                    }
+                                                    onClick={() => { dispatch(showShareModal(true)) }}
+                                                >
+                                                    <Icon name={'share'} className={"no-margin"} />
                                                 </Menu.Item>
                                             }
                                         />
 
-                                        <TableSettingsModal
-                                            headers={headers}
-                                        />
+                                        <TableSettingsModal />
                                     </Menu.Menu>
                                 )
                             }

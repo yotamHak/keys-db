@@ -11,11 +11,13 @@ import ErrorBox from "../../../Authentication/ErrorBox/ErrorBox";
 
 import itadApi from "../../../../itad";
 import Spreadsheets from "../../../../google/Spreadsheets";
-import steamApi from "../../../../steam/steam";
+import { DoesUserOwnGame } from "../../../../steam/steamApi";
 
 function NewModal({ initialValue, isEdit, children }) {
     const headers = useSelector((state) => state.table.headers)
     const spreadsheetId = useSelector((state) => state.authentication.currentSpreadsheetId)
+    const sheetId = useSelector((state) => state.authentication.currentSheetId)
+    const steam = useSelector((state) => state.authentication.steam)
     const isTableEmpty = useSelector((state) => state.table.isEmpty)
     const INITIAL_STATE = initialValue
 
@@ -65,12 +67,12 @@ function NewModal({ initialValue, isEdit, children }) {
             .reduce((acc, item) => _.concat(acc, [item.value]), [])
 
         if (isEdit) {
-            Spreadsheets.Update(spreadsheetId, sortedArray, INITIAL_STATE["ID"])
+            Spreadsheets.Update(spreadsheetId, sheetId, sortedArray, INITIAL_STATE["ID"])
                 .then(onResponse)
                 .finally(afterResponse)
         }
         else {
-            Spreadsheets.Insert(spreadsheetId, [sortedArray], isTableEmpty ? "B3:Z3" : "B:Z")
+            Spreadsheets.Insert(spreadsheetId, sheetId, [sortedArray], isTableEmpty ? "B3:Z3" : "B:Z")
                 .then(onResponse)
                 .finally(afterResponse)
         }
@@ -93,7 +95,11 @@ function NewModal({ initialValue, isEdit, children }) {
         newRowValues[steamAppIdLabel].value = parseInt(result.appid);
         newRowValues[steamUrlLabel].value = result.urls.steam;
         newRowValues['isthereanydeal URL'].value = result.urls.itad;
-        newRowValues[steamOwnershipLabel].value = steamApi.isOwning(result.appid) ? 'Own' : 'Missing'
+
+        if (steam.loggedIn === true) {
+            newRowValues[steamOwnershipLabel].value = DoesUserOwnGame(steam.ownedGames.games, result.appid) ? 'Own' : 'Missing'
+        }
+
         newRowValues[dateAddedLabel].value = newRowValues[dateAddedLabel].value ? newRowValues[dateAddedLabel].value : parseSpreadsheetDate(new Date());
 
         await itadApi.GetInfoAboutGame(result.plain).then(response => {

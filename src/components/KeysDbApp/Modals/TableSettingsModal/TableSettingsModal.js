@@ -8,32 +8,13 @@ import { setNewRowChange, reloadTable, addHeaders, } from "../../../../actions";
 import ErrorBox from "../../../Authentication/ErrorBox/ErrorBox";
 import OptionsEditor from "../../OptionsEditor/OptionsEditor";
 import Spreadsheets from "../../../../google/Spreadsheets";
-import { genericSort } from "../../../../utils";
+import { fieldTypes } from "../../../../utils";
 
-const typeOptions = [
-    { key: 'steam_title', text: '(Steam) Title', value: 'steam_title' },
-    { key: 'steam_url', text: '(Steam) URL', value: 'steam_url' },
-    { key: 'steam_appid', text: '(Steam) App Id', value: 'steam_appid' },
-    { key: 'steam_key', text: '(Steam) Key', value: 'steam_key' },
-    { key: 'steam_cards', text: '(Steam) Cards', value: 'steam_cards' },
-    { key: 'steam_achievements', text: '(Steam) Achievements', value: 'steam_achievements' },
-    { key: 'steam_dlc', text: '(Steam) DLC', value: 'steam_dlc' },
-    { key: 'steam_bundled', text: '(Steam) Bundled', value: 'steam_bundled' },
-    { key: 'steam_ownership', text: '(Steam) Owned', value: 'steam_ownership' },
-
-    { key: 'string', text: 'String', value: 'string' },
-    { key: 'number', text: 'Number', value: 'number' },
-    { key: 'date', text: 'Date', value: 'date' },
-    { key: 'text', text: 'Text', value: 'text' },
-    { key: 'key', text: 'Key', value: 'key' },
-    { key: 'dropdown', text: 'Dropdown', value: 'dropdown' },
-    { key: 'url', text: 'URL', value: 'url' },
-].sort((a, b) => genericSort(a.text, b.text))
-
-function TableSettingsModal({ headers }) {
+function TableSettingsModal() {
     const [modalOpen, setModalOpen] = useState(false)
     const [isSaving, setIsSaving] = useState(false)
     const spreadsheetId = useSelector((state) => state.authentication.currentSpreadsheetId)
+    const headers = useSelector((state) => state.table.headers)
     const tableHeaders = useSelector((state) => state.table.headers)
     const tableHeadersChanges = useSelector((state) => state.table.changes.headers)
     const dispatch = useDispatch()
@@ -66,7 +47,7 @@ function TableSettingsModal({ headers }) {
 
     const handleClose = () => setModalOpen(false)
 
-    const cleanRedundentOptions = (headers) => Object.keys(headers).reduce((result, key) => {
+    const cleanRedundentOptions = headers => Object.keys(headers).reduce((result, key) => {
         if ((headers[key].type !== 'dropdown' && headers[key].type !== 'steam_ownership' && headers[key].type !== 'steam_cards') && headers[key].options) {
             let newHeader = { ...headers[key] }
 
@@ -158,7 +139,7 @@ function TableSettingsModal({ headers }) {
                                                 <Form.Field inline>
                                                     <label>Type</label>
                                                     <Form.Select
-                                                        options={typeOptions}
+                                                        options={fieldTypes}
                                                         name={"type"}
                                                         value={values[headerKey]["type"]}
                                                         onChange={(event, data) => handleChange(event, data, headerKey)}

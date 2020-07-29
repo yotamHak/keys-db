@@ -1,7 +1,7 @@
 import { gapi } from 'gapi-script';
 import axios from "axios";
 import _ from "lodash";
-import { isUrl, isSteamKey, genericSort, parseSpreadsheetDate, SPREADSHEET_METADATA_HEADERS_ID, SPREADSHEET_METADATA_PERMISSIONS_ID, SPREADSHEET_METADATA_DEFAULT_SETTINGS, getLabelByIndex } from '../utils';
+import { isUrl, isSteamKey, genericSort, parseSpreadsheetDate, SPREADSHEET_METADATA_HEADERS_ID, SPREADSHEET_METADATA_PERMISSIONS_ID, SPREADSHEET_METADATA_DEFAULT_SETTINGS, SPREADSHEET_METADATA_SHEET_ID, getLabelByIndex, SPREADSHEET_TEMPLATE_SPREADSHEET_ID } from '../utils';
 
 class Spreashsheets {
     _queryUrl = (spreadsheetId, queryString) => `https://docs.google.com/a/google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tq=${queryString}`
@@ -135,14 +135,47 @@ class Spreashsheets {
                 }
         })
 
-    _getDeleteRequest(range) {
+    async _getSpreadsheet(spreadsheetId, includeGridData = false) {
+        return gapi.client.sheets.spreadsheets.get({
+            "spreadsheetId": spreadsheetId,
+            "includeGridData": includeGridData
+        })
+            .then(response => {
+                if (response.status === 200) {
+                    return {
+                        success: true,
+                        data: response.result
+                    }
+                } else {
+                    return {
+                        success: false,
+                        data: response
+                    }
+                }
+            })
+    }
+
+    _getDeleteRequest(sheetId, range) {
         return {
             deleteDimension: {
                 range: {
+                    sheetId: sheetId,
                     dimension: "ROWS",
                     startIndex: range - 1,
                     endIndex: range
                 }
+            }
+        }
+    }
+
+    _getUpdateSheetPropertiesRequest(sheetId, props) {
+        return {
+            "updateSheetProperties": {
+                "properties": {
+                    sheetId: sheetId,
+                    ...props
+                },
+                "fields": Object.keys(props).toString()
             }
         }
     }
@@ -419,12 +452,12 @@ class Spreashsheets {
     // }
 
 
-
     // https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/update
     // https://any-api.com/googleapis_com/sheets/docs/spreadsheets/sheets_spreadsheets_values_append
-    async Insert(spreadsheetId, values, range = "B:Z") {
+    async Insert(spreadsheetId, sheetId, values, range = "B:Z") {
         const params = {
             spreadsheetId: spreadsheetId,
+            sheetId: sheetId,
             range: range,
             valueInputOption: 'USER_ENTERED',
             insertDataOption: "INSERT_ROWS"
@@ -451,10 +484,11 @@ class Spreashsheets {
             }))
     }
 
-    async Update(spreadsheetId, values, range) {
+    async Update(spreadsheetId, sheetId, values, range) {
         const params = {
             spreadsheetId: spreadsheetId,
-            range: `Keys!B${range}`,
+            sheetId: sheetId,
+            range: `B${range}`,
             valueInputOption: 'USER_ENTERED',
         };
 
@@ -482,8 +516,8 @@ class Spreashsheets {
             })
     }
 
-    async Delete(spreadsheetId, range) {
-        return this._batchUpdate(spreadsheetId, [this._getDeleteRequest(range)])
+    async Delete(spreadsheetId, sheetId, range) {
+        return this._batchUpdate(spreadsheetId, [this._getDeleteRequest(sheetId, range)])
     }
 
     // DeveloperMetadata Related
@@ -547,7 +581,7 @@ class Spreashsheets {
                             "success": false,
                             "data": {
                                 "status": "Missing Metadata",
-                                "Missing": ids
+                                "missing": ids,
                             }
                         }
                     } else if (response.result.matchedDeveloperMetadata.length !== ids.length) {
@@ -557,7 +591,8 @@ class Spreashsheets {
                             "success": false,
                             "data": {
                                 "status": "Missing Metadata",
-                                "Missing": missingIds
+                                "missing": missingIds,
+                                "matched": response.result.matchedDeveloperMetadata
                             }
                         }
                     } else {
@@ -574,7 +609,7 @@ class Spreashsheets {
         return this._batchUpdate(spreadsheetId, [this._getUpdateDeveloperMetadataRequest("headers", JSON.stringify(settings))])
     }
 
-    async ImportAllOptions(spreadsheetId) {
+    async ImportAllOptions(spreadsheetId, sheetId) {
         return this._query(spreadsheetId, 0, 10000).then(response => {
             if (response.success) {
                 const table = this._parseTable(response.data);
@@ -589,85 +624,90 @@ class Spreashsheets {
         })
     }
 
-    async _createDefaultDeveloperMetadata(spreadsheetId) {
-        const headersRequest = this._getCreateDeveloperMetadataRequest(SPREADSHEET_METADATA_HEADERS_ID, "headers", JSON.stringify(SPREADSHEET_METADATA_DEFAULT_SETTINGS))
-        const permissionsRequest = this._getCreateDeveloperMetadataRequest(SPREADSHEET_METADATA_PERMISSIONS_ID, "permissions", "owner")
-
-        return this._batchUpdate(spreadsheetId, _.concat([headersRequest], [permissionsRequest]))
-            .then(response => {
-                if (response.success) {
-                    return {
-                        headers: SPREADSHEET_METADATA_DEFAULT_SETTINGS
-                    }
-                }
-            })
-
-        // return this._query(spreadsheetId, "", 0, 1)
-        //     .then(response => {
-        //         if (response.success) {
-        //             return this._getHeadersAndSettings(spreadsheetId)
-        //                 .then(response => {
-        //                     if (response.success) {
-
-        //                     }
-        //                 })
-        //         }
-        //     })
-    }
-
-    async _getMetadata(spreadsheetId) {
-        return this.GetDeveloperMetadata(spreadsheetId)
-            .then(response => {
-                if (response.success) {
-                    // console.log(response.data.metadataValue)
-                    return {
-                        success: true,
-                        headers: JSON.parse(response.data.metadataValue)
-                    }
-                }
-            })
-            .catch(response => this._createDefaultDeveloperMetadata(spreadsheetId))
-    }
-
     async Initialize(spreadsheetId) {
-        return this._searchDeveloperMetadataByIds(spreadsheetId, [SPREADSHEET_METADATA_HEADERS_ID, SPREADSHEET_METADATA_PERMISSIONS_ID])
+        const _handleBatchUpdateResponse = (response, matchedMetadata,) => {
+            if (response.success) {
+                const createdMetadata = response.data.replies.reduce((result, metadata) => {
+                    let value;
+
+                    try {
+                        value = JSON.parse(metadata.createDeveloperMetadata.developerMetadata.metadataValue)
+                    } catch (error) {
+                        value = metadata.createDeveloperMetadata.developerMetadata.metadataValue
+                    }
+
+                    return {
+                        ...result,
+                        [metadata.createDeveloperMetadata.developerMetadata.metadataKey]: value
+                    }
+                }, {})
+
+                return {
+                    "success": true,
+                    ...matchedMetadata,
+                    ...createdMetadata,
+                }
+            }
+        }
+
+        const _handleDeveloperMetadata = (data,) => {
+            return data.reduce((result, metadata) => {
+                let value;
+
+                try {
+                    value = JSON.parse(metadata.developerMetadata.metadataValue)
+                } catch (error) {
+                    value = metadata.developerMetadata.metadataValue
+                }
+
+                return {
+                    ...result,
+                    [metadata.developerMetadata.metadataKey]: value
+                }
+            }, {})
+        }
+
+        return this._searchDeveloperMetadataByIds(spreadsheetId, [SPREADSHEET_METADATA_HEADERS_ID, SPREADSHEET_METADATA_PERMISSIONS_ID, SPREADSHEET_METADATA_SHEET_ID])
             .then(response => {
                 if (response.success) {
-                    return response.data.reduce((result, metadata) => {
-                        let value;
-
-                        try {
-                            value = JSON.parse(metadata.developerMetadata.metadataValue)
-                        } catch (error) {
-                            value = metadata.developerMetadata.metadataValue
-                        }
-
-                        return {
-                            ...result,
-                            [metadata.developerMetadata.metadataKey]: value
-                        }
-                    }, { "success": true })
+                    return {
+                        "success": true,
+                        ..._handleDeveloperMetadata(response.data)
+                    }
                 } else {
-                    const requests = response.data.Missing.reduce((result, id) => {
-                        if (id === SPREADSHEET_METADATA_HEADERS_ID) {
-                            return _.concat(result, [this._getCreateDeveloperMetadataRequest(SPREADSHEET_METADATA_HEADERS_ID, "headers", JSON.stringify(SPREADSHEET_METADATA_DEFAULT_SETTINGS))])
-                        } else if (id === SPREADSHEET_METADATA_PERMISSIONS_ID) {
-                            return _.concat(result, [this._getCreateDeveloperMetadataRequest(SPREADSHEET_METADATA_PERMISSIONS_ID, "permissions", "owner")])
-                        } else {
-                            return result
+                    let missingSheetId = false
+
+                    const matchedMetadata = _handleDeveloperMetadata(response.data.matched)
+                    const requests = response.data.missing.reduce((result, id) => {
+                        switch (id) {
+                            case SPREADSHEET_METADATA_HEADERS_ID:
+                                return _.concat(result, [this._getCreateDeveloperMetadataRequest(SPREADSHEET_METADATA_HEADERS_ID, "headers", JSON.stringify(SPREADSHEET_METADATA_DEFAULT_SETTINGS))])
+                            case SPREADSHEET_METADATA_PERMISSIONS_ID:
+                                return _.concat(result, [this._getCreateDeveloperMetadataRequest(SPREADSHEET_METADATA_PERMISSIONS_ID, "permissions", "owner")])
+                            case SPREADSHEET_METADATA_SHEET_ID:
+                                missingSheetId = true
+                                return result
+                            default:
+                                return result
                         }
                     }, [])
 
-                    return this._batchUpdate(spreadsheetId, requests)
-                        .then(response => {
-                            if (response.success) {
-                                return {
-                                    "success": true,
-                                    "headers": SPREADSHEET_METADATA_DEFAULT_SETTINGS,
-                                    "permissions": "owner",
-                                }
-                            }
-                        })
+                    if (missingSheetId) {
+                        return this._getSpreadsheet(spreadsheetId)
+                            .then(response => {
+                                const sheetId = response.data.sheets[0].properties.sheetId
+
+                                return this._batchUpdate(spreadsheetId, _.concat(requests, [this._getCreateDeveloperMetadataRequest(SPREADSHEET_METADATA_SHEET_ID, "sheetId", sheetId.toString())]))
+                                    .then(response => {
+                                        return _handleBatchUpdateResponse(response, matchedMetadata)
+                                    })
+                            })
+                    } else {
+                        return this._batchUpdate(spreadsheetId, requests)
+                            .then(response => {
+                                return _handleBatchUpdateResponse(response, matchedMetadata)
+                            })
+                    }
                 }
             })
             .catch(response => ({ success: false, error: response.result.error.status }))
@@ -778,7 +818,7 @@ class Spreashsheets {
                             }, {})
 
                             const headersRequest = this._getCreateDeveloperMetadataRequest(SPREADSHEET_METADATA_HEADERS_ID, "headers", JSON.stringify(cleanSettings))
-                            const permissionRequest = this._getCreateDeveloperMetadataRequest(SPREADSHEET_METADATA_PERMISSIONS_ID, "permission", "viewer")
+                            const permissionRequest = this._getCreateDeveloperMetadataRequest(SPREADSHEET_METADATA_PERMISSIONS_ID, "permissions", "viewer")
                             const deleteRequests = privateColumnsRange.reduce((result, id) => (_.concat(result, [this._getDeleteDimensionRequest(newSheetId, "COLUMNS", id, id + 1)])), []).reverse()
 
                             return this._batchUpdate(newSpreadsheetId, _.concat([headersRequest], [permissionRequest], deleteRequests)).then(response => {
@@ -797,6 +837,52 @@ class Spreashsheets {
                 })
             })
         })
+    }
+
+    async CreateStartingSpreadsheet(title = "My Keys Collection", settings = SPREADSHEET_METADATA_DEFAULT_SETTINGS) {
+        return this._createNewSpreadsheet(title)
+            .then(response => {
+                if (response.success) {
+                    const newSpreadsheetId = response.data.spreadsheetId
+                    const newSpreadsheetUrl = response.data.spreadsheetUrl
+
+                    return this._copySheetToSpreadsheet(SPREADSHEET_TEMPLATE_SPREADSHEET_ID, 0, newSpreadsheetId)
+                        .then(response => {
+                            if (response.success) {
+                                const deleteSheetRequest = this._getDeleteSheetRequest(0)
+                                const headersRequest = this._getCreateDeveloperMetadataRequest(SPREADSHEET_METADATA_HEADERS_ID, "headers", JSON.stringify(settings))
+                                const permissionRequest = this._getCreateDeveloperMetadataRequest(SPREADSHEET_METADATA_PERMISSIONS_ID, "permissions", "owner")
+                                const sheetIdRequest = this._getCreateDeveloperMetadataRequest(SPREADSHEET_METADATA_SHEET_ID, "sheetId", response.data.sheetId.toString())
+                                const sheetPropsUpdateRequest = this._getUpdateSheetPropertiesRequest(response.data.sheetId, { title: "Keys" })
+
+                                return this._batchUpdate(newSpreadsheetId, _.concat([headersRequest], [permissionRequest], [deleteSheetRequest], [sheetIdRequest], [sheetPropsUpdateRequest])).then(response => {
+                                    return response.success
+                                        ? {
+                                            "success": true,
+                                            "data": {
+                                                "spreadsheetId": newSpreadsheetId,
+                                                "spreadsheetUrl": newSpreadsheetUrl
+                                            }
+                                        }
+                                        : {
+                                            success: false,
+                                            data: response
+                                        }
+                                })
+                            } else {
+                                return {
+                                    success: false,
+                                    data: response
+                                }
+                            }
+                        })
+                } else {
+                    return {
+                        success: false,
+                        data: response
+                    }
+                }
+            })
     }
 }
 

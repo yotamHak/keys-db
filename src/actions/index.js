@@ -19,9 +19,10 @@ export const steamSetProfile = profile => {
         payload: profile
     }
 }
-export const steamLoggedIn = () => {
+export const steamLogged = state => {
     return {
-        type: actionTypes.STEAM_LOGGED_IN
+        type: actionTypes.STEAM_LOGGED,
+        payload: state
     }
 }
 export const steamLoad = steam => {
@@ -30,10 +31,17 @@ export const steamLoad = steam => {
         payload: steam
     }
 }
-
-export const setupComplete = () => {
+export const steamSetOwnedGames = games => {
     return {
-        type: actionTypes.SET_UP_COMPLETE
+        type: actionTypes.STEAM_SET_OWNED_GAMES,
+        payload: games
+    }
+}
+
+export const setupComplete = state => {
+    return {
+        type: actionTypes.SET_UP_COMPLETE,
+        payload: state
     }
 }
 export const spreadsheetSetId = id => {
@@ -45,6 +53,12 @@ export const spreadsheetSetId = id => {
 export const setCurrentSpreadsheetId = id => {
     return {
         type: actionTypes.SET_CURRENT_SPREADSHEET_ID,
+        payload: id
+    }
+}
+export const setCurrentSheetId = id => {
+    return {
+        type: actionTypes.SET_CURRENT_SHEET_ID,
         payload: id
     }
 }
@@ -155,6 +169,12 @@ export const removeNewOptionsChange = (header, option) => {
 export const setIsTableEmpty = state => {
     return {
         type: actionTypes.SET_IS_TABLE_EMPTY,
+        payload: state
+    }
+}
+export const showShareModal = state => {
+    return {
+        type: actionTypes.SHOW_SHARE_MODAL,
         payload: state
     }
 }

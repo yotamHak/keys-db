@@ -1,6 +1,5 @@
 import React, { useState, } from "react";
-import { Modal, Icon, Grid, Placeholder, Statistic, Segment, Header, Message, Container, Dropdown, List, Divider, Image, Popup, Tab, Label, Button } from "semantic-ui-react";
-import steamApi from '../../../../steam'
+import { Modal, Icon, Grid, Placeholder, Statistic, Segment, Header, Message, Container, Dropdown, List, Divider, Image, Popup, Tab, } from "semantic-ui-react";
 import ImageCarousel from "../../../ImageCarousel/ImageCarousel";
 import _ from 'lodash';
 import dateFns from 'date-fns';
@@ -11,6 +10,7 @@ import withAutoplay from 'react-awesome-slider/dist/autoplay';
 
 import itadApi from "../../../../itad";
 import { STEAM_CATEGORIES } from "../../../../utils";
+import { GetAppDetails } from "../../../../steam/steamApi";
 
 function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }) {
     const [appData, setAppData] = useState(null)
@@ -28,11 +28,12 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
     function loadGameData(id, title) {
         if (appData && itadData) return
 
-        steamApi.AppDetails(id)
+
+        GetAppDetails(id)
             .then(response => {
-                console.log("AppDetails data:", response)
-                if (response) {
-                    setAppData(response)
+                if (response.success && response.data[id]) {
+                    // console.log("Steam App data:", response.data[id].data)
+                    setAppData(response.data[id].data)
                 } else {
                     setErrorGettingSteamData(true)
                 }
@@ -40,7 +41,7 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
 
         itadApi.GetOverview(title)
             .then(response => {
-                console.log("ITAD data:", response.data)
+                // console.log("ITAD data:", response.data)
                 if (response.success) {
                     setItadData(response.data)
                 } else {
@@ -421,6 +422,7 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
                                                     </Grid.Row>
                                                     <Grid.Row>
                                                         <Grid.Column width={16}>
+                                                            <Divider />
                                                             <Segment vertical>
                                                                 <Header as='h2' inverted>
                                                                     <Grid width={16}>
@@ -435,7 +437,6 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
                                                                     </Grid.Column>
                                                                 </Grid>
                                                             </Segment>
-
                                                             {/* <Segment vertical>
                                                                 <Header as='h3' style={{ width: '100%' }} className='pointer' onClick={() => setExtendedDescription(!extendedDescription)}>
                                                                     <Grid width={16}>
@@ -459,6 +460,7 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
                                                         appData.reviews && (
                                                             <Grid.Row>
                                                                 <Grid.Column width={16}>
+                                                                    <Divider />
                                                                     <Segment vertical>
                                                                         <Header as='h2' inverted>
                                                                             <Grid width={16}>

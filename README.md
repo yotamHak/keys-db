@@ -19,14 +19,12 @@ I set out some goals when making this:
 
 When I started building it, I had some goals, but everytime I used it, I got more and more ideas and features I wanted to add,
 So this is still in-progress, but the main, working features are:
-1. It's free!
-2. It's safe!
-3. Easy key adding - Add a game with integrated additional data collection, like appid, related urls (itad, steam) and more...
-4. Intuitive UI - Use filters to view your collection of keys.
-5. Game information - View extra game information with bundle history and live bundles if available, screenshots\trailers\youtube gameplay, lowest recorded price, reviews, achievements and more
-6. Dynamic Fields - Dynamically change fields from a selection of generic field types, and custom types as-well, easy options managments, select what's private, what's filterable and sortable and more. (I'm still adding more support and more fields)
-7. Sharing - Are you a trader? well if you are, or you just want to show-off your collection, you can export your collection without the selected private fields (like the keys), and share it with whomever you want.
-8. More features are coming!
+1. Easy key adding - Add a game with integrated additional data collection, like appid, related urls (itad, steam) and more...
+2. Intuitive UI - Use filters to view your collection of keys.
+3. Game information - View extra game information with bundle history and live bundles if available, screenshots\trailers\youtube gameplay, lowest recorded price, reviews, achievements and more
+4. Dynamic Fields - Dynamically change fields from a selection of generic field types, and custom types as-well, easy options managments, select what's private, what's filterable and sortable and more. (I'm still adding more support and more fields)
+5. Sharing - Are you a trader? well if you are, or you just want to show-off your collection, you can export your collection without the selected private fields (like the keys), and share it with whomever you want.
+6. More features are coming!
 
 # Technologies
 

@@ -7,7 +7,7 @@ export default function validateSettings(values) {
     }
 
     // Steam Web Api Key Errors
-    if (!values.steamApiKey) {
+    if (values.steamApiKey !== undefined && !values.steamApiKey) {
         errors.steamApiKey = "Steam Web Api is required"
     }
 

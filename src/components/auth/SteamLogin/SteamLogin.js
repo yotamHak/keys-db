@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 
 import { useDispatch, useSelector } from "react-redux";
-import {  steamSetId } from "../../../actions";
-import { Container } from "semantic-ui-react";
+import { steamSetId, steamLogged } from "../../../actions";
+import { Container, Message, List, Header, Button, } from "semantic-ui-react";
 
 function SteamLogin() {
     const env = window.location.origin
     const [steamId, setSteamId] = useState(localStorage.getItem('steam') && localStorage.getItem('steam').id)
     const steam = useSelector((state) => state.authentication.steam)
-    const dispatch = useDispatch()    
+    const dispatch = useDispatch()
 
     useEffect(() => {
         if (steam.loggedIn !== null) {
@@ -47,20 +47,40 @@ function SteamLogin() {
         }, {})
     }
 
+    function skip() {
+        dispatch(steamLogged(false))
+    }
+
     return (
         !steamId && (
-            <Container textAlign='center'>
-                <form method="get" action="https://steamcommunity.com/openid/login">
-                    <input type="hidden" name="openid.ns" value="http://specs.openid.net/auth/2.0" />
-                    <input type="hidden" name="openid.ns.sreg" value="http://openid.net/extensions/sreg/1.1" />
-                    <input type="hidden" name="openid.mode" value="checkid_setup" />
-                    <input type="hidden" name="openid.return_to" value={`${env}/login?steamlogin`} />
-                    <input type="hidden" name="openid.realm" value={`${env}/`} />
-                    <input type="hidden" name="openid.identity" value="http://specs.openid.net/auth/2.0/identifier_select" />
-                    <input type="hidden" name="openid.claimed_id" value="http://specs.openid.net/auth/2.0/identifier_select" />
-                    <input type="image" alt="Login to Steam" src="https://steamcommunity-a.akamaihd.net/public/images/signinthroughsteam/sits_02.png" />
-                </form>
-            </Container>
+            <div>
+                <Container textAlign='center'>
+                    <form method="get" action="https://steamcommunity.com/openid/login">
+                        <input type="hidden" name="openid.ns" value="http://specs.openid.net/auth/2.0" />
+                        <input type="hidden" name="openid.ns.sreg" value="http://openid.net/extensions/sreg/1.1" />
+                        <input type="hidden" name="openid.mode" value="checkid_setup" />
+                        <input type="hidden" name="openid.return_to" value={`${env}/login?steamlogin`} />
+                        <input type="hidden" name="openid.realm" value={`${env}/`} />
+                        <input type="hidden" name="openid.identity" value="http://specs.openid.net/auth/2.0/identifier_select" />
+                        <input type="hidden" name="openid.claimed_id" value="http://specs.openid.net/auth/2.0/identifier_select" />
+                        <input type="image" alt="Login to Steam" src="https://steamcommunity-a.akamaihd.net/public/images/signinthroughsteam/sits_02.png" />
+                    </form>
+
+                    <Header as='h2'>Steam is optional but it is highly recommended</Header>
+
+                    <Message info style={{ textAlign: 'left' }}>
+                        <Message.Header>Steam is used for:</Message.Header>
+                        <List bulleted>
+                            <List.Item>Checking if you own a game you're adding</List.Item>
+                            <List.Item>Checking if games are on your wishlist</List.Item>
+                            <List.Item>And more...</List.Item>
+                        </List>
+                    </Message>
+
+                    <Button onClick={skip}>Skip</Button>
+
+                </Container>
+            </div>
         )
     )
 }

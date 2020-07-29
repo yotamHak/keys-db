@@ -6,7 +6,9 @@ const _alphabet = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
 
 export const SPREADSHEET_METADATA_HEADERS_ID = 1986
 export const SPREADSHEET_METADATA_PERMISSIONS_ID = 1988
+export const SPREADSHEET_METADATA_SHEET_ID = 1910
 export const SPREADSHEET_METADATA_DEFAULT_SETTINGS = { "ID": { "id": "A", "label": "ID", "type": "number", "pattern": "General", "display": false }, "Title": { "id": "B", "label": "Title", "type": "steam_title", "isPrivate": false, "display": true, "isFilter": false, "sortable": false }, "Status": { "id": "C", "label": "Status", "type": "dropdown", "isPrivate": false, "options": { "allowEdit": false, "values": [{ "value": "Used", "color": "red" }, { "value": "Unused", "color": "green" }, { "value": "Traded", "color": "yellow" }, { "value": "Gifted", "color": "orange" }] }, "display": true, "isFilter": true, "sortable": true }, "Key": { "id": "D", "label": "Key", "type": "key", "isPrivate": true, "display": true, "isFilter": false, "sortable": false }, "From": { "id": "E", "label": "From", "type": "dropdown", "isPrivate": false, "options": { "allowEdit": true, "values": [{ "value": "Fanatical", "color": "green" }, { "value": "Indiegala", "color": "red" }, { "value": "Other", "color": "grey" }, { "value": "Amazon", "color": "brown" }, { "value": "Alienware", "color": "blue" }, { "value": "AMD", "color": "orange" }, { "value": "Indiegamestand", "color": "pink" }, { "value": "Sega", "color": "blue" }, { "value": "DigitalHomicide", "color": "brown" }, { "value": "Humblebundle", "color": "blue" }] }, "display": true, "isFilter": true, "sortable": true }, "Own Status": { "id": "F", "label": "Own Status", "type": "steam_ownership", "isPrivate": false, "options": { "allowEdit": false, "values": [{ "value": "Own", "color": "green" }, { "value": "Missing", "color": "red" }] }, "display": true, "isFilter": true, "sortable": true }, "Date Added": { "id": "G", "label": "Date Added", "type": "date", "pattern": "dd-mm-yyyy", "isPrivate": true, "display": true, "isFilter": true, "sortable": true }, "Note": { "id": "H", "label": "Note", "type": "text", "isPrivate": true, "display": true, "isFilter": false, "sortable": false }, "isthereanydeal URL": { "id": "I", "label": "isthereanydeal URL", "type": "url", "isPrivate": false, "display": true, "isFilter": false, "sortable": false }, "Steam URL": { "id": "J", "label": "Steam URL", "type": "steam_url", "isPrivate": false, "display": true, "isFilter": false, "sortable": false }, "Cards": { "id": "K", "label": "Cards", "type": "steam_cards", "isPrivate": false, "options": { "allowEdit": false, "values": [{ "value": "Have", "color": "green" }, { "value": "Missing", "color": "red" }] }, "display": true, "isFilter": true, "sortable": true }, "AppId": { "id": "L", "label": "AppId", "type": "steam_appid", "pattern": "General", "isPrivate": false, "display": true, "isFilter": false, "sortable": false } }
+export const SPREADSHEET_TEMPLATE_SPREADSHEET_ID = '13WFCn_RDuz9ZaCS4fj5VkpCUTz8HuIhSTYRjSXC-7bU'
 
 export const TABLE_DEFAULT_OFFSET = 0
 export const TABLE_DEFAULT_LIMIT = 24
@@ -62,13 +64,33 @@ export const colorOptions = [
   { key: 'black', text: 'Black', value: 'black', label: { color: 'black', circular: true, empty: true }, },
 ]
 
+export const genericSort = (a, b) => a < b ? -1 : a > b ? 1 : 0
+
+export const fieldTypes = [
+  { key: 'steam_title', text: '(Steam) Title', value: 'steam_title' },
+  { key: 'steam_url', text: '(Steam) URL', value: 'steam_url' },
+  { key: 'steam_appid', text: '(Steam) App Id', value: 'steam_appid' },
+  { key: 'steam_key', text: '(Steam) Key', value: 'steam_key' },
+  { key: 'steam_cards', text: '(Steam) Cards', value: 'steam_cards' },
+  { key: 'steam_achievements', text: '(Steam) Achievements', value: 'steam_achievements' },
+  { key: 'steam_dlc', text: '(Steam) DLC', value: 'steam_dlc' },
+  { key: 'steam_bundled', text: '(Steam) Bundled', value: 'steam_bundled' },
+  { key: 'steam_ownership', text: '(Steam) Owned', value: 'steam_ownership' },
+
+  { key: 'string', text: 'String', value: 'string' },
+  { key: 'number', text: 'Number', value: 'number' },
+  { key: 'date', text: 'Date', value: 'date' },
+  { key: 'text', text: 'Text', value: 'text' },
+  { key: 'key', text: 'Key', value: 'key' },
+  { key: 'dropdown', text: 'Dropdown', value: 'dropdown' },
+  { key: 'url', text: 'URL', value: 'url' },
+].sort((a, b) => genericSort(a.text, b.text))
+
 export const getDomain = (url) => url.replace(/^https?:\/\//i, "");
 
 export const isUrl = (url) => /^(ftp|http|https):\/\/[^ "]+$/.test(url)
 
 export const isSteamKey = (key) => /(\w{5}-){2}\w{5}/.test(key)
-
-export const genericSort = (a, b) => a < b ? -1 : a > b ? 1 : 0
 
 export const alphabetSort = (a, b) => a.toLowerCase() < b.toLowerCase() ? -1 : a.toLowerCase() > b.toLowerCase() ? 1 : 0
 
@@ -104,7 +126,11 @@ export const getLabelByIndex = index => _alphabet[index]
 
 export const getValueByLabel = (label, headers, gameData) => gameData[getIndexByLabel(label, headers)]
 
-export const getLabelByType = (headers, type, gameData) => Object.keys(headers).find(key => headers[key].type === type)
+export const getLabelByType = (headers, type) => Object.keys(headers).find(key => headers[key].type === type)
+
+export const getPrivateColumns = headers => Object.keys(headers)
+  .filter(key => headers[key].isPrivate)
+  .reduce((result, key) => (_.concat(result, [getIndexByLabel(key, headers)])), [])
 
 export const getUrlsLocationAndValue = (headers, gameData) => Object.keys(headers)
   .filter(key => headers[key].type === 'url' || headers[key].type === 'steam_url')

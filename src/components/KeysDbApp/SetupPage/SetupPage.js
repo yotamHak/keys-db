@@ -8,7 +8,7 @@ import SteamLogin from "../../auth/SteamLogin/SteamLogin"
 
 import GoogleAuthentication from "../../../google/GoogleAuthentication"
 
-function SetupPage() {
+function SetupPage() {    
     // const googleClientReady = useSelector((state) => state.authentication.googleClientReady)
     const isSteamLogged = useSelector((state) => state.authentication.steam.loggedIn)
     const isGoogleLogged = useSelector((state) => state.authentication.google.loggedIn)
@@ -22,10 +22,10 @@ function SetupPage() {
     const history = useHistory()
 
     useEffect(() => {
-        console.log("isGoogleLogged", isGoogleLogged)
-        console.log("isSteamLogged", isSteamLogged)
-        console.log("steam.id", steam.id)
-        console.log("setupComplete", setupComplete)
+        // console.log("isGoogleLogged", isGoogleLogged)
+        // console.log("isSteamLogged", isSteamLogged)
+        // console.log("steam.id", steam.id)
+        // console.log("setupComplete", setupComplete)
 
         if (setupComplete) {
             history.push(`/id/${spreadsheetId}`)
@@ -44,7 +44,7 @@ function SetupPage() {
                                     <Step.Description>Login with google</Step.Description>
                                 </Step.Content>
                             </Step>
-                            <Step completed={steam.id !== null} active={isGoogleLogged === true && steam.id === null}>
+                            <Step completed={steam.id !== null || isSteamLogged !== null} active={isGoogleLogged === true && steam.id === null && isSteamLogged === null}>
                                 <Step.Content>
                                     <Step.Title>Steam</Step.Title>
                                     <Step.Description>Login with steam</Step.Description>
@@ -65,10 +65,10 @@ function SetupPage() {
                         !isGoogleLogged && <GoogleAuthentication />
                     }
                     {
-                        isGoogleLogged && !steam.id && <SteamLogin />
+                        isGoogleLogged && (!steam.id && isSteamLogged === null) && <SteamLogin />
                     }
                     {
-                        isGoogleLogged && steam.id && !setupComplete && <Settings />
+                        isGoogleLogged && (steam.id || isSteamLogged !== null) && !setupComplete && <Settings />
                     }
                     {/* {
                         isGoogleLogged && isSteamLogged && setupComplete && (

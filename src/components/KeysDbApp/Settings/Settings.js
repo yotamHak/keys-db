@@ -5,17 +5,13 @@ import validateSettings from '../../Authentication/validateSettings';
 import useFormValidation from '../../Authentication/useFormValidation';
 import ErrorBox from '../../Authentication/ErrorBox/ErrorBox';
 import { useSelector, useDispatch } from 'react-redux';
-import { setupComplete, spreadsheetSetId, steamSetApiKey, steamSetProfile, steamLoggedIn } from '../../../actions';
-import steamApi from '../../../steam';
+import { setupComplete, spreadsheetSetId, steamSetApiKey, steamSetProfile, steamLogged } from '../../../actions';
 import { usePrevious, useInterval } from '../../../utils';
-
-const INITIAL_STATE = {
-    spreadsheetId: localStorage.getItem('spreadsheetId') || '',
-    steamApiKey: (JSON.parse(localStorage.getItem('steam')) && JSON.parse(localStorage.getItem('steam')).apiKey) || '',
-}
+import { GetUserInfo } from '../../../steam/steamApi';
+import Spreadsheets from '../../../google/Spreadsheets';
 
 function Settings() {
-    const { handleSubmit, handleChange, values, errors } = useFormValidation(INITIAL_STATE, validateSettings, handleUpdate);
+
     // const [haveValues, setHaveValues] = React.useState(localStorage.getItem('spreadsheetId') && (localStorage.getItem('steam') && localStorage.getItem('steam').apiKey) ? true : false);
 
     const steam = useSelector((state) => state.authentication.steam)
@@ -27,41 +23,67 @@ function Settings() {
 
     const [isFinishedAlertTimerRunning, setIsFinishedAlertTimerRunning] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
+    const [creatingSpreadsheet, setCreatingSpreadsheet] = useState(false);
+
+    const INITIAL_STATE = steam.loggedIn
+        ? {
+            spreadsheetId: localStorage.getItem('spreadsheetId') || '',
+            steamApiKey: (JSON.parse(localStorage.getItem('steam')) && JSON.parse(localStorage.getItem('steam')).apiKey) || '',
+        }
+        : {
+            spreadsheetId: localStorage.getItem('spreadsheetId') || '',
+        }
+
+    const { handleSubmit, handleChange, values, errors, } = useFormValidation(INITIAL_STATE, validateSettings, handleUpdate);
 
     useInterval(() => {
         setIsSuccess(false)
     }, isFinishedAlertTimerRunning ? 3000 : null);
 
     useEffect(() => {
-        if (steam.loggedIn && spreadsheetId) {
+        if (steam.loggedIn !== null && spreadsheetId) {
             dispatch(setupComplete(true))
             return
         }
 
         if (steam.id && steam.apiKey) {
             if (!steam.profile) {
-                steamApi.GetUserInfo(steam.id, steam.apiKey)
+                GetUserInfo(steam.id, steam.apiKey)
                     .then(response => {
                         if (response.success) {
-                            dispatch(steamSetProfile(response.user))
+                            dispatch(steamSetProfile(response.data.user))
                         }
                     })
             }
 
             if (prevSteamProfile === null && steam.profile) {
-                dispatch(steamLoggedIn())
+                dispatch(steamLogged(true))
             }
         }
     }, [steam, spreadsheetId])
 
     function handleUpdate() {
         dispatch(steamSetApiKey(values.steamApiKey))
-        dispatch(spreadsheetSetId(values.spreadsheetId))        
+        dispatch(spreadsheetSetId(values.spreadsheetId))
 
         setIsSuccess(true)
-        setIsFinishedAlertTimerRunning(true)     
+        setIsFinishedAlertTimerRunning(true)
 
         // setHaveValues(true)
+    }
+
+    function createSpreadsheet(event) {
+        event.preventDefault();
+        setCreatingSpreadsheet(true)
+        Spreadsheets.CreateStartingSpreadsheet("My Collection")
+            .then(response => {
+                if (response.success) {
+                    handleChange(event, { name: "spreadsheetId", value: response.data.spreadsheetId })
+                }
+            })
+            .finally(response => {
+                setCreatingSpreadsheet(false)
+            })
     }
 
     return (
@@ -71,25 +93,34 @@ function Settings() {
                 <Form onSubmit={handleSubmit} size='large'>
                     <Segment>
                         <Form.Input
+                            action={{
+                                color: 'teal',
+                                labelPosition: 'left',
+                                icon: 'file excel',
+                                content: 'Create',
+                                onClick: createSpreadsheet,
+                                loading: creatingSpreadsheet
+                            }}
+                            actionPosition='left'
                             fluid
-                            icon='file excel'
-                            iconPosition='left'
                             name='spreadsheetId'
                             placeholder='Spreadsheet ID'
                             onChange={handleChange}
                             value={values['spreadsheetId']}
                             key='spreadsheetId'
                         />
-                        <Form.Input
-                            fluid
-                            icon='steam'
-                            iconPosition='left'
-                            name='steamApiKey'
-                            placeholder='Steam Web API Key'
-                            onChange={handleChange}
-                            value={values['steamApiKey']}
-                            key='steamApiKey'
-                        />
+                        {
+                            steam.id !== null && <Form.Input
+                                fluid
+                                icon='steam'
+                                iconPosition='left'
+                                name='steamApiKey'
+                                placeholder='Steam Web API Key'
+                                onChange={handleChange}
+                                value={values['steamApiKey']}
+                                key='steamApiKey'
+                            />
+                        }
                         {
                             /* <Form.Input
                                 fluid
@@ -106,7 +137,7 @@ function Settings() {
                 {
                     isSuccess && (
                         <Message positive>
-                            <Message.Header>Saved!</Message.Header>                            
+                            <Message.Header>Saved!</Message.Header>
                         </Message>
                     )
                 }
@@ -130,7 +161,9 @@ function Settings() {
                             <br />
                             the Id looks like: <Label>1Xu-kbGGwi40FKgrf5NJMAjGQgHlR3qYmk-w6dUs74Fo</Label>
                         </Message.Item>
-                        <Message.Item>Get your Steam Web API Key <a target='_blank' rel='noopener noreferrer' href='https://steamcommunity.com/dev/apikey'>Here</a></Message.Item>
+                        {
+                            steam.loggedIn !== false && <Message.Item>Get your Steam Web API Key <a target='_blank' rel='noopener noreferrer' href='https://steamcommunity.com/dev/apikey'>Here</a></Message.Item>
+                        }
                         {/* <Message.Item>Get your IsThereAnyDeal API Key <a target='_blank' href='https://isthereanydeal.com/dev/app/'>Here</a></Message.Item> */}
                     </Message.List>
                 </Message>

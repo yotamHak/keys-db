@@ -4,7 +4,6 @@ import { isSteamKey, useInterval, isUrl } from "../../../../utils";
 import { useState } from "react";
 
 function KeyCell({ gameKey, rowIndex, onChange, header }) {
-    const [showKey, setShowKey] = useState(false)
     const [copySuccess, setCopySuccess] = useState(null);
     const [resetCopyFeedback, setResetCopyFeedback] = useState(false);
 
@@ -17,8 +16,6 @@ function KeyCell({ gameKey, rowIndex, onChange, header }) {
     function copyToClipboard(e) {
         inputRef.current.select();
         document.execCommand('copy');
-        // This is just personal preference.
-        // I prefer to not show the the whole text area selected.
         e.target.focus();
 
         setCopySuccess('Copied!');
@@ -31,7 +28,13 @@ function KeyCell({ gameKey, rowIndex, onChange, header }) {
             <Grid columns={1}>
                 <Grid.Row className='width-auto'>
                     <Grid.Column className='width-auto'>
-                        <Input type='text' defaultValue={gameKey} action style={{ width: '100%' }} onChange={(e, { value }) => { onChange(header, value) }} >
+                        <Input
+                            type='text'
+                            defaultValue={gameKey}
+                            action
+                            style={{ width: '100%' }}
+                            onChange={(e, { value }) => { onChange(header, value) }}
+                        >
                             <input ref={inputRef} />
                             {
                                 resetCopyFeedback
@@ -42,11 +45,21 @@ function KeyCell({ gameKey, rowIndex, onChange, header }) {
                                             content={"Copied to clipboard!"}
                                             position='top center'
                                             trigger={
-                                                <Button color='teal' icon onClick={copyToClipboard}><Icon name='copy' /></Button>
+                                                <Button
+                                                    color='teal'
+                                                    icon
+                                                    onClick={copyToClipboard}>
+                                                    <Icon name='copy' />
+                                                </Button>
                                             }
                                         />
                                     )
-                                    : <Button color='teal' icon onClick={copyToClipboard}><Icon name='copy' /></Button>
+                                    : <Button
+                                        color='teal'
+                                        icon
+                                        onClick={copyToClipboard}>
+                                        <Icon name='copy' />
+                                    </Button>
                             }
                             {
                                 isSteamKey(gameKey) && (
@@ -55,7 +68,16 @@ function KeyCell({ gameKey, rowIndex, onChange, header }) {
                                         content={"Activate on Steam"}
                                         position='top center'
                                         trigger={
-                                            <Button color='teal' icon as='a' target='_blank' rel='noopener noreferrer' href={`https://store.steampowered.com/account/registerkey?key=${gameKey}`}><Icon name='key' /></Button>
+                                            <Button
+                                                color='teal'
+                                                icon
+                                                as='a'
+                                                target='_blank'
+                                                rel='noopener noreferrer'
+                                                href={`https://store.steampowered.com/account/registerkey?key=${gameKey}`}
+                                            >
+                                                <Icon name='key' />
+                                            </Button>
                                         }
                                     />
                                 )
@@ -67,7 +89,16 @@ function KeyCell({ gameKey, rowIndex, onChange, header }) {
                                         content={"Open link"}
                                         position='top center'
                                         trigger={
-                                            <Button color='teal' icon as='a' target='_blank' rel='noopener noreferrer' href={gameKey}><Icon name='world' /></Button>
+                                            <Button
+                                                color='teal'
+                                                icon
+                                                as='a'
+                                                target='_blank'
+                                                rel='noopener noreferrer'
+                                                href={gameKey}
+                                            >
+                                                <Icon name='world' />
+                                            </Button>
                                         }
                                     />
                                 )

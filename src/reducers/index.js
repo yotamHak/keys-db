@@ -2,6 +2,7 @@ import { combineReducers } from 'redux';
 import * as actionTypes from '../actions/types';
 import _ from 'lodash';
 
+// Table Reducer
 const initialTableState = {
     headers: {},
     rows: [],
@@ -16,6 +17,7 @@ const initialTableState = {
     reload: false,
     pageSize: 24,
     isEmpty: true,
+    showShareModal: false,
 }
 
 const table_reducer = (state = initialTableState, action) => {
@@ -143,12 +145,17 @@ const table_reducer = (state = initialTableState, action) => {
                 ...state,
                 isEmpty: action.payload
             }
+        case actionTypes.SHOW_SHARE_MODAL:
+            return {
+                ...state,
+                showShareModal: action.payload
+            }
         default:
             return state;
     }
 }
 
-
+// Filter Reducer
 const initialFiltersState = []
 
 const filters_reducer = (state = initialFiltersState, action) => {
@@ -176,12 +183,14 @@ const filters_reducer = (state = initialFiltersState, action) => {
     }
 }
 
+// Authentication Reducer
 const initialAuthenticationState = {
     steam: {
         loggedIn: null,
         id: null,
         apiKey: null,
         profile: null,
+        ownedGames: null,
     },
     google: {
         loggedIn: null,
@@ -222,21 +231,44 @@ const authentication_reducer = (state = initialAuthenticationState, action) => {
                     profile: action.payload,
                 }
             }
-        case actionTypes.STEAM_LOGGED_IN:
+        case actionTypes.STEAM_LOGGED:
             newState = {
                 ...state,
                 steam: {
-                    ...state.steam,
-                    loggedIn: true
+                    ...initialAuthenticationState.steam,
+                    loggedIn: action.payload,
                 }
             }
 
-            localStorage.setItem('steam', JSON.stringify(newState.steam))
+            if (action.payload === true) {
+                localStorage.setItem('steam', JSON.stringify(newState.steam))
+            } else {
+                localStorage.removeItem('steam')
+            }
+
             return newState
         case actionTypes.STEAM_LOAD:
             return {
                 ...state,
                 steam: action.payload
+            }
+        case actionTypes.STEAM_SET_OWNED_GAMES:
+            newState = {
+                ...state,
+                steam: {
+                    ...state.steam,
+                    ownedGames: action.payload
+                }
+            }
+
+            localStorage.setItem('steam', JSON.stringify(newState.steam))
+
+            return {
+                ...state,
+                steam: {
+                    ...state.steam,
+                    ownedGames: action.payload
+                }
             }
         case actionTypes.GOOGLE_LOGGED_IN:
             return {
@@ -264,15 +296,19 @@ const authentication_reducer = (state = initialAuthenticationState, action) => {
             localStorage.setItem('spreadsheetId', action.payload)
             return newState
         case actionTypes.SET_CURRENT_SPREADSHEET_ID:
-            newState = {
+            return {
                 ...state,
                 currentSpreadsheetId: action.payload
             }
-            return newState
+        case actionTypes.SET_CURRENT_SHEET_ID:
+            return {
+                ...state,
+                currentSheetId: action.payload
+            }
         case actionTypes.SET_UP_COMPLETE:
             return {
                 ...state,
-                setupComplete: true
+                setupComplete: action.payload
             }
         case actionTypes.SET_SPREADSHEET_PERMISSION:
             return {
@@ -284,6 +320,7 @@ const authentication_reducer = (state = initialAuthenticationState, action) => {
     }
 }
 
+// Theme Reducer
 const initialThemeState = {
     selected: "light",
     light: {
