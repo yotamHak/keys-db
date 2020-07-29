@@ -229,10 +229,10 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
                                                                                 target='_blank'
                                                                                 rel='noopener noreferrer'
                                                                                 href={`https://store.steampowered.com/app/${appId}/`}
-                                                                                color={itadData.lowest.cut > itadData.price.cut ? 'red' : 'green'}
+                                                                                color={itadData.price ? (itadData.lowest.cut > itadData.price.cut ? 'red' : 'green') : 'red'}
                                                                             >
                                                                                 <Statistic.Label>Current Price</Statistic.Label>
-                                                                                <Statistic.Value>{itadData.price.price_formatted}</Statistic.Value>
+                                                                                <Statistic.Value>{itadData.price ? itadData.price.price_formatted : "N\\A"}</Statistic.Value>
                                                                             </Statistic>
 
                                                                             <Statistic

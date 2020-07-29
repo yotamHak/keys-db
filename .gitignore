@@ -1,6 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # Ignore Firebase Config
+.firebase/hosting.*
 /src/firebase/config.js
 
 # Ignore Google Config
