@@ -154,13 +154,13 @@ function Settings() {
                     )
                 } */}
                 <Message style={{ textAlign: 'left' }}>
-                    <Message.Header>Where do I get them from?</Message.Header>
+                    <Message.Header>Info</Message.Header>
                     <Message.List>
-                        <Message.Item>
+                        {/* <Message.Item>
                             Make a copy of <a target='_blank' rel='noopener noreferrer' href='https://docs.google.com/spreadsheets/d/1Xu-kbGGwi40FKgrf5NJMAjGQgHlR3qYmk-w6dUs74Fo/edit#gid=0'>this</a> and get the Id of your copy from the url,
                             <br />
                             the Id looks like: <Label>1Xu-kbGGwi40FKgrf5NJMAjGQgHlR3qYmk-w6dUs74Fo</Label>
-                        </Message.Item>
+                        </Message.Item> */}
                         {
                             steam.loggedIn !== false && <Message.Item>Get your Steam Web API Key <a target='_blank' rel='noopener noreferrer' href='https://steamcommunity.com/dev/apikey'>Here</a></Message.Item>
                         }
