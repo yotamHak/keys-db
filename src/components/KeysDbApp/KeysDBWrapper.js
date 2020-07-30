@@ -41,7 +41,6 @@ function KeysDBWrapper(props) {
 
         if (steam.loggedIn === true && !loadingOwnedGames && (steam.ownedGames === null || dateFns.differenceInMinutes(new Date(), steam.ownedGames.timestamp) > 10)) {
             setLoadingOwnedGames(true)
-
             GetOwnedGames(steam.id, steam.apiKey)
                 .then(response => {
                     if (response.success) {

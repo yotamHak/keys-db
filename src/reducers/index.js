@@ -232,11 +232,21 @@ const authentication_reducer = (state = initialAuthenticationState, action) => {
                 }
             }
         case actionTypes.STEAM_LOGGED:
-            newState = {
-                ...state,
-                steam: {
-                    ...initialAuthenticationState.steam,
-                    loggedIn: action.payload,
+            if (action.payload) {
+                newState = {
+                    ...state,
+                    steam: {
+                        ...state.steam,
+                        loggedIn: action.payload,
+                    }
+                }
+            } else {
+                newState = {
+                    ...state,
+                    steam: {
+                        ...initialAuthenticationState.steam,
+                        loggedIn: action.payload,
+                    }
                 }
             }
 

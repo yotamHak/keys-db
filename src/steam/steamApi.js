@@ -2,11 +2,14 @@ import axios from 'axios'
 import _ from 'lodash'
 import { corsLink } from '../utils'
 
+// https://wiki.teamfortress.com/wiki/User:RJackson/StorefrontAPI#Known_methods
+
 async function _get(url, params = {}) {
     return axios.get(url, {
         headers: {
             'Access-Control-Allow-Origin': '*',
-            'Origin': 'https://keys-db.web.app/',
+            // 'Origin': 'https://keys-db.web.app/',
+            'X-Requested-With': 'XMLHttpRequest',
         },
         ...params
     })
@@ -29,8 +32,16 @@ async function _get(url, params = {}) {
         }));
 }
 
+async function GetPackageDetails(packageid) {
+    return _get(`${corsLink('https://store.steampowered.com/api/packagedetails/')}`, {
+        params: {
+            packageids: packageid,
+        }
+    })
+}
+
 async function GetAppDetails(appid) {
-    return _get(`${corsLink('http://store.steampowered.com/api/appdetails/')}`, {
+    return _get(`${corsLink('https://store.steampowered.com/api/appdetails/')}`, {
         params: {
             appids: appid,
         }
@@ -38,6 +49,20 @@ async function GetAppDetails(appid) {
 }
 
 async function GetOwnedGames(steamId, steamApiKey) {
+    // return fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/')}`,
+    // {
+    //     params: {
+    //         steamids: steamId,
+    //         key: steamApiKey,
+    //         format: 'json'
+    //     }
+    // })
+    // .then(response => {
+    //     if (response.ok) return response.json()
+    //     throw new Error('Network response was not ok.')
+    // })
+    // .then(data => console.log(data.contents));
+
     return _get(corsLink(`http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/`), {
         params: {
             steamid: steamId,
@@ -68,9 +93,6 @@ async function GetOwnedGames(steamId, steamApiKey) {
 
 async function GetUserInfo(steamId, steamApiKey) {
     return _get(corsLink(`https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/`), {
-        headers: {
-            'Access-Control-Allow-Origin': '*',
-        },
         params: {
             steamids: steamId,
             key: steamApiKey,
@@ -104,4 +126,4 @@ function DoesUserOwnGame(ownedGames, appid) {
     return result
 }
 
-export { GetAppDetails, GetOwnedGames, GetUserInfo, DoesUserOwnGame, }
+export { GetAppDetails, GetOwnedGames, GetUserInfo, DoesUserOwnGame, GetPackageDetails, }

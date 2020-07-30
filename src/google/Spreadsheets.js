@@ -521,24 +521,6 @@ class Spreashsheets {
     }
 
     // DeveloperMetadata Related
-    async SearchDeveloperMetadata(spreadsheetId, searchKey) {
-        gapi.client.sheets.spreadsheets.batchUpdate({
-            "spreadsheetId": spreadsheetId,
-            "resource": {
-                "dataFilters": [
-                    {
-                        "developerMetadataLookup": {
-                            "metadataKey": searchKey
-                        }
-                    }
-                ]
-            },
-        }).then(response => {
-            console.log(response)
-            debugger
-        })
-    }
-
     async GetDeveloperMetadata(spreadsheetId, id = SPREADSHEET_METADATA_HEADERS_ID) {
         return gapi.client.sheets.spreadsheets.developerMetadata.get({
             "spreadsheetId": spreadsheetId,

@@ -27,6 +27,11 @@ function Header() {
         dispatch(steamLogged(null))
     }
 
+    function handleLogoutWithSteam() {
+        dispatch(setupComplete(false))
+        dispatch(steamLogged(false))
+    }
+
     return (
         <React.Fragment>
             <GoogleAuthentication dontLogin={true} />
@@ -99,7 +104,7 @@ function Header() {
                                                 {
                                                     steam.loggedIn && steam.profile
                                                         ? (
-                                                            <Grid.Row columns={'equal'}>
+                                                            <Grid.Row columns={'equal'} onClick={handleLogoutWithSteam}>
                                                                 <Grid.Column floated='left' verticalAlign='middle' textAlign='left'>
                                                                     Logout from Steam
                                                                 </Grid.Column>
@@ -109,8 +114,8 @@ function Header() {
                                                             </Grid.Row>
                                                         )
                                                         : (
-                                                            <Grid.Column floated='left' verticalAlign='middle' textAlign='left'>
-                                                                <NavLink to="/login" onClick={handleLoginWithSteam}>
+                                                            <Grid.Column floated='left' verticalAlign='middle' textAlign='left' onClick={handleLoginWithSteam}>
+                                                                <NavLink to="/login">
                                                                     <Menu.Item name='Login with Steam' style={{ padding: '0' }} />
                                                                 </NavLink>
                                                             </Grid.Column>

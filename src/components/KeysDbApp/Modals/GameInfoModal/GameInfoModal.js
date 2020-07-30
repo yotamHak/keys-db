@@ -10,7 +10,7 @@ import withAutoplay from 'react-awesome-slider/dist/autoplay';
 
 import itadApi from "../../../../itad";
 import { STEAM_CATEGORIES } from "../../../../utils";
-import { GetAppDetails } from "../../../../steam/steamApi";
+import { GetAppDetails, GetPackageDetails } from "../../../../steam/steamApi";
 
 function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }) {
     const [appData, setAppData] = useState(null)
@@ -33,7 +33,19 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
             .then(response => {
                 if (response.success && response.data[id]) {
                     // console.log("Steam App data:", response.data[id].data)
-                    setAppData(response.data[id].data)
+                    if (response.data[id].success && response.data[id].success !== false) {
+                        setAppData(response.data[id].data)
+                    } else {
+                        GetPackageDetails(id)
+                            .then(response => {
+                                if (response.success && response.data[id].success && response.data[id].success !== false) {
+                                    console.log(response.data)
+                                    setAppData(response.data[id].data)
+                                } else {
+                                    setErrorGettingSteamData(true)
+                                }
+                            })
+                    }
                 } else {
                     setErrorGettingSteamData(true)
                 }
@@ -142,7 +154,7 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
         }
     }
 
-    const renderMedia = () => {
+    const renderMedia = (screenshots, movies) => {
         return (
             <Grid.Column width={10} textAlign='center'>
                 <Grid centered style={{ height: '100%' }}>
@@ -150,9 +162,21 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
                         <Grid.Column />
                         <Grid.Column width={14} style={{ marginBottom: '40px', height: '100%' }}>
                             {
-                                appData.movies
+                                movies
                                     ? <Tab menu={{ secondary: true, pointing: true }} onTabChange={handleTabChange} panes={panes} className='white-tabs' style={{ height: '100%' }} />
-                                    : <ImageCarousel images={appData.screenshots.reduce((result, item) => (_.concat(result, [item.path_full])), [])} />
+                                    : <AutoplaySlider
+                                        play={true}
+                                        cancelOnInteraction={true}
+                                        interval={6000}
+                                        media={screenshots.reduce((result, item) => (
+                                            _.concat(result,
+                                                [{
+                                                    source: item.path_full,
+                                                    onClick: () => { fullscreenModal(item.path_full) }
+                                                }]
+                                            )
+                                        ), [])}
+                                    />
                             }
                         </Grid.Column>
                         <Grid.Column />
@@ -180,6 +204,92 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
                 return ''
         }
     }
+
+    const renderReviews = (reviews) => (
+        <Grid.Row>
+            <Grid.Column width={16}>
+                <Divider />
+                <Segment vertical>
+                    <Header as='h2' inverted>
+                        <Grid width={16}>
+                            <Grid.Column textAlign='center'>
+                                Reviews
+                            </Grid.Column>
+                        </Grid>
+                    </Header>
+                    <Grid centered>
+                        <Grid.Column>
+                            <div dangerouslySetInnerHTML={{ __html: reviews }} />
+                        </Grid.Column>
+                    </Grid>
+                </Segment>
+            </Grid.Column>
+        </Grid.Row>
+    )
+
+    const renderDescription = (description) => (
+        <Grid.Row>
+            <Grid.Column width={16}>
+                <Divider />
+                <Segment vertical>
+                    <Header as='h2' inverted>
+                        <Grid width={16}>
+                            <Grid.Column textAlign='center'>
+                                Description
+                            </Grid.Column>
+                        </Grid>
+                    </Header>
+                    <Grid centered>
+                        <Grid.Column>
+                            <div dangerouslySetInnerHTML={{ __html: description }} />
+                        </Grid.Column>
+                    </Grid>
+                </Segment>
+            </Grid.Column>
+        </Grid.Row>
+    )
+
+    const renderIncludedApps = (apps) => (
+        <Grid.Row columns={1} textAlign='center'>
+            <Grid.Column width={16}>
+                <Divider />
+                <Segment vertical>
+                    <Header as='h2' inverted>
+                        <Grid width={16}>
+                            <Grid.Column textAlign='center'>
+                                Included in this package
+                            </Grid.Column>
+                        </Grid>
+                    </Header>
+                    <Grid>
+                        {
+                            _.chunk(apps, 16).map((chunk, index) => (
+                                <Grid.Row key={index}>
+                                    <Grid.Column>
+                                        <Image.Group size='medium'>
+                                            {
+                                                chunk.map((game, index) => (
+                                                    <Image
+                                                        as='a'
+                                                        target='_blank'
+                                                        rel='noopener noreferrer'
+                                                        href={`https://store.steampowered.com/app/${game.id}/`}
+                                                        title={game.name}
+                                                        src={`https://steamcdn-a.akamaihd.net/steam/apps/${game.id}/header.jpg`}
+                                                        key={index}
+                                                    />
+                                                ))
+                                            }
+                                        </Image.Group>
+                                    </Grid.Column>
+                                </Grid.Row>
+                            ))
+                        }
+                    </Grid>
+                </Segment>
+            </Grid.Column>
+        </Grid.Row>
+    )
 
     return (
         <Modal
@@ -291,6 +401,7 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
                                                                     }
                                                                 </Statistic.Group>
                                                             </Grid.Row>
+
                                                             {
                                                                 itadData && _.isArray(itadData.bundles.live) && itadData.bundles.live.length > 0 && (
                                                                     <Message>
@@ -418,66 +529,29 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
                                                                 )
                                                             }
                                                         </Grid.Column>
-                                                        {renderMedia()}
-                                                    </Grid.Row>
-                                                    <Grid.Row>
-                                                        <Grid.Column width={16}>
-                                                            <Divider />
-                                                            <Segment vertical>
-                                                                <Header as='h2' inverted>
-                                                                    <Grid width={16}>
-                                                                        <Grid.Column textAlign='center'>
-                                                                            About the game
-                                                                            </Grid.Column>
-                                                                    </Grid>
-                                                                </Header>
-                                                                <Grid centered>
-                                                                    <Grid.Column>
-                                                                        <div dangerouslySetInnerHTML={{ __html: appData.detailed_description }} />
+
+                                                        {
+                                                            appData.screenshots
+                                                                ? renderMedia(appData.screenshots, appData.movies)
+                                                                : appData.page_image && (
+                                                                    <Grid.Column width={10} textAlign='center'>
+                                                                        <Image
+                                                                            centered
+                                                                            src={appData.page_image}
+                                                                        />
                                                                     </Grid.Column>
-                                                                </Grid>
-                                                            </Segment>
-                                                            {/* <Segment vertical>
-                                                                <Header as='h3' style={{ width: '100%' }} className='pointer' onClick={() => setExtendedDescription(!extendedDescription)}>
-                                                                    <Grid width={16}>
-                                                                        <Grid.Column floated='left' width={10} textAlign='left'>
-                                                                            About the game
-                                                                    </Grid.Column>
-                                                                        <Grid.Column floated='right' width={6} textAlign='right'>
-                                                                            <Icon name={extendedDescription ? 'angle up' : 'angle down'} />
-                                                                        </Grid.Column>
-                                                                    </Grid>
-                                                                </Header>
-                                                                <Grid centered columns={2}>
-                                                                    <Grid.Column>
-                                                                        <div dangerouslySetInnerHTML={{ __html: extendedDescription ? appData.detailed_description : appData.short_description }} />
-                                                                    </Grid.Column>
-                                                                </Grid>
-                                                            </Segment> */}
-                                                        </Grid.Column>
+                                                                )
+                                                        }
+
                                                     </Grid.Row>
                                                     {
-                                                        appData.reviews && (
-                                                            <Grid.Row>
-                                                                <Grid.Column width={16}>
-                                                                    <Divider />
-                                                                    <Segment vertical>
-                                                                        <Header as='h2' inverted>
-                                                                            <Grid width={16}>
-                                                                                <Grid.Column textAlign='center'>
-                                                                                    Reviews
-                                                                            </Grid.Column>
-                                                                            </Grid>
-                                                                        </Header>
-                                                                        <Grid centered>
-                                                                            <Grid.Column>
-                                                                                <div dangerouslySetInnerHTML={{ __html: appData.reviews }} />
-                                                                            </Grid.Column>
-                                                                        </Grid>
-                                                                    </Segment>
-                                                                </Grid.Column>
-                                                            </Grid.Row>
-                                                        )
+                                                        ((appData.detailed_description || appData.page_content) && renderDescription(appData.detailed_description || appData.page_content))
+                                                    }
+                                                    {
+                                                        appData.reviews && renderReviews(appData.reviews)
+                                                    }
+                                                    {
+                                                        appData.apps && renderIncludedApps(appData.apps)
                                                     }
                                                 </Grid>
                                             </Modal.Content>
