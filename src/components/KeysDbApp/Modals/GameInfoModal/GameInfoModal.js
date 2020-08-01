@@ -438,7 +438,7 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
                                                                         <Segment inverted color='black'>
                                                                             <Image.Group size='mini'>
                                                                                 {
-                                                                                    appData.categories.map(category => <Popup content={category.description} position='top center' trigger={<Image className="no-margin" src={STEAM_CATEGORIES[category.description]} size='mini' key={category.id} />} key={category.id} />)
+                                                                                    appData.categories.map(category => <Popup content={category.description} position='top center' trigger={<Image className="no-margin" src={STEAM_CATEGORIES[category.id]} size='mini' key={category.id} />} key={category.id} />)
                                                                                 }
                                                                             </Image.Group>
                                                                         </Segment>

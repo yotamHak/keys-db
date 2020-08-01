@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { NavLink, } from "react-router-dom";
 import { spreadsheetSetId, steamLoad, steamLogged, setupComplete, } from "../../actions";
 import GoogleAuthentication from "../../google/GoogleAuthentication";
+import ChangelogModal from "../KeysDbApp/Modals/ChangelogModal/ChangelogModal";
 
 function Header() {
     const google = useSelector((state) => state.authentication.google)
@@ -35,10 +36,11 @@ function Header() {
     return (
         <React.Fragment>
             <GoogleAuthentication dontLogin={true} />
-            <Menu pointing>
+            <Menu>
                 <NavLink to="/">
                     <Menu.Item name='Home' />
                 </NavLink>
+
                 {
                     spreadsheetId && (
                         <NavLink to={`/id/${spreadsheetId}`}>
@@ -46,6 +48,8 @@ function Header() {
                         </NavLink>
                     )
                 }
+
+                <ChangelogModal trigger={<Menu.Item name='Changelog' />} />
 
                 <Menu.Menu position='right'>
                     {

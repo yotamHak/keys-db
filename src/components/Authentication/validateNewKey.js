@@ -4,8 +4,8 @@ export default function validateNewKey(values) {
     // Title Errors
     if (!values['Title']) {
         errors['Title'] = "Title is required";
-    } else if (values['Title'].length < 3) {
-        errors.title = "Title must be at least 3 characters";
+    } else if (values['Title'].length === 0) {
+        errors.title = "Title must have at least 1 character";
     }
 
     // Date Errors
