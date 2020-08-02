@@ -3,16 +3,24 @@ import { Modal, Icon, List, Segment, Header, } from "semantic-ui-react";
 import _ from 'lodash';
 
 
-function ChangelogModal({trigger}) {
+function ChangelogModal({ trigger }) {
     const changes = [
+        {
+            date: '2/8/2020',
+            list: [
+                'Options are now editable.',
+            ]
+        },
         {
             date: '1/8/2020',
             list: [
-                'Game categories fix',
-                'Needs at least 1 character to add a game, not 3',
-                'Changelog added'
+                'Game categories fix.',
+                'Changed the minimum characters needed to add a game from 3 to 1.',
+                'Export fix.',
+                'In the new\\edit key, the date value will be filled to today\'s date on open.',
+                'Changelog added.'
             ]
-        }
+        },
     ]
 
     return (

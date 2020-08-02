@@ -3,12 +3,11 @@ import { useHistory } from 'react-router-dom'
 import { useSelector, } from "react-redux"
 import { Container, Step, Grid, } from "semantic-ui-react"
 
-import Settings from "../Settings/Settings"
-import SteamLogin from "../../auth/SteamLogin/SteamLogin"
+import GoogleAuthentication from "../../google/GoogleAuthentication"
+import Settings from "../../components/KeysDbApp/Settings/Settings"
+import SteamLogin from "../../components/auth/SteamLogin/SteamLogin"
 
-import GoogleAuthentication from "../../../google/GoogleAuthentication"
-
-function SetupPage() {    
+function SetupPage() {
     // const googleClientReady = useSelector((state) => state.authentication.googleClientReady)
     const isSteamLogged = useSelector((state) => state.authentication.steam.loggedIn)
     const isGoogleLogged = useSelector((state) => state.authentication.google.loggedIn)

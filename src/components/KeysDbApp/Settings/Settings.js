@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Form, Grid, Header, Message, Segment, Label } from 'semantic-ui-react'
+import { Button, Form, Grid, Header, Message, Segment, } from 'semantic-ui-react'
 
 import validateSettings from '../../Authentication/validateSettings';
 import useFormValidation from '../../Authentication/useFormValidation';
@@ -11,7 +11,6 @@ import { GetUserInfo } from '../../../steam/steamApi';
 import Spreadsheets from '../../../google/Spreadsheets';
 
 function Settings() {
-
     // const [haveValues, setHaveValues] = React.useState(localStorage.getItem('spreadsheetId') && (localStorage.getItem('steam') && localStorage.getItem('steam').apiKey) ? true : false);
 
     const steam = useSelector((state) => state.authentication.steam)

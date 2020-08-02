@@ -774,13 +774,13 @@ class Spreashsheets {
 
                     const newSheetId = response.data.sheetId
 
-                    const deleteRowsRequest = this._getDeleteDimensionRequest(response.data.sheetId, "ROWS", 3)
+                    const deleteRowsRequest = this._getDeleteDimensionRequest(newSheetId, "ROWS", 3)
                     const deleteSheetRequest = this._getDeleteSheetRequest(0)
 
                     return this._batchUpdate(newSpreadsheetId, _.concat([deleteRowsRequest], [deleteSheetRequest])).then(response => {
                         if (!response.success) { return handleError("_batchUpdate") }
 
-                        return this.Insert(newSpreadsheetId, newRows).then(response => {
+                        return this.Insert(newSpreadsheetId, newSheetId, newRows).then(response => {
                             if (!response.success) { return handleError("Insert") }
 
                             let newId = 0

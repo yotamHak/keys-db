@@ -8,8 +8,8 @@ async function _get(url, params = {}) {
     return axios.get(url, {
         headers: {
             'Access-Control-Allow-Origin': '*',
-            // 'Origin': 'https://keys-db.web.app/',
             'X-Requested-With': 'XMLHttpRequest',
+            // 'Origin': 'https://keys-db.web.app/',
         },
         ...params
     })

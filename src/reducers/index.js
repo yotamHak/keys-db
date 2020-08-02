@@ -132,6 +132,26 @@ const table_reducer = (state = initialTableState, action) => {
                     }
                 },
             }
+        case actionTypes.EDIT_OPTION_CHANGE:
+            const newOptions = {
+                ...state.changes.headers[action.payload.header].options,
+            }
+
+            newOptions.values[action.payload.index] = action.payload.editedOption
+
+            return {
+                ...state,
+                changes: {
+                    ...state.changes,
+                    headers: {
+                        ...state.changes.headers,
+                        [action.payload.header]: {
+                            ...state.changes.headers[action.payload.header],
+                            options: newOptions
+                        }
+                    }
+                },
+            }
         case actionTypes.SET_NEW_ROW_CHANGE:
             return {
                 ...state,

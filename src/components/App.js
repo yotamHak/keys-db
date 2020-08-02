@@ -2,12 +2,12 @@ import React, { } from "react"
 import { BrowserRouter, Switch, Route, } from 'react-router-dom'
 import firebase, { FirebaseContext } from '../firebase';
 
-import KeysDBWrapper from "./KeysDbApp/KeysDBWrapper"
 import Settings from "./KeysDbApp/Settings/Settings"
-import SetupPage from "./KeysDbApp/SetupPage/SetupPage";
 import Header from "./Header/Header";
-import Home from "../components/Home/Home";
-import ErrorPage from "./KeysDbApp/ErrorPage/ErrorPage";
+import ErrorPage from "../pages/ErrorPage/ErrorPage";
+import Home from "../pages/Home/Home";
+import KeysDBPage from "../pages/KeysDBPage/KeysDBPage";
+import SetupPage from "../pages/SetupPage/SetupPage";
 
 function App() {
     return (
@@ -20,7 +20,7 @@ function App() {
                         <Route path="/login" component={SetupPage} />
                         <Route path="/settings" component={Settings} />
                         <Route path="/error/:error" component={ErrorPage} />
-                        <Route path="/id/:spreadsheetId" component={KeysDBWrapper} />
+                        <Route path="/id/:spreadsheetId" component={KeysDBPage} />
                         <Route exact path="/" component={Home} />
                     </Switch>
                 </div>

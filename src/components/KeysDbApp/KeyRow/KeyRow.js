@@ -130,13 +130,10 @@ function KeyRow({ rowIndex }) {
     function saveChanges(gameData) {
         setIsSaving(true)
 
-        Spreadsheets.Update(spreadsheetId,sheetId, gameData, gameData[0])
+        Spreadsheets.Update(spreadsheetId, sheetId, gameData, gameData[0])
             .then(response => {
                 console.log(response)
                 setHasChanges(false)
-            })
-            .catch(reason => {
-                console.error(reason)
             })
             .finally(response => {
                 setIsSaving(false)
@@ -144,7 +141,7 @@ function KeyRow({ rowIndex }) {
     }
 
     return (
-        <Table.Row style={hasChanges ? { backgroundColor: '#B5B4D9' } : {}}>
+        <Table.Row warning={hasChanges}>
             {
                 hasChanges
                     ? <Table.Cell singleLine>

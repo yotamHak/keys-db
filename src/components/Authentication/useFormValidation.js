@@ -51,7 +51,9 @@ function useFormValidation(initialState, validate, authenticate) {
         } else {
             setValues(previousValues => ({
                 ...previousValues,
-                [data.name]: data.value || data.checked
+                [data.name]: data.value === undefined
+                    ? data.checked
+                    : data.value
             }));
         }
     }

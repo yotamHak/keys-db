@@ -100,8 +100,6 @@ function NewModal({ initialValue, isEdit, children }) {
             newRowValues[steamOwnershipLabel].value = DoesUserOwnGame(steam.ownedGames.games, result.appid) ? 'Own' : 'Missing'
         }
 
-        newRowValues[dateAddedLabel].value = newRowValues[dateAddedLabel].value ? newRowValues[dateAddedLabel].value : parseSpreadsheetDate(new Date());
-
         await itadApi.GetInfoAboutGame(result.plain).then(response => {
             console.log("More Info from ITAD:", response)
             newRowValues[steamCardsLabel].value = response.trading_cards ? 'Have' : 'Missing';
@@ -161,6 +159,10 @@ function NewModal({ initialValue, isEdit, children }) {
     }
 
     function selectInput(header) {
+        if (header.type === dateAddedLabel && values[header.label] === "") {
+            values[header.label] = parseSpreadsheetDate(new Date())
+        }
+
         switch (header.type) {
             case 'date':
                 return <Form.Input

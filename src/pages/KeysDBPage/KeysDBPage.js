@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import KeysTable from "./KeysTable/KeysTable";
+import KeysTable from "../../components/KeysDbApp/KeysTable/KeysTable";
 import Spreadsheets from "../../google/Spreadsheets";
 import { useDispatch, useSelector, } from "react-redux";
 import { addHeaders, spreadsheetSetPermission, setCurrentSpreadsheetId, steamSetOwnedGames, setCurrentSheetId, } from "../../actions";
@@ -9,7 +9,7 @@ import dateFns from 'date-fns'
 import { usePrevious } from "../../utils";
 import { GetOwnedGames } from "../../steam/steamApi";
 
-function KeysDBWrapper(props) {
+function KeysDBPage(props) {
     const spreadsheetId = props.match.params.spreadsheetId || useSelector((state) => state.authentication.spreadsheetId)
     const google = useSelector((state) => state.authentication.google)
     const steam = useSelector((state) => state.authentication.steam)
@@ -24,7 +24,7 @@ function KeysDBWrapper(props) {
     const history = useHistory()
 
     useEffect(() => {
-        if (google.googleClientReady && (!google.loggedIn)) {
+        if (google.googleClientReady && (google.loggedIn === null || google.loggedIn === false)) {
             history.push(`/login`)
         }
 
@@ -88,4 +88,4 @@ function KeysDBWrapper(props) {
     )
 }
 
-export default KeysDBWrapper;
+export default KeysDBPage;

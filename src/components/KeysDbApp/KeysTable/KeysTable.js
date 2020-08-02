@@ -1,15 +1,15 @@
 import React, { useEffect, useState, } from "react";
 import { Table, Dimmer, Icon, Segment, Loader, Placeholder, Menu, Pagination, Dropdown, Header, Input, Grid, } from 'semantic-ui-react';
 import _ from 'lodash';
+import { useSelector, useDispatch } from "react-redux";
 
+import { reloadTable, setCurrentRows, setIsTableEmpty, showShareModal } from "../../../actions";
 import { usePrevious, TABLE_DEFAULT_OFFSET, TABLE_DEFAULT_LIMIT, TABLE_DEFAULT_ACTIVEPAGE, hasWritePermission, } from "../../../utils";
 import KeyRow from "../KeyRow/KeyRow";
 import Spreadsheets from '../../../google/Spreadsheets';
 import NewModal from "../Modals/NewModal/NewModal";
 import SortDropdown from "../SortDropdown/SortDropdown";
-import { useSelector, useDispatch } from "react-redux";
 import DataFilters from "./DataFilters/DataFilters";
-import { reloadTable, setCurrentRows, setIsTableEmpty, showShareModal } from "../../../actions";
 import HeaderRow from "../HeaderRow/HeaderRow";
 import TableSettingsModal from "../Modals/TableSettingsModal/TableSettingsModal";
 import ShareModal from "../Modals/ShareModal/ShareModal";
@@ -51,12 +51,6 @@ function KeysTable() {
             }
         }
 
-        // console.log("Offset:", offset);
-        // console.log("Limit:", limit);
-        // console.log("OrderBy:", orderBy);
-        // console.log("Filters:", filters);
-        // console.log("-------------------------")
-
         loadGames(spreadsheetId, titleQuery, offset, limit, orderBy, filters)
         dispatch(reloadTable(false))
     }, [titleQuery, filters, offset, limit, orderBy, reload]);
@@ -75,6 +69,7 @@ function KeysTable() {
         }
 
         setLoading(true)
+
         Spreadsheets.GetFilteredData(spreadsheetId, titleQuery, offset, limit, convertedOrderBy, filters)
             .then(response => {
                 if (response.success) {
@@ -115,6 +110,13 @@ function KeysTable() {
             setTitleQuery(value)
             setIsSearching(true)
             dispatch(reloadTable(true))
+        }
+    }
+
+    const style = {
+        filtersSegment: {
+            segment: { minHeight: '5.5em', alignItems: 'center', display: 'flex' },
+            row: { height: '100%', alignItems: 'center', display: 'flex' }
         }
     }
 
@@ -180,21 +182,23 @@ function KeysTable() {
                             }
                         </Menu>
                     </Segment>
-                    <Segment size="mini" key={`filters-segment`} style={{ minHeight: '5.5em', alignItems: 'center', display: 'flex' }}>
+
+                    <Segment size="mini" key={`filters-segment`} style={style.filtersSegment.segment}>
                         <Grid celled='internally'>
                             <Grid.Row columns={2}>
-                                <div style={{ height: '100%', alignItems: 'center', display: 'flex' }}>
+                                <div style={style.filtersSegment.row}>
                                     <Input size={'small'} loading={isSearching} icon='search' placeholder='Search...' onChange={searchByTitle} />
                                 </div>
                                 &nbsp;&nbsp;&nbsp;
-                                <div style={{ height: '100%', alignItems: 'center', display: 'flex' }}>
+                                <div style={style.filtersSegment.row}>
                                     <DataFilters />
                                 </div>
                             </Grid.Row>
                         </Grid>
                     </Segment>
+
                     <Segment size="mini" key={`table-segment`}>
-                        <Table celled striped compact>
+                        <Table selectable celled striped compact>
                             <Table.Header>
                                 <HeaderRow />
                             </Table.Header>
@@ -222,6 +226,7 @@ function KeysTable() {
                                         />)
                                 }
                             </Table.Body>
+
                             {
                                 _.isEmpty(games) && !loading && (
                                     <Table.Footer fullWidth>
@@ -230,7 +235,7 @@ function KeysTable() {
                                                 <Segment placeholder as='span'>
                                                     <Header icon>
                                                         <Icon name='frown outline' />
-                                                    Aww... Nothing found
+                                                        Aww... Nothing found
                                                 </Header>
                                                 </Segment>
                                             </Table.HeaderCell>
