@@ -1,7 +1,7 @@
 {
-  "name": "key-db",
+  "name": "keys-db",
   "version": "1.0.0",
-  "description": "Key db using google sheets",
+  "description": "Keys-db using google sheets",
   "private": true,
   "dependencies": {
     "axios": "^0.18.0",
@@ -10,10 +10,8 @@
     "firebase-admin": "^7.3.0",
     "firebase-functions": "^2.3.1",
     "gapi-script": "^1.0.2",
+    "lodash": "^4.17.19",
     "moment": "^2.27.0",
-    "openid-steam": "^0.1.4",
-    "pure-react-carousel": "^1.27.1",
-    "querystring": "^0.2.0",
     "react": "^16.13.1",
     "react-awesome-slider": "^4.1.0",
     "react-dom": "^16.13.1",

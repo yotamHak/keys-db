@@ -1,6 +1,5 @@
 import React, { useState, } from "react";
 import { Modal, Icon, Grid, Placeholder, Statistic, Segment, Header, Message, Container, Dropdown, List, Divider, Image, Popup, Tab, } from "semantic-ui-react";
-import ImageCarousel from "../../../ImageCarousel/ImageCarousel";
 import _ from 'lodash';
 import dateFns from 'date-fns';
 
