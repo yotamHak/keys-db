@@ -153,6 +153,12 @@ class Spreashsheets {
                     }
                 }
             })
+            .catch(response => { 
+                return {
+                    success: false,
+                    data: response
+                }
+            })
     }
 
     _getDeleteRequest(sheetId, range) {
@@ -693,6 +699,10 @@ class Spreashsheets {
                 }
             })
             .catch(response => ({ success: false, error: response.result.error.status }))
+    }
+
+    async GetSpreadsheet(spreadsheetId, includeData) {
+        return this._getSpreadsheet(spreadsheetId, includeData)
     }
 
     async GetFilteredData(spreadsheetId, titleQuery, offset, limit, orderBy, filters) {

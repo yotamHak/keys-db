@@ -36,6 +36,10 @@ export const EDIT_OPTION_CHANGE = 'EDIT_OPTION_CHANGE';
 
 export const SHOW_SHARE_MODAL = 'SHOW_SHARE_MODAL';
 
+// Import Action Types
+export const SET_IMPORTED_HEADERS = 'SET_IMPORTED_HEADERS';
+export const SET_IMPORTED_HEADER = 'SET_IMPORTED_HEADER';
+
 // Filters Action Types
 export const ADD_FILTER = 'ADD_FILTER';
 export const REMOVE_FILTER = 'REMOVE_FILTER';

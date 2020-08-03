@@ -11,7 +11,7 @@ import { useState } from 'react';
 
 function OptionsEditor({ headerKey, }) {
     const headerToBeChanged = useSelector((state) => state.table.changes.headers[headerKey])
-    const optionsObject = useSelector((state) => state.table.changes.headers[headerKey].options || { allowEdit: true, values: [] })
+    const optionsObject = useSelector((state) => (!_.isEmpty(state.table.changes) && state.table.changes.headers[headerKey].options) || { allowEdit: true, values: [] })
 
     const [isEditing, setIsEditing] = useState(false)
 

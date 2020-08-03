@@ -8,7 +8,7 @@ import { setNewRowChange, reloadTable, addHeaders, } from "../../../../actions";
 import ErrorBox from "../../../Authentication/ErrorBox/ErrorBox";
 import OptionsEditor from "../../OptionsEditor/OptionsEditor";
 import Spreadsheets from "../../../../google/Spreadsheets";
-import { fieldTypes } from "../../../../utils";
+import { fieldTypes, cleanRedundentOptions } from "../../../../utils";
 
 function TableSettingsModal() {
     const [modalOpen, setModalOpen] = useState(false)
@@ -46,24 +46,6 @@ function TableSettingsModal() {
     const handleOpen = () => setModalOpen(true)
 
     const handleClose = () => setModalOpen(false)
-
-    const cleanRedundentOptions = headers => Object.keys(headers).reduce((result, key) => {
-        if ((headers[key].type !== 'dropdown' && headers[key].type !== 'steam_ownership' && headers[key].type !== 'steam_cards') && headers[key].options) {
-            let newHeader = { ...headers[key] }
-
-            _.unset(newHeader, 'options')
-
-            return {
-                ...result,
-                [key]: newHeader
-            }
-        } else {
-            return {
-                ...result,
-                [key]: headers[key]
-            }
-        }
-    }, {})
 
     const onSubmit = () => {
         dispatch(setNewRowChange('headers', cleanRedundentOptions(values)))

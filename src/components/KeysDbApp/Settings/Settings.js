@@ -9,6 +9,7 @@ import { setupComplete, spreadsheetSetId, steamSetApiKey, steamSetProfile, steam
 import { usePrevious, useInterval } from '../../../utils';
 import { GetUserInfo } from '../../../steam/steamApi';
 import Spreadsheets from '../../../google/Spreadsheets';
+import ImportModal from '../Modals/ImportModal/ImportModal';
 
 function Settings() {
     // const [haveValues, setHaveValues] = React.useState(localStorage.getItem('spreadsheetId') && (localStorage.getItem('steam') && localStorage.getItem('steam').apiKey) ? true : false);
@@ -24,7 +25,7 @@ function Settings() {
     const [isSuccess, setIsSuccess] = useState(false);
     const [creatingSpreadsheet, setCreatingSpreadsheet] = useState(false);
 
-    const INITIAL_STATE = steam.loggedIn
+    const INITIAL_STATE = steam.loggedIn || JSON.parse(localStorage.getItem('steam')).loggedIn
         ? {
             spreadsheetId: localStorage.getItem('spreadsheetId') || '',
             steamApiKey: (JSON.parse(localStorage.getItem('steam')) && JSON.parse(localStorage.getItem('steam')).apiKey) || '',
@@ -89,6 +90,14 @@ function Settings() {
         <Grid textAlign='center' style={{ height: '100%' }} verticalAlign='middle'>
             <Grid.Column style={{ maxWidth: 600 }}>
                 <Header as='h2' color='black' textAlign='center'>Settings</Header>
+
+                <Message style={{ textAlign: 'left' }} info>
+                    <Message.Header>Already have a spreadsheet?</Message.Header>
+                    <Message.List>
+                        <Message.Item>Click <ImportModal trigger={<span style={{ cursor: 'pointer' }}>Here</span>} />  to import</Message.Item>
+                    </Message.List>
+                </Message>
+
                 <Form onSubmit={handleSubmit} size='large'>
                     <Segment>
                         <Form.Input
@@ -140,32 +149,16 @@ function Settings() {
                         </Message>
                     )
                 }
-                {/* {
-                    haveValues && (
-                        <Message positive>
-                            <Message.Header>All done!</Message.Header>
-                            <p>
-                                <Button size='small' onClick={goToSpreadsheet} positive>
-                                    Take me to my spreadsheet!
-                                    </Button>
-                            </p>
+                {
+                    steam.loggedIn !== false && (
+                        <Message style={{ textAlign: 'left' }}>
+                            <Message.Header>Info</Message.Header>
+                            <Message.List>
+                                <Message.Item>Get your Steam Web API Key <a target='_blank' rel='noopener noreferrer' href='https://steamcommunity.com/dev/apikey'>Here</a></Message.Item>
+                            </Message.List>
                         </Message>
                     )
-                } */}
-                <Message style={{ textAlign: 'left' }}>
-                    <Message.Header>Info</Message.Header>
-                    <Message.List>
-                        {/* <Message.Item>
-                            Make a copy of <a target='_blank' rel='noopener noreferrer' href='https://docs.google.com/spreadsheets/d/1Xu-kbGGwi40FKgrf5NJMAjGQgHlR3qYmk-w6dUs74Fo/edit#gid=0'>this</a> and get the Id of your copy from the url,
-                            <br />
-                            the Id looks like: <Label>1Xu-kbGGwi40FKgrf5NJMAjGQgHlR3qYmk-w6dUs74Fo</Label>
-                        </Message.Item> */}
-                        {
-                            steam.loggedIn !== false && <Message.Item>Get your Steam Web API Key <a target='_blank' rel='noopener noreferrer' href='https://steamcommunity.com/dev/apikey'>Here</a></Message.Item>
-                        }
-                        {/* <Message.Item>Get your IsThereAnyDeal API Key <a target='_blank' href='https://isthereanydeal.com/dev/app/'>Here</a></Message.Item> */}
-                    </Message.List>
-                </Message>
+                }
             </Grid.Column>
         </Grid>
     )

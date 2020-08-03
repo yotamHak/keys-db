@@ -175,34 +175,6 @@ const table_reducer = (state = initialTableState, action) => {
     }
 }
 
-// Filter Reducer
-const initialFiltersState = []
-
-const filters_reducer = (state = initialFiltersState, action) => {
-    switch (action.type) {
-        case actionTypes.ADD_FILTER:
-            const oldFilters = state.filter(filter => { return filter.key !== action.payload.key });
-
-            return oldFilters.length > 0
-                ? _.concat(oldFilters, action.payload)
-                : [action.payload];
-        case actionTypes.REMOVE_FILTER:
-            return state.reduce((result, filter) => {
-                return filter.key === action.payload.key
-                    ? filter.values.length === 1
-                        ? result
-                        : result.concat([{
-                            key: action.payload.key,
-                            values: filter.values.filter(filterValue => { return filterValue !== action.payload.value }),
-                            id: action.payload.id,
-                        }])
-                    : result.concat(filter)
-            }, [])
-        default:
-            return state;
-    }
-}
-
 // Authentication Reducer
 const initialAuthenticationState = {
     steam: {
@@ -350,6 +322,59 @@ const authentication_reducer = (state = initialAuthenticationState, action) => {
     }
 }
 
+// Import Reducer
+const initialImportState = {
+    headers: null
+}
+
+const import_reducer = (state = initialImportState, action) => {
+    switch (action.type) {
+        case actionTypes.SET_IMPORTED_HEADERS:
+            return {
+                ...state,
+                headers: action.payload
+            }
+        case actionTypes.SET_IMPORTED_HEADER:
+            return {
+                ...state,
+                headers: {
+                    ...state.headers,
+                    [action.payload.label]: action.payload
+                }
+            }
+        default:
+            return state;
+    }
+}
+
+// Filter Reducer
+const initialFiltersState = []
+
+const filters_reducer = (state = initialFiltersState, action) => {
+    switch (action.type) {
+        case actionTypes.ADD_FILTER:
+            const oldFilters = state.filter(filter => { return filter.key !== action.payload.key });
+
+            return oldFilters.length > 0
+                ? _.concat(oldFilters, action.payload)
+                : [action.payload];
+        case actionTypes.REMOVE_FILTER:
+            return state.reduce((result, filter) => {
+                return filter.key === action.payload.key
+                    ? filter.values.length === 1
+                        ? result
+                        : result.concat([{
+                            key: action.payload.key,
+                            values: filter.values.filter(filterValue => { return filterValue !== action.payload.value }),
+                            id: action.payload.id,
+                        }])
+                    : result.concat(filter)
+            }, [])
+        default:
+            return state;
+    }
+}
+
 // Theme Reducer
 const initialThemeState = {
     selected: "light",
@@ -382,6 +407,7 @@ const rootReducer = combineReducers({
     table: table_reducer,
     theme: theme_reducer,
     authentication: authentication_reducer,
+    import: import_reducer,
 });
 
 export default rootReducer;

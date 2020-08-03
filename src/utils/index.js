@@ -125,6 +125,26 @@ export const parseOptions = options => options.values
   }])), [])
   .sort((a, b) => { return alphabetSort(a.text, b.text) })
 
+
+const _ignoredOptionTypes = ['dropdown', 'steam_ownership', 'steam_cards']
+export const cleanRedundentOptions = headers => Object.keys(headers).reduce((result, key) => {
+  if (_ignoredOptionTypes.find(item => headers[key].type === item) === undefined && headers[key].options) {
+    let newHeader = { ...headers[key] }
+
+    _.unset(newHeader, 'options')
+
+    return {
+      ...result,
+      [key]: newHeader
+    }
+  } else {
+    return {
+      ...result,
+      [key]: headers[key]
+    }
+  }
+}, {})
+
 export const getIndexByLabel = (label, headers) => _alphabet.indexOf(headers[label].id)
 
 export const getLabelByIndex = index => _alphabet[index]
