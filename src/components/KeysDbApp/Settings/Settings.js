@@ -12,8 +12,6 @@ import Spreadsheets from '../../../google/Spreadsheets';
 import ImportModal from '../Modals/ImportModal/ImportModal';
 
 function Settings() {
-    // const [haveValues, setHaveValues] = React.useState(localStorage.getItem('spreadsheetId') && (localStorage.getItem('steam') && localStorage.getItem('steam').apiKey) ? true : false);
-
     const steam = useSelector((state) => state.authentication.steam)
     const spreadsheetId = useSelector((state) => state.authentication.spreadsheetId)
 
@@ -21,8 +19,10 @@ function Settings() {
 
     const prevSteamProfile = usePrevious(steam.profile);
 
+    const [isSaveSuccess, setIsSaveSuccess] = useState(false);
+    const [isImportSuccess, setIsImportSuccess] = useState(false);
     const [isFinishedAlertTimerRunning, setIsFinishedAlertTimerRunning] = useState(false);
-    const [isSuccess, setIsSuccess] = useState(false);
+
     const [creatingSpreadsheet, setCreatingSpreadsheet] = useState(false);
 
     const INITIAL_STATE = steam.loggedIn || JSON.parse(localStorage.getItem('steam')).loggedIn
@@ -37,7 +37,8 @@ function Settings() {
     const { handleSubmit, handleChange, values, errors, } = useFormValidation(INITIAL_STATE, validateSettings, handleUpdate);
 
     useInterval(() => {
-        setIsSuccess(false)
+        setIsSaveSuccess(false)
+        setIsImportSuccess(false)
     }, isFinishedAlertTimerRunning ? 3000 : null);
 
     useEffect(() => {
@@ -66,10 +67,8 @@ function Settings() {
         dispatch(steamSetApiKey(values.steamApiKey))
         dispatch(spreadsheetSetId(values.spreadsheetId))
 
-        setIsSuccess(true)
+        setIsSaveSuccess(true)
         setIsFinishedAlertTimerRunning(true)
-
-        // setHaveValues(true)
     }
 
     function createSpreadsheet(event) {
@@ -86,17 +85,32 @@ function Settings() {
             })
     }
 
+    function handleImport(event, response) {
+        setIsImportSuccess(true)
+        setIsFinishedAlertTimerRunning(true)
+        handleChange(event, { name: 'spreadsheetId', value: response.spreadsheetId })
+    }
+
     return (
         <Grid textAlign='center' style={{ height: '100%' }} verticalAlign='middle'>
             <Grid.Column style={{ maxWidth: 600 }}>
                 <Header as='h2' color='black' textAlign='center'>Settings</Header>
 
-                <Message style={{ textAlign: 'left' }} info>
-                    <Message.Header>Already have a spreadsheet?</Message.Header>
-                    <Message.List>
-                        <Message.Item>Click <ImportModal trigger={<span style={{ cursor: 'pointer' }}>Here</span>} />  to import</Message.Item>
-                    </Message.List>
-                </Message>
+                {
+                    !isImportSuccess
+                        ? <Message style={{ textAlign: 'left' }} info>
+                            <Message.Header>Already have a spreadsheet?</Message.Header>
+                            <Message.List>
+                                <Message.Item>Click <ImportModal responseCallback={handleImport} trigger={<span style={{ cursor: 'pointer' }}>Here</span>} /> to import</Message.Item>
+                            </Message.List>
+                        </Message>
+                        : <Message style={{ textAlign: 'left' }} positive>
+                            <Message.Header>Success!</Message.Header>
+                            <Message.List>
+                                <Message.Item>Import successful!</Message.Item>
+                            </Message.List>
+                        </Message>
+                }
 
                 <Form onSubmit={handleSubmit} size='large'>
                     <Segment>
@@ -143,7 +157,7 @@ function Settings() {
                 </Form>
                 <ErrorBox errors={errors} />
                 {
-                    isSuccess && (
+                    isSaveSuccess && (
                         <Message positive>
                             <Message.Header>Saved!</Message.Header>
                         </Message>

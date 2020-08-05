@@ -35,7 +35,7 @@ function KeyRow({ rowIndex }) {
 
         const rKey = `${rowIndex}-${header.id}-${gameHeaderValue}`;
 
-        if (index === urlsInGameData[urlsInGameData.length - 1].index) {
+        if (urlsInGameData.length > 0 && index === urlsInGameData[urlsInGameData.length - 1].index) {
             return <UrlCell
                 rowIndex={rowIndex}
                 urls={urlsInGameData}

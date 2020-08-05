@@ -14,7 +14,7 @@ function HeaderRow() {
             return result
         }
 
-        if (index === urlsInGameData[urlsInGameData.length - 1].index) {
+        if (urlsInGameData.length > 0 && index === urlsInGameData[urlsInGameData.length - 1].index) {
             return _.concat(result, ["URLs"])
         }
 

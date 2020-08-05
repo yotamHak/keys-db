@@ -6,6 +6,12 @@ import _ from 'lodash';
 function ChangelogModal({ trigger }) {
     const changes = [
         {
+            date: '5/8/2020',
+            list: [
+                'Import is now available.',
+            ]
+        },
+        {
             date: '2/8/2020',
             list: [
                 'Options are now editable.',

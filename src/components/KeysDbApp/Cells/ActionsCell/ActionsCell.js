@@ -28,8 +28,16 @@ function ActionsCell({ index }) {
             .catch(reason => console.error(reason))
     }
 
-    const steamAppId = gameData[getIndexByLabel(getLabelByType(headers, "steam_appid"), headers)]
-    const steamTitle = gameData[getIndexByLabel(getLabelByType(headers, "steam_title"), headers)]
+    function getFieldDataByType(dataObject, headers, type) {
+        try {
+            return dataObject[getIndexByLabel(getLabelByType(headers, type), headers)]
+        } catch (error) {
+            return null
+        }
+    }
+
+    const steamAppId = getFieldDataByType(gameData, headers, "steam_appid")
+    const steamTitle = getFieldDataByType(gameData, headers, "steam_title")
 
     return (
         <Table.Cell singleLine textAlign='center' verticalAlign='middle'>

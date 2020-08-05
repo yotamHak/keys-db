@@ -2,49 +2,52 @@
 
 import React, { useState, useEffect } from "react";
 import { Modal, Header, Button, Segment, Grid, Form, List, Message, Table, Icon, } from "semantic-ui-react";
+import { useSelector, useDispatch } from "react-redux";
 import _ from "lodash";
-
 
 import useFormValidation from "../../../Authentication/useFormValidation";
 import validateImport from "../../../Authentication/validateImport"
 import ErrorBox from "../../../Authentication/ErrorBox/ErrorBox";
 import Spreadsheets from "../../../../google/Spreadsheets";
 import { getLabelByIndex } from "../../../../utils"
-import { useSelector, useDispatch } from "react-redux";
 import { addHeaders, setNewRowChange } from "../../../../actions";
 import SetColumnSettingsModal from "../SetColumnSettingsModal"
-import { functions } from "lodash";
-
 
 const INITIAL_STATE = {
     spreadsheetId: '',
 }
 
-function ImportModal({ trigger }) {
+function ImportModal({ responseCallback, trigger }) {
     const [open, setOpen] = useState(false)
     const [loadingSpreadsheet, setLoadingSpreadsheet] = useState(false)
+    const [importingSpreadsheet, setImportingSpreadsheet] = useState(false)
     const [allowImport, setAllowImport] = useState(false)
 
     const [spreadsheetData, setSpreadsheetData] = useState(null)
     const [selectedSheet, setSelectedSheet] = useState(null)
 
     const [importedHeaders, setImportedHeaders] = useState(null)
+    const [importedRows, setImportedRows] = useState(null)
+    const [previewRows, setPreviewRows] = useState(null)
+
+    const [importingError, setImportingError] = useState(null)
 
     const mappedHeaders = useSelector((state) => state.table.changes)
-    const [previewRows, setPreviewRows] = useState(null)
 
     function loadSpreadsheet() {
         setLoadingSpreadsheet(true)
 
         Spreadsheets.GetSpreadsheet(values.spreadsheetId, true)
             .then(response => {
-                if (!response.success) { return }
+                if (!response.success) {
+                    setImportingError(response)
+                    return
+                }
 
                 if (response.data.sheets.length === 1) {
                     setSelectedSheet(response.data.sheets[0])
                 }
 
-                console.log("Spreadsheet data", response.data)
                 setSpreadsheetData(response.data)
             })
             .finally(response => {
@@ -58,29 +61,36 @@ function ImportModal({ trigger }) {
 
     useEffect(() => {
         if (selectedSheet && importedHeaders === null && previewRows === null) {
-            const tempHeaders = selectedSheet.data[0].rowData[0].values.filter(value => value.formattedValue)
-            const tempPreviewRows = _.take(_.drop(selectedSheet.data[0].rowData), 5).reduce((result, item) => (
-                _.concat(result, [_.take(item.values, tempHeaders.length)])
-            ), [])
+            const tempHeaders = selectedSheet.data[0].rowData[0].values.filter(value => value.formattedValue).reduce((result, item) => (_.concat(result, [item.formattedValue])), [])
+            const tempRows = _.drop(selectedSheet.data[0].rowData)
+                .reduce((result, item) => (_.concat(result, [_.take(item.values, tempHeaders.length)])), [])
+                .reduce((result, item) => (_.concat(result, [item.reduce((result, item) => (_.concat(result, [item.formattedValue])), [])])), [])
+            const tempPreviewRows = _.take(tempRows, 5)
 
             setImportedHeaders(tempHeaders)
+            setImportedRows(tempRows)
             setPreviewRows(tempPreviewRows)
-
-            console.log("tempHeaders", tempHeaders)
-            console.log("tempPreviewRows", tempPreviewRows)
 
             const initialHeaders = tempHeaders.reduce((result, header, index) => ({
                 ...result,
-                [header.formattedValue]: {
+                [header]: {
                     id: getLabelByIndex(index + 1),
-                    label: header.formattedValue,
+                    label: header,
                     type: null,
                     isPrivate: false,
                     display: true,
                     isFilter: false,
                     sortable: false,
                 }
-            }), {})
+            }), {
+                "ID": {
+                    id: "A",
+                    label: "ID",
+                    type: "number",
+                    pattern: "General",
+                    display: false,
+                }
+            })
 
             dispatch(addHeaders(initialHeaders))
             dispatch(setNewRowChange('headers', initialHeaders))
@@ -92,8 +102,22 @@ function ImportModal({ trigger }) {
 
     }, [selectedSheet, mappedHeaders])
 
-    function handleImport() {
-        setOpen(false)
+    function handleImport(event) {
+        setImportingSpreadsheet(true)
+
+        Spreadsheets.ImportSpreadsheet(importedHeaders, importedRows, mappedHeaders.headers)
+            .then(response => {
+                if (response.success) {
+                    responseCallback(event, { imported: true, success: true, spreadsheetId: response.data.spreadsheetId })
+                    setOpen(false)
+                } else {
+                    setImportingError(response)
+                    // responseCallback(event, { imported: true, success: false, error: response })
+                }
+            })
+            .finally(response => {
+                setImportingSpreadsheet(false)
+            })
     }
 
     function renderLoadContent() {
@@ -168,15 +192,15 @@ function ImportModal({ trigger }) {
                                 importedHeaders && importedHeaders.map((value, index) => (
                                     <SetColumnSettingsModal
                                         key={index}
-                                        headerLabel={value.formattedValue}
+                                        headerLabel={value}
                                         triggerElement={
                                             <Table.HeaderCell style={{ cursor: 'pointer' }}>
                                                 {
-                                                    mappedHeaders.headers && mappedHeaders.headers[value.formattedValue].type === null
+                                                    mappedHeaders.headers && mappedHeaders.headers[value].type === null
                                                         ? <Icon color='red' name='x' />
                                                         : <Icon color='green' name='check' />
                                                 }
-                                                {value.formattedValue}
+                                                {value}
                                             </Table.HeaderCell>
                                         }
                                     />
@@ -191,7 +215,7 @@ function ImportModal({ trigger }) {
                                     {
                                         item.map((cell, index) => (
                                             <Table.Cell key={index}>
-                                                {cell.formattedValue}
+                                                {cell}
                                             </Table.Cell>
                                         ))
                                     }
@@ -210,7 +234,7 @@ function ImportModal({ trigger }) {
             onOpen={() => setOpen(true)}
             open={open}
             trigger={trigger}
-            size={'fullscreen'}
+            size={spreadsheetData && selectedSheet ? 'fullscreen' : 'small'}
         >
             <Modal.Header>Import</Modal.Header>
             <Modal.Content>
@@ -223,15 +247,23 @@ function ImportModal({ trigger }) {
                                 : renderTable()
                     }
                 </Modal.Description>
+                {
+                    importingError && (
+                        <Message error>
+                            <Message.Header>Error while trying to Import...</Message.Header>
+                        </Message>
+                    )
+                }
             </Modal.Content >
             <Modal.Actions>
                 <Button color='black' onClick={() => setOpen(false)} content='Cancel' />
                 <Button
-                    disabled={!allowImport}
+                    disabled={!allowImport || importingSpreadsheet}
                     content="Import"
                     labelPosition='right'
                     icon='checkmark'
                     onClick={handleImport}
+                    loading={importingSpreadsheet}
                     positive
                 />
             </Modal.Actions>
