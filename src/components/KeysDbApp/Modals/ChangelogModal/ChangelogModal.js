@@ -4,9 +4,10 @@ import { Modal, Icon, List, Segment, Header, } from "semantic-ui-react";
 function ChangelogModal({ trigger }) {
     const changes = [
         {
-            date: '5/8/2020',
+            date: '9/8/2020',
             list: [
                 'Import is now available.',
+                'Changes to Options, they\'re now better explained, and some are pre-set, depending on they\'re type.',
             ]
         },
         {
