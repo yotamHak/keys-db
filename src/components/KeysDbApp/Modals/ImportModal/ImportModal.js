@@ -10,10 +10,10 @@ import validateImport from "../../../Authentication/validateImport"
 import ErrorBox from "../../../Authentication/ErrorBox/ErrorBox";
 import Spreadsheets from "../../../../google/Spreadsheets";
 import { getLabelByIndex } from "../../../../utils"
-import { addHeaders, setNewRowChange } from "../../../../actions";
+import { addHeaders, setNewRowChange, } from "../../../../actions";
 import SetColumnSettingsModal from "../SetColumnSettingsModal"
 
-const INITIAL_STATE = {
+const SPREADSHEET_INITIAL_STATE = {
     spreadsheetId: '',
 }
 
@@ -55,7 +55,7 @@ function ImportModal({ responseCallback, trigger }) {
             })
     }
 
-    const { handleSubmit, handleChange, values, errors, } = useFormValidation(INITIAL_STATE, validateImport, loadSpreadsheet);
+    const { handleSubmit, handleChange, values, errors, } = useFormValidation(SPREADSHEET_INITIAL_STATE, validateImport, loadSpreadsheet);
 
     const dispatch = useDispatch()
 
@@ -254,7 +254,7 @@ function ImportModal({ responseCallback, trigger }) {
                         </Message>
                     )
                 }
-            </Modal.Content >
+            </Modal.Content>
             <Modal.Actions>
                 <Button color='black' onClick={() => setOpen(false)} content='Cancel' />
                 <Button

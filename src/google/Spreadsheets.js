@@ -1,7 +1,7 @@
 import { gapi } from 'gapi-script';
 import axios from "axios";
 import _ from "lodash";
-import { isUrl, isSteamKey, genericSort, parseSpreadsheetDate, SPREADSHEET_METADATA_HEADERS_ID, SPREADSHEET_METADATA_PERMISSIONS_ID, SPREADSHEET_METADATA_DEFAULT_SETTINGS, SPREADSHEET_METADATA_SHEET_ID, SPREADSHEET_IMPORT_TEMPLATE_SPREADSHEET_ID, getLabelByIndex, SPREADSHEET_TEMPLATE_SPREADSHEET_ID } from '../utils';
+import { SPREADSHEET_METADATA_HEADERS_ID, SPREADSHEET_METADATA_PERMISSIONS_ID, SPREADSHEET_METADATA_DEFAULT_SETTINGS, SPREADSHEET_METADATA_SHEET_ID, SPREADSHEET_IMPORT_TEMPLATE_SPREADSHEET_ID, getLabelByIndex, SPREADSHEET_TEMPLATE_SPREADSHEET_ID } from '../utils';
 
 
 const _requests = {
@@ -240,44 +240,6 @@ function _parseTable(response) {
     }
 }
 
-function _initOptions(headers, rows) {
-    const allOptions = { ...headers }
-
-    _.forEach(rows, row => {
-        let optionIndex = 0
-
-        _.forEach(allOptions, allOptionValue => {
-            let rowValue = row[optionIndex++]
-
-            if (rowValue) {
-                if (allOptionValue.type === 'date') {
-                    rowValue = parseSpreadsheetDate(rowValue);
-                }
-
-                _.isObject(allOptionValue.options)
-                    ? allOptionValue.options = {
-                        ...allOptionValue.options,
-                        [rowValue]: 0
-                    }
-                    : allOptionValue.options = { [rowValue]: 0 }
-            }
-        })
-    })
-
-    Object.keys(allOptions)
-        .map(headerKey => allOptions[headerKey].options = _.isObject(allOptions[headerKey].options) ? Object.keys(allOptions[headerKey].options) : []
-            .filter(value => {
-                return value !== ""
-                    && !_.toNumber(value)
-                    && !isUrl(value)
-                    && !isSteamKey(value)
-                    && value !== 'Invalid Date'
-            })
-            .sort(genericSort))
-
-    return allOptions
-}
-
 // https://developers.google.com/chart/interactive/docs/querylanguage
 async function _query(spreadsheetId, titleQuery, offset, limit, orderBy, filters) { return _get(_queryUrl(spreadsheetId, _createQueryString(titleQuery, offset, limit, orderBy, filters))) }
 
@@ -324,100 +286,12 @@ async function _getSpreadsheet(spreadsheetId, includeGridData = false) {
         })
 }
 
-async function _getHeadersAndSettings(spreadsheetId) {
-    return gapi.client.sheets.spreadsheets.values.get({
-        "spreadsheetId": spreadsheetId,
-        "range": "A1:Z1",
-        "majorDimension": "COLUMNS",
-        "valueRenderOption": "FORMULA"
-    })
-        .then(response => {
-            if (response.status === 200) {
-                return {
-                    success: true,
-                    data: response.result
-                }
-            } else {
-                return {
-                    success: false,
-                    errors: response.errors
-                }
-            }
-        })
-        .catch(response => {
-            return {
-                success: false,
-                errors: response.errors
-            }
-        })
-}
-
-const _combineHeadersAndSettings = (headersArray, settings) => Object.keys(settings).reduce((result, key) => ({
-    ...result,
-    [key]: {
-        ...headersArray.find(item => item.label === key),
-        ...settings[key],
-    }
-}), {})
-
-function _getSettings(headersArray, settingsValuesArray) {
-    return headersArray.reduce((result, key, index) => {
-        if (key === "ID") {
-            return {
-                ...result,
-                [key]: {
-                    id: "A",
-                    label: "ID",
-                    type: "number",
-                    pattern: "General",
-                    display: false,
-                }
-            }
-        }
-
-        return {
-            ...result, [key]: JSON.parse(settingsValuesArray[index])
-        }
-    }, {})
-}
-
 async function _createNewSpreadsheet(title) {
     return gapi.client.sheets.spreadsheets.create({
         "resource": {
             "properties": {
                 "title": title
             }
-        }
-    })
-        .then(response => {
-            return response.status === 200
-                ? {
-                    success: true,
-                    data: response.result
-                }
-                : {
-                    success: false,
-                    errors: response.errors
-                }
-        })
-        .catch(response => ({
-            success: false,
-            errors: response.errors
-        }))
-}
-
-async function _deleteColumns(spreadsheetId, sheetId, rangeArray) {
-    const requests = rangeArray.reduce((result, id) => (_.concat(result, [_requests.DeleteDimensionRequest(sheetId, "COLUMNS", id, id + 1)])), [])
-
-    return _batchUpdate(spreadsheetId, requests)
-}
-
-async function _copyCleanSheet(spreadsheetId) {
-    return gapi.client.sheets.spreadsheets.sheets.copyTo({
-        "spreadsheetId": spreadsheetId,
-        "sheetId": 0,
-        "resource": {
-            "destinationSpreadsheetId": spreadsheetId
         }
     })
         .then(response => {
@@ -571,31 +445,31 @@ async function Delete(spreadsheetId, sheetId, range) {
 }
 
 // DeveloperMetadata Related
-async function GetDeveloperMetadata(spreadsheetId, id = SPREADSHEET_METADATA_HEADERS_ID) {
-    return gapi.client.sheets.spreadsheets.developerMetadata.get({
-        "spreadsheetId": spreadsheetId,
-        "metadataId": id
-    })
-        .then(response => {
-            if (response.status === 200) {
-                return {
-                    success: true,
-                    data: response.result
-                }
-            } else {
-                return {
-                    success: false,
-                    data: response.errors
-                }
-            }
-        })
-        .catch(response => {
-            return {
-                success: false,
-                errors: response.result.error
-            }
-        })
-}
+// async function GetDeveloperMetadata(spreadsheetId, id = SPREADSHEET_METADATA_HEADERS_ID) {
+//     return gapi.client.sheets.spreadsheets.developerMetadata.get({
+//         "spreadsheetId": spreadsheetId,
+//         "metadataId": id
+//     })
+//         .then(response => {
+//             if (response.status === 200) {
+//                 return {
+//                     success: true,
+//                     data: response.result
+//                 }
+//             } else {
+//                 return {
+//                     success: false,
+//                     data: response.errors
+//                 }
+//             }
+//         })
+//         .catch(response => {
+//             return {
+//                 success: false,
+//                 errors: response.result.error
+//             }
+//         })
+// }
 
 async function SaveSettings(spreadsheetId, settings) {
     return _batchUpdate(spreadsheetId, [_requests.UpdateDeveloperMetadataRequest("headers", JSON.stringify(settings))])

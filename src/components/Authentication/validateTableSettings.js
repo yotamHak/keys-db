@@ -1,3 +1,5 @@
+import { isDropdownType } from "../../utils";
+
 export default function validateTableSettings(values) {
     let errors = {};
 
@@ -27,7 +29,7 @@ export default function validateTableSettings(values) {
         }
 
         // Dropdown errors
-        if (targetedValues.type === 'dropdown') {
+        if (isDropdownType(targetedValues.type)) {
             if (!targetedValues.options || !targetedValues.options.values || targetedValues.options.values.length === 0) {
                 errors[key] = {
                     ...errors[key],

@@ -25,7 +25,7 @@ function Settings() {
 
     const [creatingSpreadsheet, setCreatingSpreadsheet] = useState(false);
 
-    const INITIAL_STATE = steam.loggedIn || JSON.parse(localStorage.getItem('steam')).loggedIn
+    const INITIAL_STATE = steam.loggedIn || (JSON.parse(localStorage.getItem('steam')) && JSON.parse(localStorage.getItem('steam')).loggedIn)
         ? {
             spreadsheetId: localStorage.getItem('spreadsheetId') || '',
             steamApiKey: (JSON.parse(localStorage.getItem('steam')) && JSON.parse(localStorage.getItem('steam')).apiKey) || '',
@@ -39,7 +39,8 @@ function Settings() {
     useInterval(() => {
         setIsSaveSuccess(false)
         setIsImportSuccess(false)
-    }, isFinishedAlertTimerRunning ? 3000 : null);
+        setIsFinishedAlertTimerRunning(false)
+    }, isFinishedAlertTimerRunning ? 5000 : null);
 
     useEffect(() => {
         if (steam.loggedIn !== null && spreadsheetId) {

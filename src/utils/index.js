@@ -126,10 +126,12 @@ export const parseOptions = options => options.values
   }])), [])
   .sort((a, b) => { return alphabetSort(a.text, b.text) })
 
-
 const _ignoredOptionTypes = ['dropdown', 'steam_ownership', 'steam_cards']
+
+export const isDropdownType = type => _ignoredOptionTypes.find(item => type === item) ? true : false
+
 export const cleanRedundentOptions = headers => Object.keys(headers).reduce((result, key) => {
-  if (_ignoredOptionTypes.find(item => headers[key].type === item) === undefined && headers[key].options) {
+  if (!isDropdownType(headers[key].type) && headers[key].options) {
     let newHeader = { ...headers[key] }
 
     _.unset(newHeader, 'options')

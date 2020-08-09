@@ -8,7 +8,7 @@ import { setNewRowChange, reloadTable, addHeaders, } from "../../../../actions";
 import ErrorBox from "../../../Authentication/ErrorBox/ErrorBox";
 import OptionsEditor from "../../OptionsEditor/OptionsEditor";
 import Spreadsheets from "../../../../google/Spreadsheets";
-import { fieldTypes, cleanRedundentOptions } from "../../../../utils";
+import { fieldTypes, cleanRedundentOptions, isDropdownType } from "../../../../utils";
 
 function TableSettingsModal() {
     const [modalOpen, setModalOpen] = useState(false)
@@ -19,17 +19,10 @@ function TableSettingsModal() {
     const tableHeadersChanges = useSelector((state) => state.table.changes.headers)
     const dispatch = useDispatch()
 
-    useEffect(() => {
-        if (!tableHeadersChanges) {
-            dispatch(setNewRowChange('headers', tableHeaders))
-        } else {
-            Object.keys(values).forEach(key => {
-                if ((values[key].type === 'dropdown' || values[key].type === 'steam_ownership' || values[key].type === 'steam_cards') && values[key].options !== tableHeadersChanges[key].options) {
-                    updateOptions(key, tableHeadersChanges[key].options)
-                }
-            })
-        }
+    const handleOpen = () => setModalOpen(true)
+    const handleClose = () => setModalOpen(false)
 
+    useEffect(() => {
         if (isSaving) {
             Spreadsheets.SaveSettings(spreadsheetId, tableHeadersChanges)
                 .then(response => {
@@ -41,20 +34,35 @@ function TableSettingsModal() {
                     }
                 })
         }
-    }, [tableHeadersChanges])
-
-    const handleOpen = () => setModalOpen(true)
-
-    const handleClose = () => setModalOpen(false)
+    }, [tableHeadersChanges,])
 
     const onSubmit = () => {
         dispatch(setNewRowChange('headers', cleanRedundentOptions(values)))
         setIsSaving(true)
     }
 
+    function handleInitOptions(headerKey) {
+        handleChange(null, {
+            name: 'options',
+            value: {
+                allowEdit: true,
+                values: [],
+            }
+        },
+            headerKey)
+    }
+
+    function handleOptionsChange(newValues, headerKey) {
+        handleChange(null, {
+            name: 'options',
+            value: newValues
+        },
+            headerKey)
+    }
+
     const INITIAL_STATE = tableHeaders;
 
-    const { handleSubmit, handleChange, updateOptions, reset, values, errors } = useFormValidation(INITIAL_STATE, validateTableSettings, onSubmit);
+    const { handleSubmit, handleChange, reset, values, errors } = useFormValidation(INITIAL_STATE, validateTableSettings, onSubmit);
 
     return (
         <Modal
@@ -128,7 +136,12 @@ function TableSettingsModal() {
                                                     />
                                                 </Form.Field>
                                                 {
-                                                    (values[headerKey]["type"] === 'steam_ownership' || values[headerKey]["type"] === 'steam_cards' || values[headerKey]["type"] === 'dropdown') && <OptionsEditor headerKey={headerKey} />
+                                                    isDropdownType(values[headerKey]["type"]) && <OptionsEditor
+                                                        headerKey={headerKey}
+                                                        options={values[headerKey].options}
+                                                        onInitOptions={handleInitOptions}
+                                                        onOptionsChange={handleOptionsChange}
+                                                    />
                                                 }
                                             </Grid.Column>
                                         </Grid.Row>

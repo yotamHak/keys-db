@@ -1,7 +1,5 @@
 import React from "react";
 import { Modal, Icon, List, Segment, Header, } from "semantic-ui-react";
-import _ from 'lodash';
-
 
 function ChangelogModal({ trigger }) {
     const changes = [

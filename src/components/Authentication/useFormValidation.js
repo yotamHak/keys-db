@@ -34,7 +34,9 @@ function useFormValidation(initialState, validate, authenticate) {
     }
 
     function handleChange(event, data, key = null) {
-        event.persist();
+        if (event) {
+            event.persist();
+        }
 
         if (key) {
             setValues(previousValues => ({
@@ -70,17 +72,7 @@ function useFormValidation(initialState, validate, authenticate) {
         setSubmitting(true);
     }
 
-    function updateOptions(key, options) {
-        setValues(previousValues => ({
-            ...previousValues,
-            [key]: {
-                ...previousValues[key],
-                options: options
-            }
-        }))
-    }
-
-    return { handleSubmit, handleBlur, handleChange, updateValues, updateOptions, reset, values, errors, isSubmitting }
+    return { handleSubmit, handleBlur, handleChange, updateValues, reset, values, errors, isSubmitting }
 }
 
 export default useFormValidation;

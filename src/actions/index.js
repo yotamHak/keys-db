@@ -135,52 +135,6 @@ export const setNewRowChange = (id, row) => {
     }
 }
 
-// Options Actions
-export const initOptionsChange = id => {
-    return {
-        type: actionTypes.INIT_OPTIONS_CHANGE,
-        payload: id
-    }
-}
-export const resetOptionsChange = (id, type) => {
-    return {
-        type: actionTypes.RESET_OPTIONS_CHANGE,
-        payload: {
-            id: id,
-            type: type || "string"
-        }
-    }
-}
-export const setNewOptionsChange = (header, newOption) => {
-    return {
-        type: actionTypes.SET_NEW_OPTIONS_CHANGE,
-        payload: {
-            header: header,
-            newOption: newOption
-        }
-    }
-}
-export const editOptionsChange = (header, index, editedOption) => {
-    return {
-        type: actionTypes.EDIT_OPTION_CHANGE,
-        payload: {
-            header: header,
-            index: index,
-            editedOption: editedOption[0]
-        }
-    }
-}
-export const removeNewOptionsChange = (header, option) => {
-    return {
-        type: actionTypes.REMOVE_NEW_OPTIONS_CHANGE,
-        payload: {
-            header: header,
-            option: option
-        }
-    }
-}
-
-
 export const setIsTableEmpty = state => {
     return {
         type: actionTypes.SET_IS_TABLE_EMPTY,

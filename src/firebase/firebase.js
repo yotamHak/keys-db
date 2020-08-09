@@ -10,32 +10,21 @@ import firebaseConfig from './config';
 class Firebase {
     constructor() {
         app.initializeApp(firebaseConfig);
-        app.analytics();
-        // this.auth = app.auth();
-        // this.db = app.firestore();
+
+        const isLocalhost = Boolean(
+            window.location.hostname === 'localhost' ||
+            // [::1] is the IPv6 localhost address.
+            window.location.hostname === '[::1]' ||
+            // 127.0.0.1/8 is considered localhost for IPv4.
+            window.location.hostname.match(
+                /^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/
+            )
+        );
+
+        if (!isLocalhost) {
+            app.analytics();
+        }
     }
-
-    // async register(name, email, password) {
-    //     const newUser = await this.auth.createUserWithEmailAndPassword(
-    //         email,
-    //         password
-    //     )
-    //     return await newUser.user.updateProfile({
-    //         displayName: name
-    //     })
-    // }
-
-    // async login(email, password) {
-    //     return await this.auth.signInWithEmailAndPassword(email, password);
-    // }
-
-    // async logout() {
-    //     await this.auth.signOut();
-    // }
-
-    // async resetPassword(email) {
-    //     await this.auth.sendPasswordResetEmail(email);
-    // }
 }
 
 const firebase = new Firebase();
