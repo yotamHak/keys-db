@@ -12,6 +12,7 @@ import ErrorBox from "../../../Authentication/ErrorBox/ErrorBox";
 import itadApi from "../../../../itad";
 import Spreadsheets from "../../../../google/Spreadsheets";
 import { DoesUserOwnGame } from "../../../../steam/steamApi";
+import { useEffect } from "react";
 
 function NewModal({ initialValue, isEdit, children }) {
     const headers = useSelector((state) => state.table.headers)
@@ -42,6 +43,12 @@ function NewModal({ initialValue, isEdit, children }) {
     const steamCardsLabel = Object.keys(headers).find(key => headers[key].type === "steam_cards")
     const steamOwnershipLabel = Object.keys(headers).find(key => headers[key].type === "steam_ownership")
     const dateAddedLabel = Object.keys(headers).find(key => headers[key].type === "date")
+
+    const [formChunks, setFormChunks] = useState(null)
+
+    useEffect(() => {
+
+    }, [])
 
     function afterResponse() {
         handleClose();
@@ -282,8 +289,8 @@ function NewModal({ initialValue, isEdit, children }) {
                             }
                             {
                                 _.chunk(Object.keys(headers)
-                                    .filter(key => key !== "ID" && headers[key].type !== 'steam_title' && headers[key].type.indexOf('steam_') > -1), 2)
-                                    .map(group => {
+                                    .filter(key => key !== "ID" && headers[key].type !== 'steam_title' && headers[key].type.indexOf('steam_') > -1)
+                                    , 2).map(group => {
                                         return (
                                             <Form.Group widths='equal' key={_.flatten(group)}>
                                                 {
@@ -320,7 +327,7 @@ function NewModal({ initialValue, isEdit, children }) {
                 <Button type="submit" loading={isLoading} onClick={handleSubmit} positive>Save</Button>
             </Modal.Actions>
         </Modal >
-    );
+    )
 }
 
 export default NewModal;

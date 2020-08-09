@@ -115,6 +115,8 @@ function _romanize(num) {
 }
 
 function _encodeName(str) {
+    if (str === undefined || str === null) { return "" }
+
     str = str.toLowerCase(); //lowercase
     str = str.replace(/[1-9]/g, _romanize);//_romanize digits
     str = str.replace(/(^the[^a-z])|([^a-z]the[^a-z])|([^a-z]the$)/g, ""); //remove "the", but not e.g. "other" or "them"

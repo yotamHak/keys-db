@@ -73,24 +73,24 @@ export const colorOptions = [
 export const genericSort = (a, b) => a < b ? -1 : a > b ? 1 : 0
 
 export const fieldTypes = [
-  { key: 'steam_title', text: '(Steam) Title', value: 'steam_title' },
-  { key: 'steam_url', text: '(Steam) URL', value: 'steam_url' },
-  { key: 'steam_appid', text: '(Steam) App Id', value: 'steam_appid' },
-  { key: 'steam_key', text: '(Steam) Key', value: 'steam_key' },
-  { key: 'steam_cards', text: '(Steam) Cards', value: 'steam_cards' },
-  { key: 'steam_achievements', text: '(Steam) Achievements', value: 'steam_achievements' },
-  { key: 'steam_dlc', text: '(Steam) DLC', value: 'steam_dlc' },
-  { key: 'steam_bundled', text: '(Steam) Bundled', value: 'steam_bundled' },
-  { key: 'steam_ownership', text: '(Steam) Owned', value: 'steam_ownership' },
+  { key: 'steam_title', text: 'Title', value: 'steam_title', icon: 'steam', description: 'This will be used to gather Steam information' },
+  { key: 'steam_url', text: 'URL', value: 'steam_url', icon: 'steam', description: 'Store URL, Auto-filled' },
+  { key: 'steam_appid', text: 'App Id', value: 'steam_appid', icon: 'steam', description: 'AppID, Auto-filled' },
+  { key: 'steam_key', text: 'Key', value: 'steam_key', icon: 'steam', description: 'Key' },
+  { key: 'steam_cards', text: 'Cards', value: 'steam_cards', icon: 'steam', description: 'Cards, Auto-filled' },
+  { key: 'steam_achievements', text: 'Achievements', icon: 'steam', value: 'steam_achievements', description: 'Achievements, Auto-filled' },
+  // { key: 'steam_dlc', text: 'DLC', value: 'steam_dlc', icon: 'steam', description: 'Is this a Steam DLC, Exclusive for Steam' },
+  // { key: 'steam_bundled', text: 'Bundled', value: 'steam_bundled', icon: 'steam', description: 'Game title according to steam, this will be used to gather steam information' },
+  { key: 'steam_ownership', text: 'Owned', value: 'steam_ownership', icon: 'steam', description: 'Ownership, Auto-filled' },
 
-  { key: 'string', text: 'String', value: 'string' },
-  { key: 'number', text: 'Number', value: 'number' },
-  { key: 'date', text: 'Date', value: 'date' },
-  { key: 'text', text: 'Text', value: 'text' },
-  { key: 'key', text: 'Key', value: 'key' },
-  { key: 'dropdown', text: 'Dropdown', value: 'dropdown' },
-  { key: 'url', text: 'URL', value: 'url' },
-].sort((a, b) => genericSort(a.text, b.text))
+  { key: 'string', text: 'String', value: 'string', description: 'Plain text field' },
+  { key: 'number', text: 'Number', value: 'number', description: 'Number field' },
+  { key: 'date', text: 'Date', value: 'date', description: 'Date field' },
+  { key: 'text', text: 'Text', value: 'text', description: 'Long text field' },
+  { key: 'key', text: 'Key', value: 'key', description: 'Key field' },
+  { key: 'dropdown', text: 'Dropdown', value: 'dropdown', description: 'Multi-Option field' },
+  { key: 'url', text: 'URL', value: 'url', description: 'Url field' },
+].sort((a, b) => genericSort(`${a.icon}${a.text}`, `${b.icon}${b.text}`))
 
 export const getDomain = (url) => url.replace(/^https?:\/\//i, "");
 

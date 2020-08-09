@@ -1,13 +1,12 @@
 import React, { useState, } from "react";
-import { Modal, Button, Confirm, Container, Segment, Grid, Form, Checkbox, Input, } from "semantic-ui-react";
+import { Modal, Button, Confirm, Container, Segment, Form, } from "semantic-ui-react";
 import { useSelector, useDispatch } from "react-redux";
 
 import useFormValidation from "../../../Authentication/useFormValidation";
-import OptionsEditor from "../../OptionsEditor/OptionsEditor";
-import ErrorBox from "../../../Authentication/ErrorBox/ErrorBox";
-import { fieldTypes, useInterval, isDropdownType, } from "../../../../utils";
+import { useInterval, } from "../../../../utils";
 import validateHeaderSetting from "../../../Authentication/validateHeaderSetting";
 import { setNewRowChange } from "../../../../actions";
+import FieldSettings from "../../FieldSettings/FieldSettings";
 
 function SetColumnSettingsModal({ triggerElement, headerLabel, }) {
     const dispatch = useDispatch()
@@ -32,23 +31,6 @@ function SetColumnSettingsModal({ triggerElement, headerLabel, }) {
         setIsFinishedAlertTimerRunning(false)
         handleSubmit(handleSubmitEvent)
     }, isFinishedAlertTimerRunning ? 1 : null);
-
-    function handleInitOptions() {
-        handleChange(null, {
-            name: 'options',
-            value: {
-                allowEdit: true,
-                values: [],
-            }
-        })
-    }
-
-    function handleOptionsChange(newValues) {
-        handleChange(null, {
-            name: 'options',
-            value: newValues
-        })
-    }
 
     function onSubmit(event) {
         if (values.options !== headers[headerLabel].options) {
@@ -77,74 +59,11 @@ function SetColumnSettingsModal({ triggerElement, headerLabel, }) {
                 <Modal.Description>
                     <Container>
                         <Segment className="show-messages">
-                            <Grid columns={2}>
-                                <Grid.Row>
-                                    <Grid.Column>
-                                        <Form.Field inline>
-                                            <label>Field Name</label>
-                                            <Input
-                                                fluid
-                                                name={"label"}
-                                                value={values["label"]}
-                                                onChange={handleChange}
-                                            />
-                                        </Form.Field>
-                                        <Form.Field>
-                                            <Form.Checkbox
-                                                label='Private'
-                                                checked={values['isPrivate']}
-                                                name={'isPrivate'}
-                                                onChange={handleChange}
-                                            />
-                                        </Form.Field>
-                                        <Form.Field>
-                                            <Form.Checkbox
-                                                label='Display'
-                                                checked={values['display']}
-                                                name={'display'}
-                                                onChange={handleChange}
-                                            />
-                                        </Form.Field>
-                                        <Form.Field>
-                                            <Checkbox
-                                                label='Filterable'
-                                                checked={values['isFilter']}
-                                                name={'isFilter'}
-                                                onChange={handleChange}
-                                            />
-                                        </Form.Field>
-                                        <Form.Field>
-                                            <Form.Checkbox
-                                                label='Sortable'
-                                                checked={values['sortable']}
-                                                name={'sortable'}
-                                                onChange={handleChange}
-                                            />
-                                        </Form.Field>
-                                    </Grid.Column>
-                                    <Grid.Column>
-                                        <Form.Field inline>
-                                            <label>Type</label>
-                                            <Form.Select
-                                                options={fieldTypes}
-                                                name={"type"}
-                                                value={values["type"]}
-                                                onChange={handleChange}
-                                            />
-                                        </Form.Field>
-                                        {
-
-                                            isDropdownType(values["type"]) && <OptionsEditor
-                                                headerKey={headerLabel}
-                                                options={values.options}
-                                                onInitOptions={handleInitOptions}
-                                                onOptionsChange={handleOptionsChange}
-                                            />
-                                        }
-                                    </Grid.Column>
-                                </Grid.Row>
-                            </Grid>
-                            <ErrorBox errors={errors} />
+                            <FieldSettings
+                                values={values}
+                                errors={errors}
+                                handleChange={handleChange}
+                            />
                         </Segment>
                     </Container>
                 </Modal.Description>

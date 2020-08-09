@@ -1,14 +1,14 @@
 import React, { useState, useEffect, } from "react";
-import { Modal, Icon, Menu, Form, Segment, Input, Grid, Checkbox, Button, } from "semantic-ui-react";
+import { Modal, Icon, Menu, Form, Segment, Button, } from "semantic-ui-react";
+import { useSelector, useDispatch } from "react-redux";
 import _ from 'lodash';
 
 import useFormValidation from "../../../Authentication/useFormValidation";
-import validateTableSettings from "../../../Authentication/validateTableSettings"; import { useSelector, useDispatch } from "react-redux";
+import validateTableSettings from "../../../Authentication/validateTableSettings";
 import { setNewRowChange, reloadTable, addHeaders, } from "../../../../actions";
-import ErrorBox from "../../../Authentication/ErrorBox/ErrorBox";
-import OptionsEditor from "../../OptionsEditor/OptionsEditor";
 import Spreadsheets from "../../../../google/Spreadsheets";
-import { fieldTypes, cleanRedundentOptions, isDropdownType } from "../../../../utils";
+import { cleanRedundentOptions, } from "../../../../utils";
+import FieldSettings from "../../FieldSettings/FieldSettings";
 
 function TableSettingsModal() {
     const [modalOpen, setModalOpen] = useState(false)
@@ -41,25 +41,6 @@ function TableSettingsModal() {
         setIsSaving(true)
     }
 
-    function handleInitOptions(headerKey) {
-        handleChange(null, {
-            name: 'options',
-            value: {
-                allowEdit: true,
-                values: [],
-            }
-        },
-            headerKey)
-    }
-
-    function handleOptionsChange(newValues, headerKey) {
-        handleChange(null, {
-            name: 'options',
-            value: newValues
-        },
-            headerKey)
-    }
-
     const INITIAL_STATE = tableHeaders;
 
     const { handleSubmit, handleChange, reset, values, errors } = useFormValidation(INITIAL_STATE, validateTableSettings, onSubmit);
@@ -80,73 +61,12 @@ function TableSettingsModal() {
                         _.drop(Object.keys(headers)).map((headerKey,) => {
                             return (
                                 <Segment key={headerKey} className="show-messages">
-                                    <Grid columns={2}>
-                                        <Grid.Row>
-                                            <Grid.Column>
-                                                <Form.Field inline>
-                                                    <label>Field Name</label>
-                                                    <Input
-                                                        fluid
-                                                        name={"label"}
-                                                        value={values[headerKey]["label"]}
-                                                        onChange={(event, data) => handleChange(event, data, headerKey)}
-                                                    />
-                                                </Form.Field>
-                                                <Form.Field>
-                                                    <Form.Checkbox
-                                                        label='Private'
-                                                        checked={values[headerKey]['isPrivate']}
-                                                        name={'isPrivate'}
-                                                        onChange={(event, data) => handleChange(event, data, headerKey)}
-                                                    />
-                                                </Form.Field>
-                                                <Form.Field>
-                                                    <Form.Checkbox
-                                                        label='Display'
-                                                        checked={values[headerKey]['display']}
-                                                        name={'display'}
-                                                        onChange={(event, data) => handleChange(event, data, headerKey)}
-                                                    />
-                                                </Form.Field>
-                                                <Form.Field>
-                                                    <Checkbox
-                                                        label='Filterable'
-                                                        checked={values[headerKey]['isFilter']}
-                                                        name={'isFilter'}
-                                                        onChange={(event, data) => handleChange(event, data, headerKey)}
-                                                    />
-                                                </Form.Field>
-                                                <Form.Field>
-                                                    <Form.Checkbox
-                                                        label='Sortable'
-                                                        checked={values['sortable']}
-                                                        name={'sortable'}
-                                                        onChange={(event, data) => handleChange(event, data, headerKey)}
-                                                    />
-                                                </Form.Field>
-                                            </Grid.Column>
-                                            <Grid.Column>
-                                                <Form.Field inline>
-                                                    <label>Type</label>
-                                                    <Form.Select
-                                                        options={fieldTypes}
-                                                        name={"type"}
-                                                        value={values[headerKey]["type"]}
-                                                        onChange={(event, data) => handleChange(event, data, headerKey)}
-                                                    />
-                                                </Form.Field>
-                                                {
-                                                    isDropdownType(values[headerKey]["type"]) && <OptionsEditor
-                                                        headerKey={headerKey}
-                                                        options={values[headerKey].options}
-                                                        onInitOptions={handleInitOptions}
-                                                        onOptionsChange={handleOptionsChange}
-                                                    />
-                                                }
-                                            </Grid.Column>
-                                        </Grid.Row>
-                                    </Grid>
-                                    <ErrorBox errors={errors[headerKey]} />
+                                    <FieldSettings
+                                        headerKey={headerKey}
+                                        values={values[headerKey]}
+                                        errors={errors[headerKey]}
+                                        handleChange={handleChange}
+                                    />
                                 </Segment>
                             )
                         })

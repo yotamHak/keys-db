@@ -1,26 +1,49 @@
 import React, { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
 import { Segment, Label, Form, Input, List, Button, Message, } from 'semantic-ui-react';
 import _ from 'lodash'
 
 import useFormValidation from '../../Authentication/useFormValidation';
 import validateOption from '../../Authentication/validateOption';
-import { colorOptions } from '../../../utils';
+import { colorOptions, usePrevious } from '../../../utils';
 import { useState } from 'react';
 
-function OptionsEditor({ headerKey, options, onInitOptions, onOptionsChange, }) {
-    // const headerToBeChanged = useSelector((state) => state.table.changes.headers[headerKey])
-    // const optionsObject = useSelector((state) => (!_.isEmpty(state.table.changes) && state.table.changes.headers[headerKey].options) || { allowEdit: true, values: [] })
-
+function OptionsEditor({ headerKey, type, options, onInitOptions, onOptionsChange, }) {
     const [isEditing, setIsEditing] = useState(false)
+    const prevType = usePrevious(type);
+
+    const defaultDropdownValues = {
+        'steam_ownership': [
+            {
+                value: 'Own',
+                color: 'green',
+            },
+            {
+                value: 'Missing',
+                color: 'red',
+            },
+        ],
+        'steam_cards': [
+            {
+                value: 'Have',
+                color: 'green',
+            },
+            {
+                value: 'Missing',
+                color: 'red',
+            },
+        ],
+    }
+
+    const INITIAL_STATE = { value: '', color: "black" }
+    const { handleSubmit, handleChange, reset, values, errors } = useFormValidation(INITIAL_STATE, validateOption, addNewOption);
 
     useEffect(() => {
-        if (options === undefined) {
-            onInitOptions(headerKey)
+        if (options === undefined || ((prevType !== undefined) && type !== prevType)) {
+            onInitOptions(headerKey, defaultDropdownValues[type])
         }
-    }, [options])
+    }, [options, type])
 
-    const addNewOption = () => {
+    function addNewOption() {
         if (isEditing !== false) {
             onOptionsChange(
                 {
@@ -45,7 +68,7 @@ function OptionsEditor({ headerKey, options, onInitOptions, onOptionsChange, }) 
         reset()
     }
 
-    const removeOption = index => {
+    function removeOption(index) {
         onOptionsChange(
             {
                 ...options,
@@ -67,9 +90,6 @@ function OptionsEditor({ headerKey, options, onInitOptions, onOptionsChange, }) 
         handleChange(event, { name: "color", value: INITIAL_STATE.color })
         setIsEditing(false)
     }
-
-    const INITIAL_STATE = { value: '', color: "black" }
-    const { handleSubmit, handleChange, reset, values, errors } = useFormValidation(INITIAL_STATE, validateOption, addNewOption);
 
     return (
         <Segment className={'segment-no-last-child-bottom-margin'}>
