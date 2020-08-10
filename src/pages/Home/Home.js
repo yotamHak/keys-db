@@ -61,7 +61,7 @@ const Home = () => (
                             <p style={{ fontSize: '1.33em' }}>
                                 This project is an open-source project,<br />
                             If you want to check it out, submit bugs or even help, here's the link <br />
-                                <a target='_blank' rel='noopener noreferrer' href='https://github.com/yotamHak/key-db'><Icon name='github' /> GitHub</a>.
+                                <a target='_blank' rel='noopener noreferrer' href='https://github.com/yotamHak/keys-db'><Icon name='github' />&nbsp;GitHub</a>.
                         </p>
                         </Grid.Column>
                         <Grid.Column>
@@ -81,7 +81,7 @@ const Home = () => (
                             <p style={{ fontSize: '1.33em' }}>
                                 Obviously keeping your collection of keys must be safe and private, <br />
                             I decided to go with Google Spreadsheets and not have a dedicated database, <br />
-                            So there's no third-party database, I use your Google Spreadsheet as the database!
+                            So there's no third-party database, I use your private Google Spreadsheet as the database!
                         </p>
                         </Grid.Column>
                     </Grid.Row>

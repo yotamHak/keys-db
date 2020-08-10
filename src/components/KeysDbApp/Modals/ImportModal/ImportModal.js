@@ -34,28 +34,7 @@ function ImportModal({ responseCallback, trigger }) {
 
     const mappedHeaders = useSelector((state) => state.table.changes)
 
-    function loadSpreadsheet() {
-        setLoadingSpreadsheet(true)
-
-        Spreadsheets.GetSpreadsheet(values.spreadsheetId, true)
-            .then(response => {
-                if (!response.success) {
-                    setImportingError(response)
-                    return
-                }
-
-                if (response.data.sheets.length === 1) {
-                    setSelectedSheet(response.data.sheets[0])
-                }
-
-                setSpreadsheetData(response.data)
-            })
-            .finally(response => {
-                setLoadingSpreadsheet(false)
-            })
-    }
-
-    const { handleSubmit, handleChange, values, errors, } = useFormValidation(SPREADSHEET_INITIAL_STATE, validateImport, loadSpreadsheet);
+    const { handleSubmit, handleChange, values, errors, reset, } = useFormValidation(SPREADSHEET_INITIAL_STATE, validateImport, loadSpreadsheet);
 
     const dispatch = useDispatch()
 
@@ -101,6 +80,27 @@ function ImportModal({ responseCallback, trigger }) {
         }
 
     }, [selectedSheet, mappedHeaders])
+
+    function loadSpreadsheet() {
+        setLoadingSpreadsheet(true)
+
+        Spreadsheets.GetSpreadsheet(values.spreadsheetId, true)
+            .then(response => {
+                if (!response.success) {
+                    setImportingError(response)
+                    return
+                }
+
+                if (response.data.sheets.length === 1) {
+                    setSelectedSheet(response.data.sheets[0])
+                }
+
+                setSpreadsheetData(response.data)
+            })
+            .finally(response => {
+                setLoadingSpreadsheet(false)
+            })
+    }
 
     function handleImport(event) {
         setImportingSpreadsheet(true)
@@ -228,6 +228,15 @@ function ImportModal({ responseCallback, trigger }) {
         )
     }
 
+    function handleCancel() {
+        reset()
+        setPreviewRows(null)
+        setImportedHeaders(null)
+        setSelectedSheet(null)
+        setSpreadsheetData(null)
+        setOpen(false)
+    }
+
     return (
         <Modal
             onClose={() => setOpen(false)}
@@ -256,7 +265,7 @@ function ImportModal({ responseCallback, trigger }) {
                 }
             </Modal.Content>
             <Modal.Actions>
-                <Button color='black' onClick={() => setOpen(false)} content='Cancel' />
+                <Button color='black' onClick={handleCancel} content='Cancel' />
                 <Button
                     disabled={!allowImport || importingSpreadsheet}
                     content="Import"
