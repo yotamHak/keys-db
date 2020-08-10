@@ -4,25 +4,33 @@ import { Modal, Icon, List, Segment, Header, } from "semantic-ui-react";
 function ChangelogModal({ trigger }) {
     const changes = [
         {
+            date: '10/8/2020',
+            list: [
+                'Added TOS and Privacy Policy to comply with Google OAuth verification request.',
+            ]
+        },
+        {
             date: '9/8/2020',
             list: [
                 'Import is now available.',
-                'Changes to Options, they\'re now better explained, and some are pre-set, depending on they\'re type.',
+                'Settings - Better explanation to each setting.',
+                'Options - Fixed editing issues.',
+                'Options - Pre-set options for certain types.',
             ]
         },
         {
             date: '2/8/2020',
             list: [
-                'Options are now editable.',
+                'Options - Options are now editable.',
             ]
         },
         {
             date: '1/8/2020',
             list: [
-                'Game categories fix.',
-                'Changed the minimum characters needed to add a game from 3 to 1.',
-                'Export fix.',
-                'In the new\\edit key, the date value will be filled to today\'s date on open.',
+                'Game Info - Game categories fix.',
+                'New\\Edit Key - Changed the minimum characters needed to add a game from 3 to 1.',
+                'Export - Export fix.',
+                'New\\Edit Key - Date value will be filled to today\'s date on open.',
                 'Changelog added.'
             ]
         },

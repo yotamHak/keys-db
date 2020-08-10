@@ -8,6 +8,8 @@ import ErrorPage from "../pages/ErrorPage/ErrorPage";
 import Home from "../pages/Home/Home";
 import KeysDBPage from "../pages/KeysDBPage/KeysDBPage";
 import SetupPage from "../pages/SetupPage/SetupPage";
+import PrivacyNoticePage from "../pages/PrivacyNoticePage/PrivacyNoticePage";
+import TermsAndContitionsPage from "../pages/TermsAndContitionsPage/TermsAndContitionsPage";
 
 function App() {
     return (
@@ -16,11 +18,13 @@ function App() {
                 <Header />
                 <div>
                     <Switch>
-                        {/* <Route exact path="/" render={() => <Redirect to={`/id/${spreadsheetId.id}`} />} /> */}
                         <Route path="/login" component={SetupPage} />
+                        <Route path="/privacy-notice" component={PrivacyNoticePage} />
+                        <Route path="/terms-and-conditions" component={TermsAndContitionsPage} />
                         <Route path="/settings" component={Settings} />
                         <Route path="/error/:error" component={ErrorPage} />
                         <Route path="/id/:spreadsheetId" component={KeysDBPage} />
+                        {/* <Route path="/id/:spreadsheetId/statistics" component={KeysDBPage} /> */}
                         <Route exact path="/" component={Home} />
                     </Switch>
                 </div>
