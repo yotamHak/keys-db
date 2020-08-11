@@ -1,5 +1,5 @@
 import React, { useState, } from "react";
-import { Modal, Button, Confirm, Container, Message, Segment, Label, List, Image, Grid, Icon, } from "semantic-ui-react";
+import { Modal, Button, Confirm, Container, Message, Segment, Label, List, Grid, Icon, } from "semantic-ui-react";
 import { useSelector, useDispatch } from "react-redux";
 
 import { showShareModal } from "../../../../actions";
@@ -68,7 +68,7 @@ function ShareModal({ triggerElement }) {
                 <Container>
                     <p>
                         <span>Exporting will create a new spreadsheet according to the filters you've applied to your spreadsheet,</span> <br />
-                        <span>After exporting you will get a link to your new spreadsheet so you can share with whomever you want</span><br />                        
+                        <span>After exporting you will get a link to your new spreadsheet so you can share with whomever you want</span><br />
                     </p>
                     <Segment.Group stacked>
                         <Segment>

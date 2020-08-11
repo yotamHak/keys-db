@@ -4,7 +4,7 @@ body {
   font-family: Verdana, Geneva, sans-serif;
 }
 
-.search-fluid-input .ui.icon.input{
+.search-fluid-input .ui.icon.input {
   width: 100%;
 }
 
@@ -12,104 +12,110 @@ body {
   display: block !important;
 }
 
-.pointer{
+.pointer {
   cursor: pointer;
 }
 
-.cursor-auto{
+.cursor-auto {
   cursor: auto !important;
 }
 
-.visibility-hidden{
+.visibility-hidden {
   visibility: hidden;
 }
 
-.__dropdown{}
+.__dropdown {
+}
 
-.__dropdown > .dropdown{
+.__dropdown > .dropdown {
   display: flex;
   width: 100%;
   align-items: center;
   justify-content: flex-start;
 }
-.__dropdown > .dropdown > input{
+.__dropdown > .dropdown > input {
   cursor: pointer !important;
 }
 
-.__dropdown > .dropdown > .text{
+.__dropdown > .dropdown > .text {
   display: flex;
   cursor: pointer !important;
   flex-grow: 1;
 }
 
-.__dropdown > .dropdown > .icon{
+.__dropdown > .dropdown > .icon {
   color: black !important;
   display: flex;
   cursor: pointer !important;
 }
 
-.__dropdown > .dropdown > .menu{
+.__dropdown > .dropdown > .menu {
   width: 100%;
 }
 
-.contained-image .carousel__image{
+.contained-image .carousel__image {
   background-size: contain !important;
   background-position: center !important;
   background-repeat: no-repeat !important;
 }
 
-.ui.fullscreen.modal{
-      left: auto!important;
+.ui.fullscreen.modal {
+  left: auto !important;
 }
 
-.segment-no-last-child-bottom-margin.ui.segment:last-child{
+.segment-no-last-child-bottom-margin.ui.segment:last-child {
   /* margin-bottom: 1rem; */
 }
 
-.no-margin{
+.no-margin {
   margin: 0 !important;
 }
 
-.show-messages > .ui.error.message{
-display: block !important;
+.show-messages > .ui.error.message {
+  display: block !important;
 }
 
-.filters-search-column{
+.filters-search-column {
   width: 25% !important;
   height: 100%;
   display: flex;
   justify-content: center;
 }
 
-.ui.simple.active.dropdown>.menu, .ui.simple.dropdown:hover>.menu.actions-menu{
+.ui.simple.active.dropdown > .menu,
+.ui.simple.dropdown:hover > .menu.actions-menu {
   top: -225% !important;
   left: 100%;
 }
 
-.gameinfo-with-background{
+.gameinfo-with-background {
   background: transparent !important;
 }
 .gameinfo-with-background > .header,
-.gameinfo-with-background > .content{
+.gameinfo-with-background > .content {
   background-color: rgb(29, 40, 57) !important;
 }
-.gameinfo-with-background.ui.modal>.header,
-.gameinfo-with-background .ui.statistic>.label, .ui.statistics .statistic>.label,
+.gameinfo-with-background.ui.modal > .header,
+.gameinfo-with-background .ui.statistic > .label,
+.ui.statistics .statistic > .label,
 .gameinfo-with-background .ui.vertical.segment,
 .gameinfo-with-background i.close.icon {
   color: white !important;
 }
 
-.gameinfo-with-background .carousel .ui.basic.buttons .button{
+.gameinfo-with-background .carousel .ui.basic.buttons .button {
   background-color: white !important;
 }
 
-.white-tabs > .ui.menu > .item{
-  color: rgba(255,255,255, 0.50) !important;;
+.white-tabs > .ui.menu > .item {
+  color: rgba(255, 255, 255, 0.5) !important;
 }
 
-.white-tabs > .ui.menu > .active.item{
-  color: rgba(255,255,255, 0.95) !important;
-  border-color:rgba(255,255,255, 0.95) !important;
+.white-tabs > .ui.menu > .active.item {
+  color: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(255, 255, 255, 0.95) !important;
 }
 
+.awssld.img-contain img {
+  object-fit: contain;
+}

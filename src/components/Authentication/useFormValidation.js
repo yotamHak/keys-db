@@ -34,7 +34,7 @@ function useFormValidation(initialState, validate, authenticate) {
     }
 
     function handleChange(event, data, key = null) {
-        if (event) {
+        if (event && event.persist) {
             event.persist();
         }
 

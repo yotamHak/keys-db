@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Table, Dropdown, Confirm, } from "semantic-ui-react";
 import NewModal from "../../Modals/NewModal/NewModal";
 import { useSelector, useDispatch } from "react-redux";
-import { parseSpreadsheetDate, getValueByLabel, hasWritePermission, getIdByType, getLabelByType, getIndexByLabel } from "../../../../utils";
+import { parseSpreadsheetDate, getValueByLabel, hasWritePermission, getLabelByType, getIndexByLabel } from "../../../../utils";
 import { reloadTable } from "../../../../actions";
 import Spreadsheets from "../../../../google/Spreadsheets";
 import GameInfoModal from "../../Modals/GameInfoModal/GameInfoModal";

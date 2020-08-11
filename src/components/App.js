@@ -18,7 +18,7 @@ function App() {
                 <Header />
                 <div>
                     <Switch>
-                        <Route path="/login" component={SetupPage} />
+                        <Route path="/get-started" component={SetupPage} />
                         <Route path="/privacy-notice" component={PrivacyNoticePage} />
                         <Route path="/terms-and-conditions" component={TermsAndContitionsPage} />
                         <Route path="/settings" component={Settings} />

@@ -3,6 +3,7 @@ import googleConfig from "./config";
 import { gapi } from 'gapi-script';
 import { useDispatch } from "react-redux";
 import { googleClientReady, googleLoggedIn } from "../actions";
+import { Message, Container } from "semantic-ui-react";
 
 function GoogleAuthentication({ dontLogin }) {
     React.useEffect(() => {
@@ -70,7 +71,15 @@ function GoogleAuthentication({ dontLogin }) {
         }
     }
 
-    return (<></>);
+    return (<>
+        {
+            !dontLogin && <Container textAlign='center'>
+                <Message info>
+                    <Message.Header>A Google login pop-up should appear, if it doesn't check if your browser is blocking it.</Message.Header>
+                </Message>
+            </Container>
+        }
+    </>);
 }
 
 export default GoogleAuthentication;

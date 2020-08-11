@@ -19,6 +19,10 @@ function TableSettingsModal() {
     const tableHeadersChanges = useSelector((state) => state.table.changes.headers)
     const dispatch = useDispatch()
 
+    const INITIAL_STATE = tableHeaders;
+
+    const { handleSubmit, handleChange, reset, values, errors } = useFormValidation(INITIAL_STATE, validateTableSettings, onSubmit);
+
     const handleOpen = () => setModalOpen(true)
     const handleClose = () => setModalOpen(false)
 
@@ -36,14 +40,14 @@ function TableSettingsModal() {
         }
     }, [tableHeadersChanges,])
 
-    const onSubmit = () => {
+    function onSubmit() {
         dispatch(setNewRowChange('headers', cleanRedundentOptions(values)))
         setIsSaving(true)
     }
 
-    const INITIAL_STATE = tableHeaders;
+    // function handleAddNewField() {
 
-    const { handleSubmit, handleChange, reset, values, errors } = useFormValidation(INITIAL_STATE, validateTableSettings, onSubmit);
+    // }
 
     return (
         <Modal
@@ -57,6 +61,10 @@ function TableSettingsModal() {
             <Modal.Header>Table Settings</Modal.Header>
             <Modal.Content scrolling>
                 <Form autoComplete="off">
+                    {/* <Segment className="show-messages">
+                        <Button onClick={handleAddNewField} positive>Add New Field</Button>
+                    </Segment> */}
+
                     {
                         _.drop(Object.keys(headers)).map((headerKey,) => {
                             return (

@@ -8,11 +8,9 @@ import useFormValidation from '../../../Authentication/useFormValidation';
 import validateNewKey from '../../../Authentication/validateNewKey';
 import { parseSpreadsheetDate, parseOptions, genericSort } from "../../../../utils";
 import ErrorBox from "../../../Authentication/ErrorBox/ErrorBox";
-
 import itadApi from "../../../../itad";
 import Spreadsheets from "../../../../google/Spreadsheets";
 import { DoesUserOwnGame } from "../../../../steam/steamApi";
-import { useEffect } from "react";
 
 function NewModal({ initialValue, isEdit, children }) {
     const headers = useSelector((state) => state.table.headers)
@@ -43,12 +41,6 @@ function NewModal({ initialValue, isEdit, children }) {
     const steamCardsLabel = Object.keys(headers).find(key => headers[key].type === "steam_cards")
     const steamOwnershipLabel = Object.keys(headers).find(key => headers[key].type === "steam_ownership")
     const dateAddedLabel = Object.keys(headers).find(key => headers[key].type === "date")
-
-    const [formChunks, setFormChunks] = useState(null)
-
-    useEffect(() => {
-
-    }, [])
 
     function afterResponse() {
         handleClose();
@@ -108,7 +100,7 @@ function NewModal({ initialValue, isEdit, children }) {
         }
 
         await itadApi.GetInfoAboutGame(result.plain).then(response => {
-            console.log("More Info from ITAD:", response)
+            // console.log("More Info from ITAD:", response)
             newRowValues[steamCardsLabel].value = response.trading_cards ? 'Have' : 'Missing';
         })
 
@@ -166,7 +158,7 @@ function NewModal({ initialValue, isEdit, children }) {
     }
 
     function selectInput(header) {
-        if (header.type === dateAddedLabel && values[header.label] === "") {
+        if (header.label === dateAddedLabel && values[header.label] === "") {
             values[header.label] = parseSpreadsheetDate(new Date())
         }
 
@@ -178,6 +170,7 @@ function NewModal({ initialValue, isEdit, children }) {
                     onChange={handleChange}
                     value={values[header.label]}
                     key={header.label}
+                    type='date'
                 />
             case 'text':
                 return <Form.TextArea
@@ -198,6 +191,7 @@ function NewModal({ initialValue, isEdit, children }) {
                         <Form.Select
                             fluid
                             search
+
                             name={header.label}
                             label={header.label}
                             onChange={handleChange}

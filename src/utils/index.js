@@ -100,7 +100,7 @@ export const isSteamKey = (key) => /(\w{5}-){2}\w{5}/.test(key)
 
 export const alphabetSort = (a, b) => a.toLowerCase() < b.toLowerCase() ? -1 : a.toLowerCase() > b.toLowerCase() ? 1 : 0
 
-export const parseSpreadsheetDate = date => {
+export const parseSpreadsheetDate = (date, display) => {
   if (date) {
     let parsedDate = new Date(date);
 
@@ -108,10 +108,14 @@ export const parseSpreadsheetDate = date => {
       parsedDate = moment(date, 'DD/MM/YYYY')
     }
 
-    return moment(parsedDate).format('DD/MM/YYYY')
+    return display
+      ? moment(parsedDate).format('DD/MM/YYYY')
+      : moment(parsedDate).format('YYYY-MM-DD')
   }
   else {
-    return ""
+    return display
+      ? moment(new Date()).format('DD/MM/YYYY')
+      : moment(new Date()).format('YYYY-MM-DD')
   }
 }
 

@@ -1,10 +1,13 @@
-import React, { useEffect, } from "react"
-import { Menu, Dropdown, Image, Grid, } from "semantic-ui-react";
+import React, { useEffect, useState, } from "react"
+import { Menu, Dropdown, Image, Grid, Label, } from "semantic-ui-react";
 import { useSelector, useDispatch } from "react-redux";
 import { NavLink, } from "react-router-dom";
+import dateFns from 'date-fns';
+
 import { spreadsheetSetId, steamLoad, steamLogged, setupComplete, } from "../../actions";
 import GoogleAuthentication from "../../google/GoogleAuthentication";
-import ChangelogModal from "../KeysDbApp/Modals/ChangelogModal/ChangelogModal";
+import ChangelogModal, { changelog } from "../KeysDbApp/Modals/ChangelogModal/ChangelogModal";
+import { parseSpreadsheetDate } from "../../utils";
 
 function Header() {
     const google = useSelector((state) => state.authentication.google)
@@ -33,6 +36,8 @@ function Header() {
         dispatch(steamLogged(false))
     }
 
+    const [openedNotifications, setOpenedNotifications] = useState(false)
+
     return (
         <React.Fragment>
             <GoogleAuthentication dontLogin={true} />
@@ -49,7 +54,22 @@ function Header() {
                     )
                 }
 
-                <ChangelogModal trigger={<Menu.Item name='Changelog' />} />
+                <ChangelogModal
+                    trigger={
+                        <Menu.Item onClick={() => { setOpenedNotifications(true) }}>
+                            Changelog
+                            {
+                                !openedNotifications
+                                && dateFns.differenceInWeeks(new Date(), parseSpreadsheetDate(changelog[0].date)) === 0
+                                && (
+                                    <Label size={'mini'} color='red'>
+                                        {changelog.filter(item => dateFns.differenceInWeeks(new Date(), parseSpreadsheetDate(item.date) === 0)).length}
+                                    </Label>
+                                )
+                            }
+                        </Menu.Item>
+                    }
+                />
 
                 <Menu.Menu position='right'>
                     {
@@ -95,7 +115,7 @@ function Header() {
                                                         )
                                                         : (
                                                             <Grid.Column floated='left' verticalAlign='middle' textAlign='left'>
-                                                                <NavLink to="/login">
+                                                                <NavLink to="/get-started">
                                                                     <Menu.Item name='Login with Google' />
                                                                 </NavLink>
                                                             </Grid.Column>
@@ -119,7 +139,7 @@ function Header() {
                                                         )
                                                         : (
                                                             <Grid.Column floated='left' verticalAlign='middle' textAlign='left' onClick={handleLoginWithSteam}>
-                                                                <NavLink to="/login">
+                                                                <NavLink to="/get-started">
                                                                     <Menu.Item name='Login with Steam' style={{ padding: '0' }} />
                                                                 </NavLink>
                                                             </Grid.Column>
@@ -131,8 +151,8 @@ function Header() {
                                 </Dropdown>
                             )
                             : (
-                                <NavLink to="/login">
-                                    <Menu.Item name='Login' />
+                                <NavLink to="/get-started">
+                                    <Menu.Item name='Get Started' />
                                 </NavLink>
                             )
                     }
