@@ -1,14 +1,14 @@
 import React, { useState, } from "react";
-import { Modal, Icon, Grid, Placeholder, Statistic, Segment, Header, Message, Container, Dropdown, List, Divider, Image, Popup, Tab, } from "semantic-ui-react";
+import { Modal, Icon, Grid, Statistic, Segment, Header, Message, Dropdown, List, Divider, Image, Popup, Tab, Dimmer, Loader, } from "semantic-ui-react";
 import _ from 'lodash';
 import dateFns from 'date-fns';
 
 import AwesomeSlider from 'react-awesome-slider';
-import 'react-awesome-slider/dist/styles.css';
+// import 'react-awesome-slider/dist/styles.css';
 import withAutoplay from 'react-awesome-slider/dist/autoplay';
 
 import itadApi from "../../../../itad";
-import { STEAM_CATEGORIES } from "../../../../utils";
+import { STEAM_CATEGORIES, } from "../../../../utils";
 import { GetAppDetails, GetPackageDetails } from "../../../../steam/steamApi";
 
 function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }) {
@@ -16,50 +16,16 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
     const [itadData, setItadData] = useState(null)
 
     const [errorGettingSteamData, setErrorGettingSteamData] = useState(false)
-    const [errorGettingItadData, setErrorGettingItadData] = useState(false)
+    // const [errorGettingItadData, setErrorGettingItadData] = useState(false)
+
+    const [finishedLoadingSteamData, setFinishedLoadingSteamData] = useState(false)
+    const [finishedLoadingItadData, setFinishedLoadingItadData] = useState(false)
 
     const [showScreenshotsTab, setShowScreenshotsTab] = useState(true)
     const [showMoviesTab, setShowMoviesTab] = useState(false)
     const [showYoutubeTab, setShowYoutubeTab] = useState(false)
 
     const AutoplaySlider = withAutoplay(AwesomeSlider);
-
-    function loadGameData(id, title) {
-        if (appData && itadData) return
-
-
-        GetAppDetails(id)
-            .then(response => {
-                if (response.success && response.data[id]) {
-                    // console.log("Steam App data:", response.data[id].data)
-                    if (response.data[id].success && response.data[id].success !== false) {
-                        setAppData(response.data[id].data)
-                    } else {
-                        GetPackageDetails(id)
-                            .then(response => {
-                                if (response.success && response.data[id].success && response.data[id].success !== false) {
-                                    console.log(response.data)
-                                    setAppData(response.data[id].data)
-                                } else {
-                                    setErrorGettingSteamData(true)
-                                }
-                            })
-                    }
-                } else {
-                    setErrorGettingSteamData(true)
-                }
-            })
-
-        itadApi.GetOverview(title)
-            .then(response => {
-                // console.log("ITAD data:", response.data)
-                if (response.success) {
-                    setItadData(response.data)
-                } else {
-                    setErrorGettingItadData(true)
-                }
-            })
-    }
 
     const panes = [
         {
@@ -128,6 +94,46 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
             ),
         },
     ]
+
+    function loadGameData(id, title) {
+        if (appData && itadData) return
+
+
+        GetAppDetails(id)
+            .then(response => {
+                if (response.success && response.data[id]) {
+                    // console.log("Steam App data:", response.data[id].data)
+                    if (response.data[id].success && response.data[id].success !== false) {
+                        setAppData(response.data[id].data)
+                        setFinishedLoadingSteamData(true)
+                    } else {
+                        GetPackageDetails(id)
+                            .then(response => {
+                                if (response.success && response.data[id].success && response.data[id].success !== false) {
+                                    // console.log(response.data)
+                                    setAppData(response.data[id].data)
+                                    setFinishedLoadingSteamData(true)
+                                } else {
+                                    setErrorGettingSteamData(true)
+                                }
+                            })
+                    }
+                } else {
+                    setErrorGettingSteamData(true)
+                }
+            })
+
+        itadApi.GetOverview(title)
+            .then(response => {
+                // console.log("ITAD data:", response.data)
+                if (response.success) {
+                    setItadData(response.data)
+                    setFinishedLoadingItadData(true)
+                } else {
+                    // setErrorGettingItadData(true)
+                }
+            })
+    }
 
     function fullscreenModal(imageUrl) { console.log(imageUrl) }
 
@@ -292,14 +298,15 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
 
     return (
         <Modal
-            className={appData && "gameinfo-with-background"}
+            className={finishedLoadingSteamData && finishedLoadingItadData && appData && "gameinfo-with-background"}
             onOpen={() => { loadGameData(appId, title) }}
             closeIcon={<Icon name="close" />}
             trigger={trigger}
             centered={false}
-            size={errorGettingSteamData ? 'small' : 'fullscreen'}
+            size={!errorGettingSteamData && finishedLoadingSteamData && finishedLoadingItadData && appData ? 'fullscreen' : 'small'}
         >
             {
+
                 errorGettingSteamData
                     ? (
                         <React.Fragment>
@@ -316,7 +323,7 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
                     : (
                         <React.Fragment>
                             {
-                                appData
+                                finishedLoadingSteamData && finishedLoadingItadData && appData
                                     ? (
                                         <React.Fragment>
                                             <Modal.Header style={appData.background && { backgroundImage: `url(${appData.background})`, backgroundPositionX: 'center' }}>
@@ -341,7 +348,7 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
                                                                                 color={itadData.price ? (itadData.lowest.cut > itadData.price.cut ? 'red' : 'green') : 'red'}
                                                                             >
                                                                                 <Statistic.Label>Current Price</Statistic.Label>
-                                                                                <Statistic.Value>{itadData.price ? itadData.price.price_formatted : "N\\A"}</Statistic.Value>
+                                                                                <Statistic.Value>{itadData.price ? itadData.price.price_formatted : 'N\\A'}</Statistic.Value>
                                                                             </Statistic>
 
                                                                             <Statistic
@@ -355,7 +362,7 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
                                                                                 color={'grey'}
                                                                             >
                                                                                 <Statistic.Label>Lowest Price</Statistic.Label>
-                                                                                <Statistic.Value>{itadData.lowest.price_formatted}</Statistic.Value>
+                                                                                <Statistic.Value>{itadData.lowest ? itadData.lowest.price_formatted : 'N\\A'}</Statistic.Value>
                                                                             </Statistic>
                                                                         </Statistic.Group>
                                                                     )
@@ -557,79 +564,21 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
                                         </React.Fragment>
                                     )
                                     : (
-                                        <React.Fragment>
-                                            <Modal.Header>
-                                                <Placeholder>
-                                                    <Placeholder.Header>
-                                                        <Placeholder.Line length='full' />
-                                                    </Placeholder.Header>
-                                                </Placeholder>
-                                            </Modal.Header>
-                                            <Modal.Content scrolling>
-                                                <Grid columns={16}>
-                                                    <Grid.Row>
-                                                        <Grid.Column width={8}>
-                                                            <Segment vertical>
-                                                                <Grid columns={3}>
-                                                                    <Grid.Column>
-                                                                        <Placeholder>
-                                                                            <Placeholder.Header>
-                                                                                <Placeholder.Line />
-                                                                            </Placeholder.Header>
-                                                                        </Placeholder>
-                                                                    </Grid.Column>
-                                                                    <Grid.Column>
-                                                                        <Placeholder>
-                                                                            <Placeholder.Header>
-                                                                                <Placeholder.Line />
-                                                                            </Placeholder.Header>
-                                                                        </Placeholder>
-                                                                    </Grid.Column>
-                                                                    <Grid.Column>
-                                                                        <Placeholder>
-                                                                            <Placeholder.Header>
-                                                                                <Placeholder.Line />
-                                                                            </Placeholder.Header>
-                                                                        </Placeholder>
-                                                                    </Grid.Column>
-                                                                </Grid>
-                                                            </Segment>
 
-                                                            <Segment vertical>
-                                                                <Header as='h3' style={{ width: '100%' }} >
-                                                                    <Placeholder>
-                                                                        <Placeholder.Header>
-                                                                            <Placeholder.Line length='full' />
-                                                                        </Placeholder.Header>
-                                                                    </Placeholder>
-                                                                </Header>
-                                                                <Container>
-                                                                    <Placeholder>
-                                                                        <Placeholder.Paragraph>
-                                                                            <Placeholder.Line />
-                                                                            <Placeholder.Line />
-                                                                            <Placeholder.Line />
-                                                                            <Placeholder.Line />
-                                                                            <Placeholder.Line />
-                                                                        </Placeholder.Paragraph>
-                                                                        <Placeholder.Paragraph>
-                                                                            <Placeholder.Line />
-                                                                            <Placeholder.Line />
-                                                                            <Placeholder.Line />
-                                                                        </Placeholder.Paragraph>
-                                                                    </Placeholder>
-                                                                </Container>
-                                                            </Segment>
-                                                        </Grid.Column>
-                                                        <Grid.Column width={8}>
-                                                            <Placeholder>
-                                                                <Placeholder.Image rectangular />
-                                                            </Placeholder>
-                                                        </Grid.Column>
-                                                    </Grid.Row>
-                                                </Grid>
-                                            </Modal.Content>
-                                        </React.Fragment>
+                                        <Modal.Content>
+                                            <Segment style={{ minHeight: '10em' }} vertical>
+                                                <Dimmer active inverted>
+                                                    <Loader inverted>
+                                                        <p>
+                                                            <span>Loading IsThereAnyDeal data...</span> {finishedLoadingItadData && <Icon color='green' name='check' />}
+                                                        </p>
+                                                        <p>
+                                                            <span>Loading Steam data...</span> {finishedLoadingSteamData && <Icon color='green' name='check' />}
+                                                        </p>
+                                                    </Loader>
+                                                </Dimmer>
+                                            </Segment>
+                                        </Modal.Content>
                                     )
                             }
                         </React.Fragment>
