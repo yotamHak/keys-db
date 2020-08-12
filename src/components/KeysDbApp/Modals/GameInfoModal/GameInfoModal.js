@@ -107,6 +107,10 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
                         setAppData(response.data[id].data)
                         setFinishedLoadingSteamData(true)
                     } else {
+                        if (id === 2000) {
+                            setErrorGettingSteamData(true)
+                            return
+                        }
                         GetPackageDetails(id)
                             .then(response => {
                                 if (response.success && response.data[id].success && response.data[id].success !== false) {
@@ -298,7 +302,7 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
 
     return (
         <Modal
-            className={finishedLoadingSteamData && finishedLoadingItadData && appData && "gameinfo-with-background"}
+            className={finishedLoadingSteamData && finishedLoadingItadData && appData ? "gameinfo-with-background" : ''}
             onOpen={() => { loadGameData(appId, title) }}
             closeIcon={<Icon name="close" />}
             trigger={trigger}
