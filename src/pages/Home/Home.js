@@ -47,9 +47,10 @@ function Home() {
         },
         {
             header: `Dynamic Fields`,
-            paragraph: `Set what options each field has,<br />
-                        Set whats sortable, filterable and whats private,<br />
-                        Change the label without breaking stuff,<br />
+            paragraph: `Control your Spreadsheet,<br />
+                        Add custom and pre-defined fields,<br />
+                        Set what options each field has,<br />
+                        decide whats sortable, filterable and whats private,<br />
                         More field types are coming!`
         },
         {
@@ -132,31 +133,31 @@ function Home() {
                     <Grid.Column>
                         <Header as='h3' style={{ fontSize: '2em' }}>
                             Open-Source
-            </Header>
+                         </Header>
                         <p style={{ fontSize: '1.33em' }}>
                             This project is an open-source project,<br />
-                If you want to check it out, submit bugs or even help, here's the link <br />
+                            If you want to check it out, submit bugs or even help, here's the link<br />
                             <a target='_blank' rel='noopener noreferrer' href='https://github.com/yotamHak/keys-db'><Icon name='github' />&nbsp;GitHub</a>.
-            </p>
+                        </p>
                     </Grid.Column>
                     <Grid.Column>
                         <Header as='h3' style={{ fontSize: '2em' }}>
-                            No User Needed
-            </Header>
+                            No Additional User Needed
+                        </Header>
                         <p style={{ fontSize: '1.33em' }}>
-                            You don't need a user to use this tool, <br />
-                But you will need a Google account to manage your spreadsheet and a Steam account to get additional data (If you own a game)
-            </p>
+                            You don't need an additional user to use this tool,<br />
+                            All you need is a Google account to manage your spreadsheet and a Steam account to get additional data.
+                         </p>
                     </Grid.Column>
                     <Grid.Column>
                         <Header as='h3' style={{ fontSize: '2em' }}>
                             No Database
-            </Header>
+                        </Header>
                         <p style={{ fontSize: '1.33em' }}>
-                            Obviously keeping your collection of keys must be safe and private, <br />
-                I decided to go with Google Spreadsheets and not have a dedicated database, <br />
-                So there's no third-party database, I use your private Google Spreadsheet as the database!
-            </p>
+                            Obviously keeping your collection of keys must be safe and private,<br />
+                            I decided to go with Google Spreadsheets and not have a dedicated database, <br />
+                            So there's no third-party database, I use your private Google Spreadsheet as the database!
+                        </p>
                     </Grid.Column>
                 </Grid.Row>
             </Grid>

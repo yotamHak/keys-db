@@ -322,7 +322,7 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
                                             <Modal.Header style={appData.background && { backgroundImage: `url(${appData.background})`, backgroundPositionX: 'center' }}>
                                                 <span>{appData.name}</span>
                                             </Modal.Header>
-                                            <Modal.Content scrolling style={{ backgroundImage: `url(${appData.background})`, backgroundPositionY: "-55px", backgroundPositionX: 'center' }}>
+                                            <Modal.Content scrolling style={{ backgroundImage: `url(${appData.background})`, backgroundPositionY: "-55px", backgroundPositionX: 'center', backgroundRepeat: 'no-repeat' }}>
                                                 <Grid stackable columns={2}>
                                                     <Grid.Row>
                                                         <Grid.Column width={6}>

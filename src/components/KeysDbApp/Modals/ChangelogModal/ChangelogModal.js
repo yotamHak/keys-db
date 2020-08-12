@@ -1,5 +1,5 @@
 import React from "react";
-import { Modal, Icon, List, Segment, Header, } from "semantic-ui-react";
+import { Modal, Icon, List, Segment, Header, Container, } from "semantic-ui-react";
 
 export const changelog = [
     {
@@ -55,20 +55,22 @@ function ChangelogModal({ trigger }) {
             <Modal.Header as={'h1'}>Changelog</Modal.Header>
             <Modal.Content scrolling>
                 <Modal.Description>
-                    {
-                        changelog.map((changelist, index) => (
-                            <Segment key={index}>
-                                <Header as={'h3'}>{changelist.date}</Header>
-                                <List bulleted>
-                                    {
-                                        changelist.list.map((listitem, index) => (
-                                            <List.Item key={index}>{listitem}</List.Item>
-                                        ))
-                                    }
-                                </List>
-                            </Segment>
-                        ))
-                    }
+                    <Container>
+                        {
+                            changelog.map((changelist, index) => (
+                                <Segment key={index}>
+                                    <Header as={'h3'}>{changelist.date}</Header>
+                                    <List bulleted>
+                                        {
+                                            changelist.list.map((listitem, index) => (
+                                                <List.Item key={index}>{listitem}</List.Item>
+                                            ))
+                                        }
+                                    </List>
+                                </Segment>
+                            ))
+                        }
+                    </Container>
                 </Modal.Description>
             </Modal.Content>
         </Modal >
