@@ -10,9 +10,10 @@ import NameCell from "../Cells/NameCell/NameCell";
 import OptionsCell from "../Cells/OptionsCell/OptionsCell";
 import ActionsCell from "../Cells/ActionsCell/ActionsCell";
 import { useSelector } from "react-redux";
-import { getUrlsLocationAndValue, getIndexByLabel, } from "../../../utils";
+import { getUrlsLocationAndValue, isDropdownType, getIndexById, } from "../../../utils";
 import Spreadsheets from "../../../google/Spreadsheets";
-import CardsCell from "../Cells/CardsCell/CardsCell";
+import SteamCardsCell from "../Cells/SteamCardsCell/SteamCardsCell";
+import SteamAchievementsCell from "../Cells/SteamAchievementsCell/SteamAchievementsCell";
 
 function KeyRow({ rowIndex }) {
     const [hasChanges, setHasChanges] = useState(false);
@@ -26,7 +27,7 @@ function KeyRow({ rowIndex }) {
     const urlsInGameData = getUrlsLocationAndValue(headers, gameData);
 
     function changeCallback(header, changedValue) {
-        gameData[getIndexByLabel(header.label, headers)] = changedValue;
+        gameData[getIndexById(header.id, headers)] = changedValue;
         setHasChanges(true)
     }
 
@@ -45,85 +46,84 @@ function KeyRow({ rowIndex }) {
 
         if (urlsInGameData.find(item => item.index === index)) { return }
 
-        switch (header.type) {
-            case 'steam_achievements':
-            case 'steam_dlc':
-            case 'steam_bundled':
-                return
-            case 'steam_title':
-                return <NameCell
-                    rowIndex={rowIndex}
-                    onChange={changeCallback}
-                    header={header}
-                    name={gameHeaderValue}
-                    key={rKey}
-                />
-            case 'steam_key':
-                return <KeyCell
-                    rowIndex={rowIndex}
-                    onChange={changeCallback}
-                    header={header}
-                    gameKey={gameHeaderValue}
-                    key={rKey}
-                />
-            case 'steam_cards':
-                return <CardsCell
-                    rowIndex={rowIndex}
-                    header={header}
-                    key={rKey}
-                    cards={gameHeaderValue}
-                />
-            case 'steam_ownership':
-            case "dropdown":
-                return <OptionsCell
-                    rowIndex={rowIndex}
-                    onChange={changeCallback}
-                    header={header}
-                    title={gameHeaderValue}
-                    key={rKey}
-                />
-            case "key":
-                return <KeyCell
-                    rowIndex={rowIndex}
-                    onChange={changeCallback}
-                    header={header}
-                    gameKey={gameHeaderValue}
-                    key={rKey}
-                />
-            case "date":
-                return <DateCell
-                    rowIndex={rowIndex}
-                    onChange={changeCallback}
-                    header={header}
-                    dateAdded={gameHeaderValue}
-                    key={rKey}
-                />
-            case "text":
-                return <NoteCell
-                    rowIndex={rowIndex}
-                    onChange={changeCallback}
-                    header={header}
-                    note={gameHeaderValue}
-                    key={rKey}
-                />
-            case 'steam_appid':
-            case "number":
-                return <AppIdCell
-                    rowIndex={rowIndex}
-                    onChange={changeCallback}
-                    header={header}
-                    appId={gameHeaderValue}
-                    key={rKey}
-                />
-            case 'string':
-            default:
-                return <Table.Cell
-                    // rowIndex={rowIndex}
-                    // onChange={changeCallback}
-                    // header={header}
-                    key={rKey}>
-                    {gameHeaderValue}
-                </Table.Cell>
+        if (header.type === 'steam_cards') {
+            return <SteamCardsCell
+                rowIndex={rowIndex}
+                header={header}
+                key={rKey}
+                value={gameHeaderValue}
+            />
+        } else if (header.type === 'steam_achievements') {
+            return <SteamAchievementsCell
+                rowIndex={rowIndex}
+                header={header}
+                key={rKey}
+                value={gameHeaderValue}
+            />
+        } else if (isDropdownType(header.type)) {
+            return <OptionsCell
+                rowIndex={rowIndex}
+                onChange={changeCallback}
+                header={header}
+                title={gameHeaderValue}
+                key={rKey}
+            />
+        } else if (header.type === 'steam_title') {
+            return <NameCell
+                rowIndex={rowIndex}
+                onChange={changeCallback}
+                header={header}
+                name={gameHeaderValue}
+                key={rKey}
+            />
+        } else if (header.type === 'steam_key') {
+            return <KeyCell
+                rowIndex={rowIndex}
+                onChange={changeCallback}
+                header={header}
+                gameKey={gameHeaderValue}
+                key={rKey}
+            />
+        } else if (header.type === 'steam_appid') {
+            return <AppIdCell
+                rowIndex={rowIndex}
+                onChange={changeCallback}
+                header={header}
+                appId={gameHeaderValue}
+                key={rKey}
+            />
+        } else if (header.type === 'key') {
+            return <KeyCell
+                rowIndex={rowIndex}
+                onChange={changeCallback}
+                header={header}
+                gameKey={gameHeaderValue}
+                key={rKey}
+            />
+        } else if (header.type === 'date') {
+            return <DateCell
+                rowIndex={rowIndex}
+                onChange={changeCallback}
+                header={header}
+                dateAdded={gameHeaderValue}
+                key={rKey}
+            />
+        } else if (header.type === 'text') {
+            return <NoteCell
+                rowIndex={rowIndex}
+                onChange={changeCallback}
+                header={header}
+                note={gameHeaderValue}
+                key={rKey}
+            />
+        } else {
+            return <Table.Cell
+                // rowIndex={rowIndex}
+                // onChange={changeCallback}
+                // header={header}
+                key={rKey}>
+                {gameHeaderValue}
+            </Table.Cell>
         }
     }
 

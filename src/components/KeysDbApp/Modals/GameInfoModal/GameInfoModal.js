@@ -10,6 +10,7 @@ import withAutoplay from 'react-awesome-slider/dist/autoplay';
 import itadApi from "../../../../itad";
 import { STEAM_CATEGORIES, } from "../../../../utils";
 import { GetAppDetails, GetPackageDetails } from "../../../../steam/steamApi";
+import { useEffect } from "react";
 
 function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }) {
     const [appData, setAppData] = useState(null)
@@ -24,6 +25,10 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
     const [showScreenshotsTab, setShowScreenshotsTab] = useState(true)
     const [showMoviesTab, setShowMoviesTab] = useState(false)
     const [showYoutubeTab, setShowYoutubeTab] = useState(false)
+
+    // const [toRender, setToRender] = useState(true)
+
+    // useEffect(() => { }, [])
 
     const AutoplaySlider = withAutoplay(AwesomeSlider);
 
@@ -97,7 +102,6 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
 
     function loadGameData(id, title) {
         if (appData && itadData) return
-
 
         GetAppDetails(id)
             .then(response => {

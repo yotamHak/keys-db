@@ -32,6 +32,16 @@ function OptionsEditor({ headerKey, type, options, onInitOptions, onOptionsChang
                 color: 'red',
             },
         ],
+        'steam_achievements': [
+            {
+                value: 'Have',
+                color: 'green',
+            },
+            {
+                value: 'Missing',
+                color: 'red',
+            },
+        ],
     }
 
     const INITIAL_STATE = { value: '', color: "black" }

@@ -2,24 +2,33 @@ import React, { useState } from "react";
 import { Table, Dropdown, Confirm, } from "semantic-ui-react";
 import NewModal from "../../Modals/NewModal/NewModal";
 import { useSelector, useDispatch } from "react-redux";
-import { parseSpreadsheetDate, getValueByLabel, hasWritePermission, getLabelByType, getIndexByLabel } from "../../../../utils";
+import { parseSpreadsheetDate, hasWritePermission, getValueByType, getValueById } from "../../../../utils";
 import { reloadTable } from "../../../../actions";
 import Spreadsheets from "../../../../google/Spreadsheets";
 import GameInfoModal from "../../Modals/GameInfoModal/GameInfoModal";
+import { useEffect } from "react";
 
 function ActionsCell({ index }) {
+    const [prompt, setPrompt] = useState(false)
+    const [steamAppId, setSteamAppId] = useState(null)
+    const [steamTitle, setSteamTitle] = useState(null)
+
     const spreadsheetId = useSelector((state) => state.authentication.currentSpreadsheetId)
     const sheetId = useSelector((state) => state.authentication.currentSheetId)
     const permission = useSelector((state) => state.authentication.permission)
     const headers = useSelector((state) => state.table.headers)
     const gameData = useSelector((state) => state.table.rows[index])
+
     const dispatch = useDispatch()
 
-    const [prompt, setPrompt] = useState(false)
+    useEffect(() => {
+        setSteamAppId(getValueByType(gameData, headers, "steam_appid"))
+        setSteamTitle(getValueByType(gameData, headers, "steam_title"))
+    }, [headers])
 
     function handleDelete(e, data) {
         setPrompt(false)
-        Spreadsheets.Delete(spreadsheetId, sheetId, getValueByLabel("ID", headers, gameData))
+        Spreadsheets.Delete(spreadsheetId, sheetId, getValueById(gameData, headers["ID"].id))
             .then(response => {
                 if (response.success) {
                     dispatch(reloadTable(true))
@@ -27,17 +36,6 @@ function ActionsCell({ index }) {
             })
             .catch(reason => console.error(reason))
     }
-
-    function getFieldDataByType(dataObject, headers, type) {
-        try {
-            return dataObject[getIndexByLabel(getLabelByType(headers, type), headers)]
-        } catch (error) {
-            return null
-        }
-    }
-
-    const steamAppId = getFieldDataByType(gameData, headers, "steam_appid")
-    const steamTitle = getFieldDataByType(gameData, headers, "steam_title")
 
     return (
         <Table.Cell singleLine textAlign='center' verticalAlign='middle'>
@@ -50,12 +48,11 @@ function ActionsCell({ index }) {
                     {
                         steamAppId && steamTitle && (
                             <GameInfoModal
-                                appId={gameData[getLabelByType(headers, "steam_appid")]}
-                                title={gameData[getLabelByType(headers, "steam_title")]}
+                                appId={steamAppId}
+                                title={steamTitle}
                             />
                         )
                     }
-
                     {
                         hasWritePermission(permission) && (
                             <React.Fragment>
@@ -65,8 +62,8 @@ function ActionsCell({ index }) {
                                     initialValue={Object.keys(headers).reduce((acc, header) => ({
                                         ...acc,
                                         [header]: headers[header].type === "date"
-                                            ? parseSpreadsheetDate(getValueByLabel(header, headers, gameData))
-                                            : getValueByLabel(header, headers, gameData)
+                                            ? parseSpreadsheetDate(getValueById(gameData, headers[header].id))
+                                            : getValueById(gameData, headers[header].id)
                                     }), {})}
                                 >
                                     <Dropdown.Item text="Edit" />

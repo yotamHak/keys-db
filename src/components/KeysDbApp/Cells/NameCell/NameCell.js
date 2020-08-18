@@ -1,15 +1,24 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Table } from "semantic-ui-react";
 import { useSelector, } from "react-redux";
-import { getLabelByType, getIndexByLabel } from "../../../../utils";
+
+import { getValueByType, } from "../../../../utils";
 import GameInfoModal from "../../Modals/GameInfoModal/GameInfoModal";
 
 function NameCell({ name, rowIndex }) {
     const headers = useSelector((state) => state.table.headers)
     const gameData = useSelector((state) => state.table.rows[rowIndex])
 
-    const steamAppId = gameData[getIndexByLabel(getLabelByType(headers, "steam_appid"), headers)]
-    const steamTitle = gameData[getIndexByLabel(getLabelByType(headers, "steam_title"), headers)]
+    const [steamAppId, setSteamAppId] = useState(null)
+    const [steamTitle, setSteamTitle] = useState(null)
+
+    useEffect(() => {
+        debugger
+        console.log('steam_appid', getValueByType(gameData, headers, "steam_appid"))
+        console.log('steam_title', getValueByType(gameData, headers, "steam_title"))
+        setSteamAppId(getValueByType(gameData, headers, "steam_appid"))
+        setSteamTitle(getValueByType(gameData, headers, "steam_title"))
+    }, [headers])
 
     return (
         <React.Fragment>

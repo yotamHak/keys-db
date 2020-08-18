@@ -63,7 +63,7 @@ function Header() {
                                 && dateFns.differenceInWeeks(new Date(), parseSpreadsheetDate(changelog[0].date)) === 0
                                 && (
                                     <Label size={'mini'} color='red'>
-                                        {changelog.filter(item => dateFns.differenceInWeeks(new Date(), parseSpreadsheetDate(item.date) === 0)).length}
+                                        {changelog.filter(item => dateFns.differenceInWeeks(new Date(), parseSpreadsheetDate(item.date)) === 0).length}
                                     </Label>
                                 )
                             }

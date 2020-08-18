@@ -3,6 +3,21 @@ import { Modal, Icon, List, Segment, Header, Container, } from "semantic-ui-reac
 
 export const changelog = [
     {
+        date: '18/8/2020',
+        list: [
+            'Settings - You can now add new fields and delete fields.',
+            'Fields - New Steam Achievements fields, will be filled automatically.',
+            'General - Bugs, stability and performance fixes, and other boring stuff.',
+        ]
+    },
+    {
+        date: '12/8/2020',
+        list: [
+            'Game Info - Changed loading to give a better feedback.',
+            'Home - Grammatical fixes.',
+        ]
+    },
+    {
         date: '11/8/2020',
         list: [
             'New\\Edit Key - Date have a date picker.',

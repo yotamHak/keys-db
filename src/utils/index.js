@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import _ from 'lodash';
+import _, { indexOf } from 'lodash';
 import moment from 'moment'
 
 const _alphabet = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
@@ -134,7 +134,7 @@ export const parseOptions = options => options.values
   }])), [])
   .sort((a, b) => { return alphabetSort(a.text, b.text) })
 
-const _ignoredOptionTypes = ['dropdown', 'steam_ownership', 'steam_cards']
+const _ignoredOptionTypes = ['dropdown', 'steam_ownership', 'steam_cards', 'steam_achievements']
 
 export const isDropdownType = type => _ignoredOptionTypes.find(item => type === item) ? true : false
 
@@ -156,38 +156,69 @@ export const cleanRedundentOptions = headers => Object.keys(headers).reduce((res
   }
 }, {})
 
-export const getIndexByLabel = (label, headers) => _alphabet.indexOf(headers[label].id)
+export const getIndexByLabel = (label, headers) => {
+  return _alphabet.indexOf(headers[label].id)
+}
+
+export const getIndexById = (id,) => _alphabet.indexOf(id)
+
+
+export function getValueByType(dataObject, headers, type) {
+  try {
+    return dataObject[getIndexByType(headers, type)]
+  } catch (error) {
+    return null
+  }
+}
+
+export function getValueById(dataObject, id) {
+  try {
+    return dataObject[getIndexById(id)]
+  } catch (error) {
+    return null
+  }
+}
+
+// export const getValueByLabel = (label, headers, gameData) => gameData[getIndexByLabel(label, headers)]
 
 export const getLabelByIndex = index => _alphabet[index]
 
-export const getValueByLabel = (label, headers, gameData) => gameData[getIndexByLabel(label, headers)]
-
 export const getLabelByType = (headers, type) => Object.keys(headers).find(key => headers[key].type === type)
+
+export const getIndexByType = (headers, type) => _alphabet.indexOf(headers[Object.keys(headers).find(key => headers[key].type === type)].id)
+
+export const nextChar = c => c === 'Z' ? 'A' : String.fromCharCode(c.charCodeAt(0) + 1)
 
 export const getPrivateColumns = headers => Object.keys(headers)
   .filter(key => headers[key].isPrivate)
-  .reduce((result, key) => (_.concat(result, [getIndexByLabel(key, headers)])), [])
+  .reduce((result, key) => (_.concat(result, [getIndexById(headers[key].id)])), [])
 
-export const getUrlsLocationAndValue = (headers, gameData) => Object.keys(headers)
-  .filter(key => headers[key].type === 'url' || headers[key].type === 'steam_url')
-  .reduce((result, key) => (_.concat(
-    ...result,
-    [gameData
-      ? {
-        index: getIndexByLabel(key, headers),
-        label: "URLs",
-        website: gameData[getIndexByLabel(key, headers)]
-          ? _.lowerCase(gameData[getIndexByLabel(key, headers)]).indexOf("isthereanydeal") > -1
-            ? "itad"
-            : "steam"
-          : "",
-        url: gameData[getIndexByLabel(key, headers)],
-      }
-      : {
-        index: getIndexByLabel(key, headers),
-        label: "URLs",
-      }]
-  )), [])
+export function getUrlsLocationAndValue(headers, gameData) {
+  return Object.keys(headers)
+    .filter(key => headers[key].type === 'url' || headers[key].type === 'steam_url')
+    .reduce((result, key) => {
+      const urlIndex = getIndexById(headers[key].id)
+
+      return _.concat(
+        ...result,
+        [gameData
+          ? {
+            index: urlIndex,
+            label: "URLs",
+            website: gameData[urlIndex]
+              ? _.lowerCase(gameData[urlIndex]).indexOf("isthereanydeal") > -1
+                ? "itad"
+                : "steam"
+              : "",
+            url: gameData[urlIndex],
+          }
+          : {
+            index: urlIndex,
+            label: "URLs",
+          }]
+      )
+    }, [])
+}
 
 export const hasWritePermission = permission => permission === "owner"
 

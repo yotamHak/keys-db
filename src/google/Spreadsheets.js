@@ -1,9 +1,18 @@
 import { gapi } from 'gapi-script';
 import axios from "axios";
 import _ from "lodash";
-import { SPREADSHEET_METADATA_HEADERS_ID, SPREADSHEET_METADATA_PERMISSIONS_ID, SPREADSHEET_METADATA_DEFAULT_SETTINGS, SPREADSHEET_METADATA_SHEET_ID, SPREADSHEET_IMPORT_TEMPLATE_SPREADSHEET_ID, getLabelByIndex, SPREADSHEET_TEMPLATE_SPREADSHEET_ID } from '../utils';
+import {
+    SPREADSHEET_METADATA_HEADERS_ID,
+    SPREADSHEET_METADATA_PERMISSIONS_ID,
+    SPREADSHEET_METADATA_DEFAULT_SETTINGS,
+    SPREADSHEET_METADATA_SHEET_ID,
+    SPREADSHEET_IMPORT_TEMPLATE_SPREADSHEET_ID,
+    getLabelByIndex,
+    SPREADSHEET_TEMPLATE_SPREADSHEET_ID,
+    numberToCharacters
+} from '../utils';
 
-
+// https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/request
 const _requests = {
     DeleteRequest: (sheetId, range) => ({
         deleteDimension: {
@@ -127,6 +136,13 @@ const _requests = {
 
         return request
     },
+    AppendDimensionRequest: (sheetId, dimension, length) => ({
+        "appendDimension": {
+            "sheetId": sheetId,
+            "dimension": dimension,
+            "length": length
+        }
+    }),
     InsertDimensionRequest: (sheetId, dimension, startRowIndex, endRowIndex) => ({
         "insertDimension": {
             "inheritFromBefore": true,
@@ -137,12 +153,35 @@ const _requests = {
                 "endIndex": startRowIndex + endRowIndex,
             }
         }
-    })
+    }),
+    /**
+     * Available props: https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#DimensionProperties
+     * hiddenByFilter: boolean
+     * hiddenByUser: boolean
+     * pixelSize: integer
+     * developerMetadata[]: object
+     */
+    updateDimensionProperties: (sheetId, dimension, startRowIndex, endRowIndex, props) => ({
+        "insertDimension": {
+            "properties": {
+                ...props
+            },
+            "range": {
+                "sheetId": sheetId,
+                "dimension": dimension,
+                "startIndex": startRowIndex,
+                "endIndex": startRowIndex + endRowIndex,
+            },
+            "fields": Object.keys(props).toString()
+        }
+    }),
 }
+
 async function _batchUpdate(spreadsheetId, requests) {
     const params = {
         spreadsheetId: spreadsheetId,
         requests: requests,
+        includeSpreadsheetInResponse: true,
     }
 
     return gapi.client.sheets.spreadsheets.batchUpdate(params)
@@ -172,7 +211,8 @@ const _handleError = async response => {
     return response
 }
 
-const _get = async url => axios.get(url, { headers: { 'Content-Type': 'application/json; charset=UTF-8', Authorization: _.concat('Bearer ', localStorage.getItem('gTokenId')) } })
+const _get = async url => axios
+    .get(url, { headers: { 'Content-Type': 'application/json; charset=UTF-8', Authorization: _.concat('Bearer ', localStorage.getItem('gTokenId')) } })
     .then(response => {
         const parsedResponse = JSON.parse(response.data.slice(response.data.indexOf("{"), response.data.length - 2));
 
@@ -471,8 +511,28 @@ async function Delete(spreadsheetId, sheetId, range) {
 //         })
 // }
 
-async function SaveSettings(spreadsheetId, settings) {
-    return _batchUpdate(spreadsheetId, [_requests.UpdateDeveloperMetadataRequest("headers", JSON.stringify(settings))])
+async function SaveSettings(spreadsheetId, sheetId, settings) {
+    const updatedSettings = Object.keys(settings).reduce((result, settingKey, index) => ({
+        ...result,
+        [settingKey]: {
+            ...settings[settingKey],
+            id: String.fromCharCode((index + 1 % 24) + 64)
+        }
+    }), {})
+
+    const updateDeveloperMetadataRequest = _requests.UpdateDeveloperMetadataRequest("headers", JSON.stringify(updatedSettings))
+    const updateSpreadsheetHeadersRequest = _requests.UpdateCellsRequest(sheetId, [Object.keys(updatedSettings).reduce((result, key) => (_.concat(result, [updatedSettings[key].label])), [])], 0, 0)
+
+    return _batchUpdate(spreadsheetId, [updateDeveloperMetadataRequest, updateSpreadsheetHeadersRequest])
+        .then(response => (
+            response.success
+                ? {
+                    success: true,
+                    data: {
+                        updatedSettings: updatedSettings
+                    }
+                }
+                : response))
 }
 
 async function Initialize(spreadsheetId) {
@@ -742,10 +802,42 @@ async function CreateStartingSpreadsheet(title = "My Keys Collection", settings 
         })
 }
 
+async function InsertNewColumn(spreadsheetId, sheetId,) {
+    const appendDimensionRequest = _requests.AppendDimensionRequest(sheetId, "COLUMNS", 1)
 
+    return _batchUpdate(spreadsheetId, appendDimensionRequest).then(response => {
+        return response.success
+            ? {
+                "success": true,
+                "data": {
+                    columnId: getLabelByIndex(response.data.updatedSpreadsheet.sheets.find(sheet => sheet.properties.sheetId === sheetId).properties.gridProperties.columnCount - 1)
+                }
+            }
+            : {
+                success: false,
+                data: response
+            }
+    })
+}
+
+async function DeleteDimension(spreadsheetId, sheetId, dimension, startIndex, length) {
+    const deleteDimensionRequest = _requests.DeleteDimensionRequest(sheetId, dimension, startIndex, length)
+
+    return _batchUpdate(spreadsheetId, deleteDimensionRequest).then(response => {
+        return response.success
+            ? {
+                "success": true,
+                "data": response.data
+            }
+            : {
+                success: false,
+                data: response
+            }
+    })
+}
 
 async function ImportSpreadsheet(headers, rows, settings) {
-    return _createNewSpreadsheet("TESTTESTTEST")
+    return _createNewSpreadsheet("My Keys Collection")
         .then(response => {
             if (!response.success) {
                 return {
@@ -813,4 +905,17 @@ async function ImportSpreadsheet(headers, rows, settings) {
         })
 }
 
-export default { Initialize, Insert, Update, Delete, CreateStartingSpreadsheet, SaveSettings, ExportSpreadsheet, ImportSpreadsheet, GetSpreadsheet, GetFilteredData, };
+export default {
+    Initialize,
+    Insert,
+    InsertNewColumn,
+    Update,
+    Delete,
+    DeleteDimension,
+    CreateStartingSpreadsheet,
+    SaveSettings,
+    ExportSpreadsheet,
+    ImportSpreadsheet,
+    GetSpreadsheet,
+    GetFilteredData,
+};

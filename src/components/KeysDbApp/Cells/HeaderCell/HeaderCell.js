@@ -1,6 +1,8 @@
 import React from "react";
 import { Table, Dropdown, Grid, } from "semantic-ui-react";
 import { useDispatch, useSelector } from "react-redux";
+import _ from 'lodash';
+
 import { addFilter, resetTableParams } from "../../../../actions";
 import { parseOptions, usePrevious } from "../../../../utils";
 
@@ -64,7 +66,7 @@ function HeaderCell({ title }) {
                                     <Dropdown.Menu>
                                         <Dropdown.Menu scrolling>
                                             {
-                                                options
+                                                _.isArray(options) && options
                                                     .filter(option => !filters.values.find(item => item === option.text))
                                                     .map((option) => (
                                                         <Dropdown.Item

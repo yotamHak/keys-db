@@ -25,6 +25,8 @@ function GoogleAuthentication({ dontLogin }) {
                 // Your API key will be automatically added to the Discovery Document URLs.
                 discoveryDocs: googleConfig.discoveryDocs,
                 scope: "https://www.googleapis.com/auth/spreadsheets",
+                ux_mode: 'redirect',
+                cookiepolicy: 'single_host_origin',
             })
             .then(() => {
                 // Listen for sign-in state changes.

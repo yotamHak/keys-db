@@ -6,7 +6,7 @@ import _ from 'lodash';
 import { reloadTable } from "../../../../actions";
 import useFormValidation from '../../../Authentication/useFormValidation';
 import validateNewKey from '../../../Authentication/validateNewKey';
-import { parseSpreadsheetDate, parseOptions, genericSort } from "../../../../utils";
+import { parseSpreadsheetDate, parseOptions, genericSort, isDropdownType, getLabelByType } from "../../../../utils";
 import ErrorBox from "../../../Authentication/ErrorBox/ErrorBox";
 import itadApi from "../../../../itad";
 import Spreadsheets from "../../../../google/Spreadsheets";
@@ -18,13 +18,14 @@ function NewModal({ initialValue, isEdit, children }) {
     const sheetId = useSelector((state) => state.authentication.currentSheetId)
     const steam = useSelector((state) => state.authentication.steam)
     const isTableEmpty = useSelector((state) => state.table.isEmpty)
-    const INITIAL_STATE = initialValue
 
     const [modalOpen, setModalOpen] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const [isSubmittinError, setIsSubmittinError] = useState(false)
     const [isSearching, setIsSearching] = useState(false)
     const [searchResults, setSearchResults] = useState(null)
+
+    const INITIAL_STATE = initialValue
     const { handleSubmit, handleChange, updateValues, reset, values, errors } = useFormValidation(INITIAL_STATE, validateNewKey, handleCreate)
 
     const dispatch = useDispatch()
@@ -35,12 +36,13 @@ function NewModal({ initialValue, isEdit, children }) {
     const Child = React.Children.only(children);
     const newChildren = React.cloneElement(Child, { onClick: handleOpen });
 
-    const steamTitleLabel = Object.keys(headers).find(key => headers[key].type === "steam_title")
-    const steamAppIdLabel = Object.keys(headers).find(key => headers[key].type === "steam_appid")
-    const steamUrlLabel = Object.keys(headers).find(key => headers[key].type === "steam_url")
-    const steamCardsLabel = Object.keys(headers).find(key => headers[key].type === "steam_cards")
-    const steamOwnershipLabel = Object.keys(headers).find(key => headers[key].type === "steam_ownership")
-    const dateAddedLabel = Object.keys(headers).find(key => headers[key].type === "date")
+    const steamTitleLabel = getLabelByType(headers, "steam_title")
+    const steamAppIdLabel = getLabelByType(headers, "steam_appid")
+    const steamUrlLabel = getLabelByType(headers, "steam_url")
+    const steamCardsLabel = getLabelByType(headers, "steam_cards")
+    const steamOwnershipLabel = getLabelByType(headers, "steam_ownership")
+    const steamAchievementsLabel = getLabelByType(headers, "steam_achievements")
+    const dateAddedLabel = getLabelByType(headers, "date")
 
     function afterResponse() {
         handleClose();
@@ -96,12 +98,20 @@ function NewModal({ initialValue, isEdit, children }) {
         newRowValues['isthereanydeal URL'].value = result.urls.itad;
 
         if (steam.loggedIn === true) {
-            newRowValues[steamOwnershipLabel].value = DoesUserOwnGame(steam.ownedGames.games, result.appid) ? 'Own' : 'Missing'
+            if (steamOwnershipLabel) {
+                newRowValues[steamOwnershipLabel].value = DoesUserOwnGame(steam.ownedGames.games, result.appid) ? 'Own' : 'Missing'
+            }
         }
 
         await itadApi.GetInfoAboutGame(result.plain).then(response => {
-            // console.log("More Info from ITAD:", response)
-            newRowValues[steamCardsLabel].value = response.trading_cards ? 'Have' : 'Missing';
+            console.log("More Info from ITAD:", response)
+
+            if (steamCardsLabel) {
+                newRowValues[steamCardsLabel].value = response.trading_cards ? 'Have' : 'Missing';
+            }
+            if (steamAchievementsLabel) {
+                newRowValues[steamAchievementsLabel].value = response.achievements ? 'Have' : 'Missing';
+            }
         })
 
         updateValues(e, newRowValues)
@@ -162,18 +172,48 @@ function NewModal({ initialValue, isEdit, children }) {
             values[header.label] = parseSpreadsheetDate(new Date())
         }
 
-        switch (header.type) {
-            case 'date':
-                return <Form.Input
-                    name={header.label}
-                    label={header.label}
-                    onChange={handleChange}
-                    value={values[header.label]}
-                    key={header.label}
-                    type='date'
-                />
-            case 'text':
-                return <Form.TextArea
+        if (isDropdownType(header.type)) {
+            const options = parseOptions(header.options)
+            const label = header.label
+            const headerKey = Object.keys(headers).find(headerKey => headers[headerKey].label === header.label)
+
+            return (
+                <Form.Field key={headerKey}>
+                    <Form.Select
+                        fluid
+                        search
+                        name={headerKey}
+                        label={label}
+                        onChange={handleChange}
+                        placeholder={`Add ${label}...`}
+                        options={options}
+                        value={values[headerKey]}
+                        key={headerKey}
+                    />
+                </Form.Field>
+            )
+        } else if (header.type === 'date') {
+            return <Form.Input
+                name={header.label}
+                label={header.label}
+                onChange={handleChange}
+                value={values[header.label]}
+                key={header.label}
+                type='date'
+            />
+        } else if (header.type === 'text') {
+            return <Form.TextArea
+                name={header.label}
+                label={header.label}
+                onChange={handleChange}
+                placeholder={`Add ${header.label}...`}
+                value={values[header.label]}
+                key={header.label}
+            />
+        } else {
+            return (
+                <Form.Input
+                    fluid
                     name={header.label}
                     label={header.label}
                     onChange={handleChange}
@@ -181,41 +221,7 @@ function NewModal({ initialValue, isEdit, children }) {
                     value={values[header.label]}
                     key={header.label}
                 />
-            case 'steam_ownership':
-            case 'steam_cards':
-            case 'dropdown':
-                const options = parseOptions(header.options)
-
-                return (
-                    <Form.Field key={header.label}>
-                        <Form.Select
-                            fluid
-                            search
-
-                            name={header.label}
-                            label={header.label}
-                            onChange={handleChange}
-                            placeholder={`Add ${header.label}...`}
-                            options={options}
-                            value={values[header.label]}
-                            key={header.label}
-                        />
-                    </Form.Field>
-                )
-            case 'string':
-            case 'key':
-            default:
-                return (
-                    <Form.Input
-                        fluid
-                        name={header.label}
-                        label={header.label}
-                        onChange={handleChange}
-                        placeholder={`Add ${header.label}...`}
-                        value={values[header.label]}
-                        key={header.label}
-                    />
-                )
+            )
         }
     }
 
@@ -283,8 +289,8 @@ function NewModal({ initialValue, isEdit, children }) {
                             }
                             {
                                 _.chunk(Object.keys(headers)
-                                    .filter(key => key !== "ID" && headers[key].type !== 'steam_title' && headers[key].type.indexOf('steam_') > -1)
-                                    , 2).map(group => {
+                                    .filter(key => key !== "ID" && headers[key].type && headers[key].type !== 'steam_title' && headers[key].type.indexOf('steam_') > -1), 2)
+                                    .map(group => {
                                         return (
                                             <Form.Group widths='equal' key={_.flatten(group)}>
                                                 {
@@ -298,7 +304,7 @@ function NewModal({ initialValue, isEdit, children }) {
                         <Segment basic>
                             <Label attached='top'>General</Label>
                             {
-                                _.chunk(Object.keys(headers).filter(key => key !== "ID" && headers[key].type.indexOf('steam_') === -1), 2)
+                                _.chunk(Object.keys(headers).filter(key => key !== "ID" && headers[key].type && headers[key].type.indexOf('steam_') === -1), 2)
                                     .map(group => {
                                         return (
                                             <Form.Group widths='equal' key={_.flatten(group)}>

@@ -19,7 +19,12 @@ export default function validateTableSettings(values) {
         const targetedValues = values[key]
 
         // Type errors
-        if (types[targetedValues.type] && types[targetedValues.type].selected === false) {
+        if (!targetedValues.type) {
+            errors[key] = {
+                ...errors[key],
+                type: `You must select a type.`
+            }
+        } else if (types[targetedValues.type] && types[targetedValues.type].selected === false) {
             types[targetedValues.type].selected = true
         } else if (types[targetedValues.type] && types[targetedValues.type].selected === true) {
             errors[key] = {
