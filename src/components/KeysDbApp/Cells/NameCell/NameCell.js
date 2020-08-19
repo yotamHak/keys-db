@@ -13,9 +13,6 @@ function NameCell({ name, rowIndex }) {
     const [steamTitle, setSteamTitle] = useState(null)
 
     useEffect(() => {
-        debugger
-        console.log('steam_appid', getValueByType(gameData, headers, "steam_appid"))
-        console.log('steam_title', getValueByType(gameData, headers, "steam_title"))
         setSteamAppId(getValueByType(gameData, headers, "steam_appid"))
         setSteamTitle(getValueByType(gameData, headers, "steam_title"))
     }, [headers])

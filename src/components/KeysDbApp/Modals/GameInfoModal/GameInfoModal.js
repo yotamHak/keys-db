@@ -4,13 +4,11 @@ import _ from 'lodash';
 import dateFns from 'date-fns';
 
 import AwesomeSlider from 'react-awesome-slider';
-// import 'react-awesome-slider/dist/styles.css';
 import withAutoplay from 'react-awesome-slider/dist/autoplay';
 
 import itadApi from "../../../../itad";
 import { STEAM_CATEGORIES, } from "../../../../utils";
 import { GetAppDetails, GetPackageDetails } from "../../../../steam/steamApi";
-import { useEffect } from "react";
 
 function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }) {
     const [appData, setAppData] = useState(null)
@@ -314,7 +312,6 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
             size={!errorGettingSteamData && finishedLoadingSteamData && finishedLoadingItadData && appData ? 'fullscreen' : 'small'}
         >
             {
-
                 errorGettingSteamData
                     ? (
                         <React.Fragment>
@@ -572,7 +569,6 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
                                         </React.Fragment>
                                     )
                                     : (
-
                                         <Modal.Content>
                                             <Segment style={{ minHeight: '10em' }} vertical>
                                                 <Dimmer active inverted>

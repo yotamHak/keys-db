@@ -91,10 +91,15 @@ function NewModal({ initialValue, isEdit, children }) {
                     value: values[header]
                 }
             }), [])
-
-        newRowValues[steamTitleLabel].value = result.title;
-        newRowValues[steamAppIdLabel].value = parseInt(result.appid);
-        newRowValues[steamUrlLabel].value = result.urls.steam;
+        if (steamTitleLabel) {
+            newRowValues[steamTitleLabel].value = result.title;
+        }
+        if (steamAppIdLabel) {
+            newRowValues[steamAppIdLabel].value = parseInt(result.appid);
+        }
+        if (steamUrlLabel) {
+            newRowValues[steamUrlLabel].value = result.urls.steam;
+        }
         newRowValues['isthereanydeal URL'].value = result.urls.itad;
 
         if (steam.loggedIn === true) {

@@ -120,6 +120,7 @@ function TableSettingsModal() {
                             handleSetNewValue(response.data.updatedSettings)
                             dispatch(addHeaders(response.data.updatedSettings))
                             dispatch(setNewRowChange('headers', response.data.updatedSettings))
+                            dispatch(reloadTable(true))
                         }
                     })
                     .finally(response => {
@@ -142,7 +143,6 @@ function TableSettingsModal() {
                 }
 
                 const cleanedHeaders = dropSpecificHeader(headers, headerToDelete.id)
-                const cleanedHeadersChanges = dropSpecificHeader(tableHeadersChanges, headerToDelete.id)
 
                 Spreadsheets.SaveSettings(spreadsheetId, sheetId, cleanedHeaders)
                     .then(response => {
@@ -151,9 +151,10 @@ function TableSettingsModal() {
                             return
                         }
 
-                        handleSetNewValue(cleanedHeadersChanges)
+                        handleSetNewValue(response.data.updatedSettings)
                         dispatch(addHeaders(response.data.updatedSettings))
-                        dispatch(setNewRowChange('headers', cleanedHeadersChanges))
+                        dispatch(setNewRowChange('headers', response.data.updatedSettings))
+                        dispatch(reloadTable(true))
                     })
             })
             .catch(reason => console.error(reason))
