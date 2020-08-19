@@ -5,7 +5,7 @@ function NoteCell({ note, rowIndex }) {
     return (
         <Table.Cell textAlign='center'>
             {
-                note && (
+                note && note !== '' && (
                     <Popup
                         trigger={<Icon name='sticky note outline' size='large' />}
                         content={note}

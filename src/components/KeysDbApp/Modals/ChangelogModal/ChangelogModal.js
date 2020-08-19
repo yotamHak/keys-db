@@ -7,6 +7,7 @@ export const changelog = [
         list: [
             'Settings - You can now add new fields and delete fields.',
             'Fields - New Steam Achievements fields, will be filled automatically.',
+            'Note Field - Fixed issue where the note i still displayed even though it\'s empty.',
             'General - Bugs, stability and performance fixes, and other boring stuff.',
         ]
     },
