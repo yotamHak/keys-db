@@ -30,7 +30,7 @@ function NameCell({ name, rowIndex }) {
                                     <Grid columns='equal'>
                                         <Popup
                                             on='hover'
-                                            mouseEnterDelay='1000'
+                                            mouseEnterDelay={1000}
                                             position='bottom left'
                                             popperDependencies={[steamAppId, steamTitle]}
                                             trigger={<Grid.Column floated='left'>{name}</Grid.Column>}
