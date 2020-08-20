@@ -80,7 +80,7 @@ export const fieldTypes = [
   { key: 'steam_cards', text: 'Cards', value: 'steam_cards', icon: 'steam', description: 'Cards, Auto-filled' },
   { key: 'steam_achievements', text: 'Achievements', icon: 'steam', value: 'steam_achievements', description: 'Achievements, Auto-filled' },
   // { key: 'steam_dlc', text: 'DLC', value: 'steam_dlc', icon: 'steam', description: 'Is this a Steam DLC, Exclusive for Steam' },
-  // { key: 'steam_bundled', text: 'Bundled', value: 'steam_bundled', icon: 'steam', description: 'Game title according to steam, this will be used to gather steam information' },
+  { key: 'steam_bundled', text: 'Bundled', value: 'steam_bundled', icon: 'steam', description: 'Times this game was bundled, Auto-filled' },
   { key: 'steam_ownership', text: 'Owned', value: 'steam_ownership', icon: 'steam', description: 'Ownership, Auto-filled' },
 
   { key: 'string', text: 'String', value: 'string', description: 'Plain text field' },

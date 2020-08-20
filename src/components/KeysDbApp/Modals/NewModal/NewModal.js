@@ -42,6 +42,7 @@ function NewModal({ initialValue, isEdit, children }) {
     const steamCardsLabel = getLabelByType(headers, "steam_cards")
     const steamOwnershipLabel = getLabelByType(headers, "steam_ownership")
     const steamAchievementsLabel = getLabelByType(headers, "steam_achievements")
+    const steamBundledLabel = getLabelByType(headers, "steam_bundled")
     const dateAddedLabel = getLabelByType(headers, "date")
 
     function afterResponse() {
@@ -79,10 +80,18 @@ function NewModal({ initialValue, isEdit, children }) {
         }
     }
 
+    function fillValueIfFieldExist(label, values, onExist) {
+        if (label) {
+            values[label].value = onExist()
+        }
+
+        return values
+    }
+
     async function handleSearchResultSelect(e, { result }) {
         handleChange(e, { name: steamTitleLabel, value: result.title })
 
-        const newRowValues = Object.keys(headers)
+        let newRowValues = Object.keys(headers)
             .reduce((result, header) => ({
                 ...result,
                 [header]: {
@@ -91,33 +100,40 @@ function NewModal({ initialValue, isEdit, children }) {
                     value: values[header]
                 }
             }), [])
-        if (steamTitleLabel) {
-            newRowValues[steamTitleLabel].value = result.title;
-        }
-        if (steamAppIdLabel) {
-            newRowValues[steamAppIdLabel].value = parseInt(result.appid);
-        }
-        if (steamUrlLabel) {
-            newRowValues[steamUrlLabel].value = result.urls.steam;
-        }
-        newRowValues['isthereanydeal URL'].value = result.urls.itad;
+
+        newRowValues = fillValueIfFieldExist(steamTitleLabel, newRowValues, () => result.title)
+        newRowValues = fillValueIfFieldExist(steamAppIdLabel, newRowValues, () => parseInt(result.appid))
+        newRowValues = fillValueIfFieldExist(steamUrlLabel, newRowValues, () => result.urls.steam)
+        newRowValues = fillValueIfFieldExist('isthereanydeal URL', newRowValues, () => result.urls.itad)
 
         if (steam.loggedIn === true) {
-            if (steamOwnershipLabel) {
-                newRowValues[steamOwnershipLabel].value = DoesUserOwnGame(steam.ownedGames.games, result.appid) ? 'Own' : 'Missing'
-            }
+            newRowValues = fillValueIfFieldExist(steamOwnershipLabel, newRowValues, () => DoesUserOwnGame(steam.ownedGames.games, result.appid) ? 'Own' : 'Missing')
         }
 
-        await itadApi.GetInfoAboutGame(result.plain).then(response => {
-            console.log("More Info from ITAD:", response)
+        await itadApi.GetOverview(result.plain)
+            .then(response => {
+                // console.log("ITAD data:", response.data)
 
-            if (steamCardsLabel) {
-                newRowValues[steamCardsLabel].value = response.trading_cards ? 'Have' : 'Missing';
-            }
-            if (steamAchievementsLabel) {
-                newRowValues[steamAchievementsLabel].value = response.achievements ? 'Have' : 'Missing';
-            }
-        })
+                if (!response.success) {
+                    console.error("Error getting overview from ITAD", response)
+                    return
+                }
+
+                newRowValues = fillValueIfFieldExist(steamBundledLabel, newRowValues, () => response.data.bundles && response.data.bundles.count ? response.data.bundles.count : 0)
+            })
+
+        await itadApi.GetInfoAboutGame(result.plain)
+            .then(response => {
+                // console.log("More Info from ITAD:", response)
+
+                if (!response.success) {
+                    console.error("Error getting info about game from ITAD", response)
+                    return
+                }
+
+                newRowValues = fillValueIfFieldExist(steamCardsLabel, newRowValues, () => response.data.trading_cards ? 'Have' : 'Missing')
+                newRowValues = fillValueIfFieldExist(steamAchievementsLabel, newRowValues, () => response.data.achievements ? 'Have' : 'Missing')
+            })
 
         updateValues(e, newRowValues)
     }
@@ -177,10 +193,11 @@ function NewModal({ initialValue, isEdit, children }) {
             values[header.label] = parseSpreadsheetDate(new Date())
         }
 
+        const label = header.label
+        const headerKey = Object.keys(headers).find(headerKey => headers[headerKey].label === header.label)
+
         if (isDropdownType(header.type)) {
             const options = parseOptions(header.options)
-            const label = header.label
-            const headerKey = Object.keys(headers).find(headerKey => headers[headerKey].label === header.label)
 
             return (
                 <Form.Field key={headerKey}>
@@ -199,32 +216,32 @@ function NewModal({ initialValue, isEdit, children }) {
             )
         } else if (header.type === 'date') {
             return <Form.Input
-                name={header.label}
-                label={header.label}
+                name={headerKey}
+                label={label}
                 onChange={handleChange}
-                value={values[header.label]}
-                key={header.label}
+                value={values[headerKey]}
+                key={label}
                 type='date'
             />
         } else if (header.type === 'text') {
             return <Form.TextArea
-                name={header.label}
-                label={header.label}
+                name={headerKey}
+                label={label}
                 onChange={handleChange}
-                placeholder={`Add ${header.label}...`}
-                value={values[header.label]}
-                key={header.label}
+                placeholder={`Add ${label}...`}
+                value={values[headerKey]}
+                key={label}
             />
         } else {
             return (
                 <Form.Input
                     fluid
-                    name={header.label}
-                    label={header.label}
+                    name={headerKey}
+                    label={label}
                     onChange={handleChange}
-                    placeholder={`Add ${header.label}...`}
-                    value={values[header.label]}
-                    key={header.label}
+                    placeholder={`Add ${label}...`}
+                    value={values[headerKey]}
+                    key={label}
                 />
             )
         }

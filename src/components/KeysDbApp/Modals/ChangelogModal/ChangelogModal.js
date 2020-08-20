@@ -3,10 +3,17 @@ import { Modal, Icon, List, Segment, Header, Container, } from "semantic-ui-reac
 
 export const changelog = [
     {
+        date: '20/8/2020',
+        list: [
+            'Table - Hovering for at least 1 second on game title will show popover of the games title and the games image from Steam.',
+            'Fields - New Steam Bundled field, will be filled automatically.',
+        ]
+    },
+    {
         date: '19/8/2020',
         list: [
-            'Settings - You can now add new fields and delete fields.',
-            'Fields - New Steam Achievements fields, will be filled automatically.',
+            'Settings - You can now add and delete fields.',
+            'Fields - New Steam Achievements field, will be filled automatically.',
             'Note Field - Fixed issue where the note i still displayed even though it\'s empty.',
             'General - Bugs, stability and performance fixes, and other boring stuff.',
         ]

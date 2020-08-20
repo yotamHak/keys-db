@@ -86,7 +86,10 @@ class ItadApi {
         const plainName = _encodeName(gameName);
         return axios.get(`https://api.isthereanydeal.com/v01/game/info/?key=${this.apiKey}&plains=${plainName}`)
             .then(response => {
-                return response.data.data[plainName]
+                return {
+                    success: response.status === 200 ? true : false,
+                    data: response.data.data[plainName]
+                }
             })
     }
 
@@ -114,7 +117,7 @@ function _romanize(num) {
     return key[Number(num)];
 }
 
-function _encodeName(str) {
+export function _encodeName(str) {
     if (str === undefined || str === null) { return "" }
 
     str = str.toLowerCase(); //lowercase
@@ -123,7 +126,7 @@ function _encodeName(str) {
     str = str.replace(/([^a-z]the[^a-z])|([^a-z]the$)/g, ""); //remove "the", but not e.g. "other" or "them"
     str = str.replace(/\+/g, "plus");    //spell out "plus"
     str = str.replace(/&/g, "and");    //spell out "and"
-    // str = str.replace(/\&/g, "and");    //spell out "and"
+    str = str.replace(/\&/g, "and");    //spell out "and"
     str = str.replace(/[^a-z0]/g, '');    //remove remaining invalid characters, like spaces, braces, hyphens etc
     return str;
 }

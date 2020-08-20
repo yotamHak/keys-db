@@ -14,6 +14,7 @@ import { getUrlsLocationAndValue, isDropdownType, getIndexById, } from "../../..
 import Spreadsheets from "../../../google/Spreadsheets";
 import SteamCardsCell from "../Cells/SteamCardsCell/SteamCardsCell";
 import SteamAchievementsCell from "../Cells/SteamAchievementsCell/SteamAchievementsCell";
+import SteamBundledCell from "../Cells/SteamBundledCell/SteamBundledCell";
 
 function KeyRow({ rowIndex }) {
     const [hasChanges, setHasChanges] = useState(false);
@@ -57,6 +58,12 @@ function KeyRow({ rowIndex }) {
             return <SteamAchievementsCell
                 rowIndex={rowIndex}
                 header={header}
+                key={rKey}
+                value={gameHeaderValue}
+            />
+        } else if (header.type === 'steam_bundled') {
+            return <SteamBundledCell
+                rowIndex={rowIndex}
                 key={rKey}
                 value={gameHeaderValue}
             />
