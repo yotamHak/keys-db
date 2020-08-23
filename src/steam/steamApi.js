@@ -87,7 +87,8 @@ async function GetOwnedGames(steamId, steamApiKey) {
                     }
                 }
             }
-            else return response
+
+            return response
         })
 }
 

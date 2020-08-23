@@ -156,6 +156,14 @@ export const cleanRedundentOptions = headers => Object.keys(headers).reduce((res
   }
 }, {})
 
+export function fillValueIfFieldExist(label, values, onExist) {
+  if (label) {
+    values[label].value = onExist()
+  }
+
+  return values
+}
+
 export const getIndexByLabel = (label, headers) => {
   return _alphabet.indexOf(headers[label].id)
 }

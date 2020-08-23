@@ -6,11 +6,11 @@ import _ from 'lodash';
 import { reloadTable } from "../../../../actions";
 import useFormValidation from '../../../Authentication/useFormValidation';
 import validateNewKey from '../../../Authentication/validateNewKey';
-import { parseSpreadsheetDate, parseOptions, genericSort, isDropdownType, getLabelByType } from "../../../../utils";
+import { parseSpreadsheetDate, parseOptions, genericSort, isDropdownType, getLabelByType, fillValueIfFieldExist } from "../../../../utils";
 import ErrorBox from "../../../Authentication/ErrorBox/ErrorBox";
-import itadApi from "../../../../itad";
 import Spreadsheets from "../../../../google/Spreadsheets";
 import { DoesUserOwnGame } from "../../../../steam/steamApi";
+import { GetOverview, GetInfoAboutGame, FindGame } from "../../../../itad/itad";
 
 function NewModal({ initialValue, isEdit, children }) {
     const headers = useSelector((state) => state.table.headers)
@@ -80,14 +80,6 @@ function NewModal({ initialValue, isEdit, children }) {
         }
     }
 
-    function fillValueIfFieldExist(label, values, onExist) {
-        if (label) {
-            values[label].value = onExist()
-        }
-
-        return values
-    }
-
     async function handleSearchResultSelect(e, { result }) {
         handleChange(e, { name: steamTitleLabel, value: result.title })
 
@@ -110,7 +102,7 @@ function NewModal({ initialValue, isEdit, children }) {
             newRowValues = fillValueIfFieldExist(steamOwnershipLabel, newRowValues, () => DoesUserOwnGame(steam.ownedGames.games, result.appid) ? 'Own' : 'Missing')
         }
 
-        await itadApi.GetOverview(result.plain)
+        await GetOverview(result.plain)
             .then(response => {
                 // console.log("ITAD data:", response.data)
 
@@ -122,7 +114,7 @@ function NewModal({ initialValue, isEdit, children }) {
                 newRowValues = fillValueIfFieldExist(steamBundledLabel, newRowValues, () => response.data.bundles && response.data.bundles.count ? response.data.bundles.count : 0)
             })
 
-        await itadApi.GetInfoAboutGame(result.plain)
+        await GetInfoAboutGame(result.plain)
             .then(response => {
                 // console.log("More Info from ITAD:", response)
 
@@ -147,7 +139,7 @@ function NewModal({ initialValue, isEdit, children }) {
 
         setIsSearching(true);
 
-        itadApi.FindGame(value).then(response => {
+        FindGame(value).then(response => {
             const uniqueResultsObject = response.data.data.list.reduce((acc, item) => Object.assign(acc, { [item.plain]: item }), {});
             const uniqueResultsArray = Object.keys(uniqueResultsObject).map(s => ({ ...uniqueResultsObject[s] }));
             const filteredResults = uniqueResultsArray.reduce((results, item) => {

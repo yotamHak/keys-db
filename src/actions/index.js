@@ -37,6 +37,12 @@ export const steamSetOwnedGames = games => {
         payload: games
     }
 }
+export const itadSetMap = data => {
+    return {
+        type: actionTypes.ITAD_SET_MAP,
+        payload: data
+    }
+}
 
 export const setupComplete = state => {
     return {

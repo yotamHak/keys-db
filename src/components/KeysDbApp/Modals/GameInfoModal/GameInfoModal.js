@@ -6,9 +6,9 @@ import dateFns from 'date-fns';
 import AwesomeSlider from 'react-awesome-slider';
 import withAutoplay from 'react-awesome-slider/dist/autoplay';
 
-import itadApi from "../../../../itad";
 import { STEAM_CATEGORIES, } from "../../../../utils";
 import { GetAppDetails, GetPackageDetails } from "../../../../steam/steamApi";
+import { GetOverview } from "../../../../itad/itad";
 
 function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }) {
     const [appData, setAppData] = useState(null)
@@ -129,7 +129,7 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
                 }
             })
 
-        itadApi.GetOverview(title)
+        GetOverview(title)
             .then(response => {
                 // console.log("ITAD data:", response.data)
                 if (response.success) {

@@ -27,6 +27,12 @@ function KeyRow({ rowIndex }) {
 
     const urlsInGameData = getUrlsLocationAndValue(headers, gameData);
 
+    function rowChangesCallback(changedRow) {
+        Object.keys(changedRow).forEach(header => {
+            changeCallback(changedRow[header], changedRow[header].value)
+        })
+    }
+
     function changeCallback(header, changedValue) {
         gameData[getIndexById(header.id, headers)] = changedValue;
         setHasChanges(true)
@@ -154,7 +160,7 @@ function KeyRow({ rowIndex }) {
                     ? <Table.Cell singleLine>
                         <Button icon='save' onClick={() => { saveChanges(gameData) }} loading={isSaving} circular basic size='mini' />
                     </Table.Cell>
-                    : <ActionsCell index={rowIndex} />
+                    : <ActionsCell index={rowIndex} changesCallback={rowChangesCallback} />
             }
 
             {

@@ -99,6 +99,9 @@ const initialAuthenticationState = {
         googleClientReady: false,
         profile: null,
     },
+    itad: {
+        map: null,
+    },
     setupComplete: false,
     spreadsheetId: null,
     currentSpreadsheetId: null,
@@ -180,6 +183,24 @@ const authentication_reducer = (state = initialAuthenticationState, action) => {
                 steam: {
                     ...state.steam,
                     ownedGames: action.payload
+                }
+            }
+        case actionTypes.ITAD_SET_MAP:
+            newState = {
+                ...state,
+                itad: {
+                    ...state.itad,
+                    map: action.payload
+                }
+            }
+
+            localStorage.setItem('itad', JSON.stringify(newState.itad))
+
+            return {
+                ...state,
+                itad: {
+                    ...state.itad,
+                    map: action.payload
                 }
             }
         case actionTypes.GOOGLE_LOGGED_IN:

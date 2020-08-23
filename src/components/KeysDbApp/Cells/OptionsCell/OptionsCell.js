@@ -1,9 +1,9 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import { Table, Dropdown } from "semantic-ui-react";
 import _ from 'lodash';
 
 import { parseOptions, hasWritePermission } from "../../../../utils";
-import { useSelector } from "react-redux";
 
 function OptionsCell({ rowIndex, title, header, onChange }) {
     const options = parseOptions(header.options);
