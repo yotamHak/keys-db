@@ -3,6 +3,13 @@ import { Modal, Icon, List, Segment, Header, Container, } from "semantic-ui-reac
 
 export const changelog = [
     {
+        date: '23/8/2020',
+        list: [
+            'Table - You can now update ITAD information from the actions dropdown.',
+            'General - Bugs, stability, performance fixes, and other boring stuff.',
+        ]
+    },
+    {
         date: '20/8/2020',
         list: [
             'Table - Hovering for at least 1 second on game title will show popover of the games title and the games image from Steam.',
@@ -15,7 +22,7 @@ export const changelog = [
             'Settings - You can now add and delete fields.',
             'Fields - New Steam Achievements field, will be filled automatically.',
             'Note Field - Fixed issue where the note i still displayed even though it\'s empty.',
-            'General - Bugs, stability and performance fixes, and other boring stuff.',
+            'General - Bugs, stability, performance fixes, and other boring stuff.',
         ]
     },
     {
