@@ -4,12 +4,13 @@ import { useSelector, useDispatch } from "react-redux";
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 
-import useFormValidation from "../../../Authentication/useFormValidation";
-import validateTableSettings from "../../../Authentication/validateTableSettings";
 import { setNewRowChange, reloadTable, addHeaders, } from "../../../../actions";
-import Spreadsheets from "../../../../google/Spreadsheets";
 import { cleanRedundentOptions, nextChar, getIndexById, hasWritePermission, } from "../../../../utils";
 import FieldSettings from "../../FieldSettings/FieldSettings";
+
+import useFormValidation from '../../../../hooks/useFormValidation';
+import validateTableSettings from '../../../../hooks/formValidations/validateTableSettings';
+import Spreadsheets from "../../../../lib/google/Spreadsheets";
 
 function TableSettingsModal() {
     const [modalOpen, setModalOpen] = useState(false)

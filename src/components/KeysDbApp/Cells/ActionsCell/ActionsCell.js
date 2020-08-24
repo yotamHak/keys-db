@@ -1,15 +1,15 @@
 import React, { useState, useEffect, } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Table, Dropdown, Confirm, Icon, } from "semantic-ui-react";
-import _, { result } from 'lodash';
 
 import NewModal from "../../Modals/NewModal/NewModal";
 import { parseSpreadsheetDate, hasWritePermission, getValueByType, getValueById, getLabelByType, fillValueIfFieldExist, } from "../../../../utils";
 import { reloadTable } from "../../../../actions";
-import Spreadsheets from "../../../../google/Spreadsheets";
 import GameInfoModal from "../../Modals/GameInfoModal/GameInfoModal";
-import { GetOverview, GetInfoAboutGame } from "../../../../itad/itad";
-import { DoesUserOwnGame } from "../../../../steam/steamApi";
+
+import Spreadsheets from "../../../../lib/google/Spreadsheets";
+import ItadApi from "../../../../lib/itad/ItadApi";
+import SteamApi from "../../../../lib/steam/SteamApi";
 
 function ActionsCell({ index, changesCallback }) {
     const [prompt, setPrompt] = useState(false)
@@ -61,7 +61,7 @@ function ActionsCell({ index, changesCallback }) {
     }
 
     async function handleRefreshItadData() {
-        const itadPlain = itadMap.data[`app/${steamAppId}`] || itadMap.data[`sub/${steamAppId}`] || itadMap.data[`bundle/${steamAppId}`]
+        const itadPlain = ItadApi.GetPlainName(itadMap, steamAppId)
 
         if (itadPlain === undefined) {
             console.error("Can't find data, please check your app id or update Itad data")
@@ -87,10 +87,10 @@ function ActionsCell({ index, changesCallback }) {
         }), [])
 
         if (steam.loggedIn === true) {
-            newRowValues = fillValueIfFieldExist(steamOwnershipLabel, newRowValues, () => DoesUserOwnGame(steam.ownedGames.games, steamAppId) ? 'Own' : 'Missing')
+            newRowValues = fillValueIfFieldExist(steamOwnershipLabel, newRowValues, () => SteamApi.DoesUserOwnGame(steam.ownedGames.games, steamAppId) ? 'Own' : 'Missing')
         }
 
-        await GetOverview(itadPlain[0])
+        await ItadApi.GetOverview(itadPlain[0])
             .then(response => {
                 // console.log("ITAD data:", response.data)
 
@@ -104,7 +104,7 @@ function ActionsCell({ index, changesCallback }) {
                 newRowValues = fillValueIfFieldExist(steamBundledLabel, newRowValues, () => response.data.bundles && response.data.bundles.count ? response.data.bundles.count : 0)
             })
 
-        await GetInfoAboutGame(itadPlain[0])
+        await ItadApi.GetInfoAboutGame(itadPlain[0])
             .then(response => {
                 // console.log("More Info from ITAD:", response)
 

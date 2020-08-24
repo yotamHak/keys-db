@@ -7,8 +7,8 @@ import AwesomeSlider from 'react-awesome-slider';
 import withAutoplay from 'react-awesome-slider/dist/autoplay';
 
 import { STEAM_CATEGORIES, } from "../../../../utils";
-import { GetAppDetails, GetPackageDetails } from "../../../../steam/steamApi";
-import { GetOverview } from "../../../../itad/itad";
+import ItadApi from "../../../../lib/itad/ItadApi";
+import SteamApi from "../../../../lib/steam/SteamApi";
 
 function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }) {
     const [appData, setAppData] = useState(null)
@@ -101,7 +101,7 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
     function loadGameData(id, title) {
         if (appData && itadData) return
 
-        GetAppDetails(id)
+        SteamApi.GetAppDetails(id)
             .then(response => {
                 if (response.success && response.data[id]) {
                     // console.log("Steam App data:", response.data[id].data)
@@ -113,7 +113,7 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
                             setErrorGettingSteamData(true)
                             return
                         }
-                        GetPackageDetails(id)
+                        SteamApi.GetPackageDetails(id)
                             .then(response => {
                                 if (response.success && response.data[id].success && response.data[id].success !== false) {
                                     // console.log(response.data)
@@ -129,7 +129,7 @@ function GameInfoModal({ appId, title, trigger = <Dropdown.Item text="Info" /> }
                 }
             })
 
-        GetOverview(title)
+        ItadApi.GetOverview(title)
             .then(response => {
                 // console.log("ITAD data:", response.data)
                 if (response.success) {

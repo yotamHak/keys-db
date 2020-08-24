@@ -1,11 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Segment, Label, Form, Input, List, Button, Message, } from 'semantic-ui-react';
 import _ from 'lodash'
 
-import useFormValidation from '../../Authentication/useFormValidation';
-import validateOption from '../../Authentication/validateOption';
-import { colorOptions, usePrevious } from '../../../utils';
-import { useState } from 'react';
+import useFormValidation from '../../../hooks/useFormValidation';
+import validateOption from '../../../hooks/formValidations/validateOption';
+import usePrevious from '../../../hooks/usePrevious'
+import { colorOptions, } from '../../../utils';
 
 function OptionsEditor({ headerKey, type, options, onInitOptions, onOptionsChange, }) {
     const [isEditing, setIsEditing] = useState(false)

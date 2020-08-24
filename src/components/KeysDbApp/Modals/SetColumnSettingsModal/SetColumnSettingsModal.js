@@ -2,11 +2,12 @@ import React, { useState, } from "react";
 import { Modal, Button, Confirm, Container, Segment, Form, } from "semantic-ui-react";
 import { useSelector, useDispatch } from "react-redux";
 
-import useFormValidation from "../../../Authentication/useFormValidation";
-import { useInterval, } from "../../../../utils";
-import validateHeaderSetting from "../../../Authentication/validateHeaderSetting";
 import { setNewRowChange } from "../../../../actions";
 import FieldSettings from "../../FieldSettings/FieldSettings";
+
+import useFormValidation from '../../../../hooks/useFormValidation'
+import validateHeaderSetting from '../../../../hooks/formValidations/validateHeaderSetting'
+import useInterval from '../../../../hooks/useInterval'
 
 function SetColumnSettingsModal({ triggerElement, headerLabel, }) {
     const dispatch = useDispatch()

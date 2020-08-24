@@ -1,9 +1,11 @@
 import React from "react";
-import googleConfig from "./config";
-import { gapi } from 'gapi-script';
 import { useDispatch } from "react-redux";
-import { googleClientReady, googleLoggedIn } from "../actions";
 import { Message, Container } from "semantic-ui-react";
+
+import googleConfig from "./config";
+import { googleClientReady, googleLoggedIn } from "../actions";
+
+import { gapi } from 'gapi-script';
 
 function GoogleAuthentication({ dontLogin }) {
     React.useEffect(() => {

@@ -9,10 +9,10 @@
 /src/Google/config.js
 
 # Ignore ITAD Config
-/src/itad/config.js
+/src/lib/itad/config.js
 
 # Ignore Steam Config
-/src/steam/config.js
+/src/lib/steam/config.js
 
 # dependencies
 /node_modules

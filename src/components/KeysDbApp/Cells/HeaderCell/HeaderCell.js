@@ -4,7 +4,8 @@ import { useDispatch, useSelector } from "react-redux";
 import _ from 'lodash';
 
 import { addFilter, resetTableParams } from "../../../../actions";
-import { parseOptions, usePrevious } from "../../../../utils";
+import { parseOptions, } from "../../../../utils";
+import usePrevious from '../../../../hooks/usePrevious'
 
 function HeaderCell({ title }) {
     const dispatch = useDispatch()

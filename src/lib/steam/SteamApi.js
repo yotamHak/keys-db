@@ -1,6 +1,6 @@
 import axios from 'axios'
 import _ from 'lodash'
-import { corsLink } from '../utils'
+import { corsLink } from '../../utils'
 
 // https://wiki.teamfortress.com/wiki/User:RJackson/StorefrontAPI#Known_methods
 
@@ -59,7 +59,7 @@ async function GetOwnedGames(steamId, steamApiKey) {
     // })
     // .then(response => {
     //     if (response.ok) return response.json()
-    //     throw new Error('Network response was not ok.')
+    //     throw new Error('Network response was not ok.') 
     // })
     // .then(data => console.log(data.contents));
 
@@ -127,4 +127,10 @@ function DoesUserOwnGame(ownedGames, appid) {
     return result
 }
 
-export { GetAppDetails, GetOwnedGames, GetUserInfo, DoesUserOwnGame, GetPackageDetails, }
+export default {
+    GetAppDetails,
+    GetOwnedGames,
+    GetUserInfo,
+    DoesUserOwnGame,
+    GetPackageDetails,
+}

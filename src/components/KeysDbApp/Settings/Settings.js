@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from 'react'
+import { useSelector, useDispatch } from 'react-redux';
 import { Button, Form, Grid, Header, Message, Segment, } from 'semantic-ui-react'
 
-import validateSettings from '../../Authentication/validateSettings';
-import useFormValidation from '../../Authentication/useFormValidation';
 import ErrorBox from '../../Authentication/ErrorBox/ErrorBox';
-import { useSelector, useDispatch } from 'react-redux';
 import { setupComplete, spreadsheetSetId, steamSetApiKey, steamSetProfile, steamLogged } from '../../../actions';
-import { usePrevious, useInterval } from '../../../utils';
-import { GetUserInfo } from '../../../steam/steamApi';
-import Spreadsheets from '../../../google/Spreadsheets';
 import ImportModal from '../Modals/ImportModal/ImportModal';
+
+import useFormValidation from '../../../hooks/useFormValidation'
+import validateSettings from '../../../hooks/formValidations/validateSettings'
+import usePrevious from '../../../hooks/usePrevious'
+import useInterval from '../../../hooks/useInterval'
+
+import SteamApi from '../../../lib/steam/SteamApi';
+import Spreadsheets from '../../../lib/google/Spreadsheets';
+
 
 function Settings() {
     const steam = useSelector((state) => state.authentication.steam)
@@ -50,7 +54,7 @@ function Settings() {
 
         if (steam.id && steam.apiKey) {
             if (!steam.profile) {
-                GetUserInfo(steam.id, steam.apiKey)
+                SteamApi.GetUserInfo(steam.id, steam.apiKey)
                     .then(response => {
                         if (response.success) {
                             dispatch(steamSetProfile(response.data.user))

@@ -1,10 +1,11 @@
-import React, { useRef } from "react";
+import React, { useRef, useState, } from "react";
 import { Table, Icon, Grid, Popup, Input, Button } from "semantic-ui-react";
-import { isSteamKey, useInterval, isUrl } from "../../../../utils";
-import { useState } from "react";
+
+import { isSteamKey, isUrl } from "../../../../utils";
+import useInterval from '../../../../hooks/useInterval'
 
 function KeyCell({ gameKey, rowIndex, onChange, header }) {
-    const [copySuccess, setCopySuccess] = useState(null);
+    const [, setCopySuccess] = useState(null);
     const [resetCopyFeedback, setResetCopyFeedback] = useState(false);
 
     const inputRef = useRef(null);

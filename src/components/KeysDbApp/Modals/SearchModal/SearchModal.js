@@ -2,7 +2,7 @@ import React from "react";
 import { Modal, Search, Segment, Header, Item, Icon, Container, Button, Input, Divider } from "semantic-ui-react";
 import _ from 'lodash';
 
-import { FindGame } from "../../../../itad/itad";
+import ItadApi from "../../../../lib/itad/ItadApi";
 
 function SearchModal({ onSelect, initialValue, children }) {
     const [showModal, setShowModal] = React.useState(false)
@@ -30,7 +30,7 @@ function SearchModal({ onSelect, initialValue, children }) {
         setValue(value)
         if (isSearching || !value || value.length < 3) return
         setIsSearching(true)
-        FindGame(value).then(response => {
+        ItadApi.FindGame(value).then(response => {
             console.log("response", response);
 
             const uniqueResultsObject = response.data.data.list.reduce((acc, item) => Object.assign(acc, { [item.plain]: item }), {});

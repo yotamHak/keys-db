@@ -5,11 +5,13 @@ import { Dimmer, Loader } from "semantic-ui-react";
 import dateFns from 'date-fns'
 
 import KeysTable from "../../components/KeysDbApp/KeysTable/KeysTable";
-import Spreadsheets from "../../google/Spreadsheets";
 import { addHeaders, spreadsheetSetPermission, setCurrentSpreadsheetId, steamSetOwnedGames, setCurrentSheetId, itadSetMap, } from "../../actions";
-import { usePrevious } from "../../utils";
-import { GetOwnedGames } from "../../steam/steamApi";
-import { GetMap } from "../../itad/itad";
+
+import usePrevious from '../../hooks/usePrevious'
+
+import SteamApi from "../../lib/steam/SteamApi";
+import ItadApi from "../../lib/itad/ItadApi";
+import Spreadsheets from "../../lib/google/Spreadsheets";
 
 function KeysDBPage(props) {
     const spreadsheetId = props.match.params.spreadsheetId || useSelector((state) => state.authentication.spreadsheetId)
@@ -47,7 +49,7 @@ function KeysDBPage(props) {
         if (steam.loggedIn === true && !loadingOwnedGames && (steam.ownedGames === null || dateFns.differenceInMinutes(new Date(), steam.ownedGames.timestamp) > 10)) {
             setLoadingOwnedGames(true)
 
-            GetOwnedGames(steam.id, steam.apiKey)
+            SteamApi.GetOwnedGames(steam.id, steam.apiKey)
                 .then(response => {
                     if (!response.success) {
                         console.error(response.data)
@@ -66,7 +68,7 @@ function KeysDBPage(props) {
             } else {
                 setLoadingItadMap(true)
 
-                GetMap()
+                ItadApi.GetMap()
                     .then(response => {
                         if (!response.success) {
                             console.error(response.data)

@@ -4,15 +4,17 @@ import _ from 'lodash';
 import { useSelector, useDispatch } from "react-redux";
 
 import { reloadTable, setCurrentRows, setIsTableEmpty, showShareModal } from "../../../actions";
-import { usePrevious, TABLE_DEFAULT_OFFSET, TABLE_DEFAULT_LIMIT, TABLE_DEFAULT_ACTIVEPAGE, hasWritePermission, } from "../../../utils";
+import { TABLE_DEFAULT_OFFSET, TABLE_DEFAULT_LIMIT, TABLE_DEFAULT_ACTIVEPAGE, hasWritePermission, } from "../../../utils";
 import KeyRow from "../KeyRow/KeyRow";
-import Spreadsheets from '../../../google/Spreadsheets';
 import NewModal from "../Modals/NewModal/NewModal";
 import SortDropdown from "../SortDropdown/SortDropdown";
 import DataFilters from "./DataFilters/DataFilters";
 import HeaderRow from "../HeaderRow/HeaderRow";
 import TableSettingsModal from "../Modals/TableSettingsModal/TableSettingsModal";
 import ShareModal from "../Modals/ShareModal/ShareModal";
+
+import usePrevious from '../../../hooks/usePrevious'
+import Spreadsheets from "../../../lib/google/Spreadsheets";
 
 function KeysTable() {
     const [loading, setLoading] = useState(false);

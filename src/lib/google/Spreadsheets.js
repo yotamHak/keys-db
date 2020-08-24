@@ -9,7 +9,7 @@ import {
     SPREADSHEET_IMPORT_TEMPLATE_SPREADSHEET_ID,
     getLabelByIndex,
     SPREADSHEET_TEMPLATE_SPREADSHEET_ID,
-} from '../utils';
+} from '../../utils';
 
 // https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/request
 const _requests = {

@@ -31,7 +31,7 @@ function useFormValidation(initialState, validate, authenticate) {
             ...previousValues,
             ...Object.keys(values).reduce((result, item) => ({
                 ...result,
-                [values[item].header]: values[item].value || values[item].checked
+                [values[item].header]: values[item].value !== undefined ? values[item].value : values[item].checked
             }), {})
         }))
     }

@@ -3,9 +3,9 @@ import { Modal, Button, Confirm, Container, Message, Segment, Label, List, Grid,
 import { useSelector, useDispatch } from "react-redux";
 
 import { showShareModal } from "../../../../actions";
-import Spreadsheets from "../../../../google/Spreadsheets";
 import { getPrivateColumns } from "../../../../utils";
 import DataFilters from "../../KeysTable/DataFilters/DataFilters";
+import Spreadsheets from "../../../../lib/google/Spreadsheets";
 
 function ShareModal({ triggerElement }) {
     const dispatch = useDispatch()

@@ -1,20 +1,16 @@
-import { useEffect, useRef, useState } from "react";
-import _, { indexOf } from 'lodash';
+import _ from 'lodash';
 import moment from 'moment'
 
 const _alphabet = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
-
 export const SPREADSHEET_METADATA_HEADERS_ID = 1986
 export const SPREADSHEET_METADATA_PERMISSIONS_ID = 1988
 export const SPREADSHEET_METADATA_SHEET_ID = 1910
 export const SPREADSHEET_METADATA_DEFAULT_SETTINGS = { "ID": { "id": "A", "label": "ID", "type": "number", "pattern": "General", "display": false }, "Title": { "id": "B", "label": "Title", "type": "steam_title", "isPrivate": false, "display": true, "isFilter": false, "sortable": false }, "Status": { "id": "C", "label": "Status", "type": "dropdown", "isPrivate": false, "options": { "allowEdit": false, "values": [{ "value": "Used", "color": "red" }, { "value": "Unused", "color": "green" }, { "value": "Traded", "color": "yellow" }, { "value": "Gifted", "color": "orange" }] }, "display": true, "isFilter": true, "sortable": true }, "Key": { "id": "D", "label": "Key", "type": "key", "isPrivate": true, "display": true, "isFilter": false, "sortable": false }, "From": { "id": "E", "label": "From", "type": "dropdown", "isPrivate": false, "options": { "allowEdit": true, "values": [{ "value": "Fanatical", "color": "green" }, { "value": "Indiegala", "color": "red" }, { "value": "Other", "color": "grey" }, { "value": "Amazon", "color": "brown" }, { "value": "Alienware", "color": "blue" }, { "value": "AMD", "color": "orange" }, { "value": "Indiegamestand", "color": "pink" }, { "value": "Sega", "color": "blue" }, { "value": "DigitalHomicide", "color": "brown" }, { "value": "Humblebundle", "color": "blue" }] }, "display": true, "isFilter": true, "sortable": true }, "Own Status": { "id": "F", "label": "Own Status", "type": "steam_ownership", "isPrivate": false, "options": { "allowEdit": false, "values": [{ "value": "Own", "color": "green" }, { "value": "Missing", "color": "red" }] }, "display": true, "isFilter": true, "sortable": true }, "Date Added": { "id": "G", "label": "Date Added", "type": "date", "pattern": "dd-mm-yyyy", "isPrivate": true, "display": true, "isFilter": true, "sortable": true }, "Note": { "id": "H", "label": "Note", "type": "text", "isPrivate": true, "display": true, "isFilter": false, "sortable": false }, "isthereanydeal URL": { "id": "I", "label": "isthereanydeal URL", "type": "url", "isPrivate": false, "display": true, "isFilter": false, "sortable": false }, "Steam URL": { "id": "J", "label": "Steam URL", "type": "steam_url", "isPrivate": false, "display": true, "isFilter": false, "sortable": false }, "Cards": { "id": "K", "label": "Cards", "type": "steam_cards", "isPrivate": false, "options": { "allowEdit": false, "values": [{ "value": "Have", "color": "green" }, { "value": "Missing", "color": "red" }] }, "display": true, "isFilter": true, "sortable": true }, "AppId": { "id": "L", "label": "AppId", "type": "steam_appid", "pattern": "General", "isPrivate": false, "display": true, "isFilter": false, "sortable": false } }
 export const SPREADSHEET_TEMPLATE_SPREADSHEET_ID = '13WFCn_RDuz9ZaCS4fj5VkpCUTz8HuIhSTYRjSXC-7bU'
 export const SPREADSHEET_IMPORT_TEMPLATE_SPREADSHEET_ID = '1qlzwzis9pyxI_C2s534oOPDjCaMp8ou_nTQ_SClZTxg'
-
 export const TABLE_DEFAULT_OFFSET = 0
 export const TABLE_DEFAULT_LIMIT = 24
 export const TABLE_DEFAULT_ACTIVEPAGE = 1
-
 export const STEAM_CATEGORIES = {
   1: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_multiPlayer.png',
   2: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_singlePlayer.png',
@@ -53,7 +49,6 @@ export const STEAM_CATEGORIES = {
   47: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_multiPlayer.png',
   48: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_coop.png',
 }
-
 export const colorOptions = [
   { key: 'red', text: 'Red', value: 'red', label: { color: 'red', circular: true, empty: true }, },
   { key: 'orange', text: 'Orange', value: 'orange', label: { color: 'orange', circular: true, empty: true }, },
@@ -229,55 +224,6 @@ export function getUrlsLocationAndValue(headers, gameData) {
 }
 
 export const hasWritePermission = permission => permission === "owner"
-
-// Custom hook for saving previous value
-export function usePrevious(value) {
-  const ref = useRef();
-  useEffect(() => {
-    ref.current = value;
-  });
-  return ref.current;
-}
-
-// Custom hook that will alert once reaching the bottom of the page
-export function useBottomPage(offset = 100) {
-  const [bottom, setBottom] = useState(false);
-
-  useEffect(() => {
-    function handleScroll() {
-      // const isBottom = Math.ceil(window.innerHeight + document.documentElement.scrollTop) === document.documentElement.scrollHeight;
-      const isBottom = document.documentElement.scrollTop !== 0 && window.innerHeight + document.documentElement.scrollTop > document.documentElement.scrollHeight - offset
-      setBottom(isBottom);
-    }
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
-
-  return bottom;
-}
-
-// Custom hook for an setTimeout
-export function useInterval(callback, delay) {
-  const savedCallback = useRef();
-
-  // Remember the latest callback.
-  useEffect(() => {
-    savedCallback.current = callback;
-  }, [callback]);
-
-  // Set up the interval.
-  useEffect(() => {
-    function tick() {
-      savedCallback.current();
-    }
-    if (delay !== null) {
-      let id = setInterval(tick, delay);
-      return () => clearInterval(id);
-    }
-  }, [delay]);
-}
 
 /* EMAIL REGEX: !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email) */
 /* URL REGEX: !/^(ftp|http|https):\/\/[^ "]+$/.test(values.url) */

@@ -4,13 +4,16 @@ import { Modal, Search, Segment, Header, Item, Icon, Container, Form, Label, But
 import _ from 'lodash';
 
 import { reloadTable } from "../../../../actions";
-import useFormValidation from '../../../Authentication/useFormValidation';
-import validateNewKey from '../../../Authentication/validateNewKey';
 import { parseSpreadsheetDate, parseOptions, genericSort, isDropdownType, getLabelByType, fillValueIfFieldExist } from "../../../../utils";
 import ErrorBox from "../../../Authentication/ErrorBox/ErrorBox";
-import Spreadsheets from "../../../../google/Spreadsheets";
-import { DoesUserOwnGame } from "../../../../steam/steamApi";
-import { GetOverview, GetInfoAboutGame, FindGame } from "../../../../itad/itad";
+
+import Spreadsheets from "../../../../lib/google/Spreadsheets";
+import SteamApi from '../../../../lib/steam/SteamApi'
+import ItadApi from "../../../../lib/itad/ItadApi";
+
+import useFormValidation from '../../../../hooks/useFormValidation';
+import validateNewKey from '../../../../hooks/formValidations/validateNewKey';
+
 
 function NewModal({ initialValue, isEdit, children }) {
     const headers = useSelector((state) => state.table.headers)
@@ -21,7 +24,7 @@ function NewModal({ initialValue, isEdit, children }) {
 
     const [modalOpen, setModalOpen] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
-    const [isSubmittinError, setIsSubmittinError] = useState(false)
+    const [, setIsSubmittinError] = useState(false)
     const [isSearching, setIsSearching] = useState(false)
     const [searchResults, setSearchResults] = useState(null)
 
@@ -99,10 +102,10 @@ function NewModal({ initialValue, isEdit, children }) {
         newRowValues = fillValueIfFieldExist('isthereanydeal URL', newRowValues, () => result.urls.itad)
 
         if (steam.loggedIn === true) {
-            newRowValues = fillValueIfFieldExist(steamOwnershipLabel, newRowValues, () => DoesUserOwnGame(steam.ownedGames.games, result.appid) ? 'Own' : 'Missing')
+            newRowValues = fillValueIfFieldExist(steamOwnershipLabel, newRowValues, () => SteamApi.DoesUserOwnGame(steam.ownedGames.games, result.appid) ? 'Own' : 'Missing')
         }
 
-        await GetOverview(result.plain)
+        await ItadApi.GetOverview(result.plain)
             .then(response => {
                 // console.log("ITAD data:", response.data)
 
@@ -114,7 +117,7 @@ function NewModal({ initialValue, isEdit, children }) {
                 newRowValues = fillValueIfFieldExist(steamBundledLabel, newRowValues, () => response.data.bundles && response.data.bundles.count ? response.data.bundles.count : 0)
             })
 
-        await GetInfoAboutGame(result.plain)
+        await ItadApi.GetInfoAboutGame(result.plain)
             .then(response => {
                 // console.log("More Info from ITAD:", response)
 
@@ -139,7 +142,7 @@ function NewModal({ initialValue, isEdit, children }) {
 
         setIsSearching(true);
 
-        FindGame(value).then(response => {
+        ItadApi.FindGame(value).then(response => {
             const uniqueResultsObject = response.data.data.list.reduce((acc, item) => Object.assign(acc, { [item.plain]: item }), {});
             const uniqueResultsArray = Object.keys(uniqueResultsObject).map(s => ({ ...uniqueResultsObject[s] }));
             const filteredResults = uniqueResultsArray.reduce((results, item) => {

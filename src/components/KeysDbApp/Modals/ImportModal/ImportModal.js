@@ -5,13 +5,14 @@ import { Modal, Header, Button, Segment, Grid, Form, List, Message, Table, Icon,
 import { useSelector, useDispatch } from "react-redux";
 import _ from "lodash";
 
-import useFormValidation from "../../../Authentication/useFormValidation";
-import validateImport from "../../../Authentication/validateImport"
 import ErrorBox from "../../../Authentication/ErrorBox/ErrorBox";
-import Spreadsheets from "../../../../google/Spreadsheets";
 import { getLabelByIndex } from "../../../../utils"
 import { addHeaders, setNewRowChange, } from "../../../../actions";
 import SetColumnSettingsModal from "../SetColumnSettingsModal"
+
+import useFormValidation from '../../../../hooks/useFormValidation';
+import validateImport from '../../../../hooks/formValidations/validateImport';
+import Spreadsheets from "../../../../lib/google/Spreadsheets";
 
 const SPREADSHEET_INITIAL_STATE = {
     spreadsheetId: '',
