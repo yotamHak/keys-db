@@ -82,11 +82,11 @@ body {
   justify-content: center;
 }
 
-/* .ui.simple.active.dropdown > .menu,
+.ui.simple.active.dropdown > .menu,
 .ui.simple.dropdown:hover > .menu.actions-menu {
-  top: -225% !important;
+  top: -200% !important;
   left: 100%;
-} */
+}
 
 .gameinfo-with-background {
   background: transparent !important;

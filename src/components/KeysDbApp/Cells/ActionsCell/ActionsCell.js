@@ -1,6 +1,7 @@
 import React, { useState, useEffect, } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Table, Dropdown, Confirm, Icon, } from "semantic-ui-react";
+import _, { result } from 'lodash';
 
 import NewModal from "../../Modals/NewModal/NewModal";
 import { parseSpreadsheetDate, hasWritePermission, getValueByType, getValueById, getLabelByType, fillValueIfFieldExist, } from "../../../../utils";
@@ -46,7 +47,7 @@ function ActionsCell({ index, changesCallback }) {
             changesCallback(hasChanges)
             setHasChanges(false)
         }
-    }, [headers, refreshingItadData, hasChanges])
+    }, [headers, refreshingItadData,])
 
     function handleDelete(e, data) {
         setPrompt(false)
@@ -64,26 +65,26 @@ function ActionsCell({ index, changesCallback }) {
 
         if (itadPlain === undefined) {
             console.error("Can't find data, please check your app id or update Itad data")
+            setRefreshingItadData(false)
             return
         }
 
         const steamUrlLabel = getLabelByType(headers, "steam_url")
         const steamCardsLabel = getLabelByType(headers, "steam_cards")
+        const steamBundledLabel = getLabelByType(headers, "steam_bundled")
         const steamOwnershipLabel = getLabelByType(headers, "steam_ownership")
         const steamAchievementsLabel = getLabelByType(headers, "steam_achievements")
-        const steamBundledLabel = getLabelByType(headers, "steam_bundled")
 
         const values = initialValues
 
-        let newRowValues = Object.keys(headers)
-            .reduce((result, header) => ({
-                ...result,
-                [header]: {
-                    id: headers[header].id,
-                    header: header,
-                    value: values[header]
-                }
-            }), [])
+        let newRowValues = Object.keys(headers).reduce((result, header) => ({
+            ...result,
+            [header]: {
+                id: headers[header].id,
+                header: header,
+                value: values[header]
+            }
+        }), [])
 
         if (steam.loggedIn === true) {
             newRowValues = fillValueIfFieldExist(steamOwnershipLabel, newRowValues, () => DoesUserOwnGame(steam.ownedGames.games, steamAppId) ? 'Own' : 'Missing')
@@ -116,8 +117,11 @@ function ActionsCell({ index, changesCallback }) {
                 newRowValues = fillValueIfFieldExist(steamAchievementsLabel, newRowValues, () => response.data.achievements ? 'Have' : 'Missing')
             })
 
+        if (Object.keys(newRowValues).reduce((result, key) => `${newRowValues[key].value}` !== `${values[key]}` ? [...result, key] : result, []).length > 0) {
+            setHasChanges(newRowValues)
+        }
+
         setRefreshingItadData(false)
-        setHasChanges(newRowValues)
     }
 
     return (
