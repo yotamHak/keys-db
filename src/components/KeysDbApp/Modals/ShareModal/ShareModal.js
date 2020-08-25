@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 
 import { showShareModal } from "../../../../actions";
 import { getPrivateColumns } from "../../../../utils";
-import DataFilters from "../../KeysTable/DataFilters/DataFilters";
+import DataFilters from "../../DataFilters";
 import Spreadsheets from "../../../../lib/google/Spreadsheets";
 
 function ShareModal({ triggerElement }) {

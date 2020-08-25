@@ -3,7 +3,7 @@ import { Modal, Button, Confirm, Container, Segment, Form, } from "semantic-ui-r
 import { useSelector, useDispatch } from "react-redux";
 
 import { setNewRowChange } from "../../../../actions";
-import FieldSettings from "../../FieldSettings/FieldSettings";
+import FieldSettings from "../../FieldSettings";
 
 import useFormValidation from '../../../../hooks/useFormValidation'
 import validateHeaderSetting from '../../../../hooks/formValidations/validateHeaderSetting'

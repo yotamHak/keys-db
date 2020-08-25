@@ -5,7 +5,7 @@ import _ from 'lodash';
 
 import { reloadTable } from "../../../../actions";
 import { parseSpreadsheetDate, parseOptions, genericSort, isDropdownType, getLabelByType, fillValueIfFieldExist } from "../../../../utils";
-import ErrorBox from "../../../Authentication/ErrorBox/ErrorBox";
+import ErrorBox from "../../../ErrorBox";
 
 import Spreadsheets from "../../../../lib/google/Spreadsheets";
 import SteamApi from '../../../../lib/steam/SteamApi'

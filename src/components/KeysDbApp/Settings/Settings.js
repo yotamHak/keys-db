@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux';
 import { Button, Form, Grid, Header, Message, Segment, } from 'semantic-ui-react'
 
-import ErrorBox from '../../Authentication/ErrorBox/ErrorBox';
+import ErrorBox from '../../ErrorBox';
 import { setupComplete, spreadsheetSetId, steamSetApiKey, steamSetProfile, steamLogged } from '../../../actions';
-import ImportModal from '../Modals/ImportModal/ImportModal';
+import ImportModal from '../Modals/ImportModal';
 
 import useFormValidation from '../../../hooks/useFormValidation'
 import validateSettings from '../../../hooks/formValidations/validateSettings'

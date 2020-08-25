@@ -1,9 +1,11 @@
 import React from "react";
-import _ from 'lodash'
-import { Table, } from 'semantic-ui-react';
 import { useSelector } from "react-redux";
+import { Table, } from 'semantic-ui-react';
+import _ from 'lodash';
+
+import HeaderCell from "../Cells/HeaderCell";
+
 import { getUrlsLocationAndValue, } from "../../../utils";
-import HeaderCell from "../Cells/HeaderCell/HeaderCell";
 
 function HeaderRow() {
     const headers = useSelector((state) => state.table.headers)

@@ -2,8 +2,8 @@ import React from 'react';
 import { Form, Input, Grid, Popup, Icon, Checkbox, } from 'semantic-ui-react';
 
 import { isDropdownType, fieldTypes } from '../../../utils';
-import ErrorBox from '../../Authentication/ErrorBox/ErrorBox';
-import OptionsEditor from '../OptionsEditor/OptionsEditor';
+import ErrorBox from '../../ErrorBox';
+import OptionsEditor from '../OptionsEditor';
 
 function FieldSettings({ headerKey, values, errors, handleChange, }) {
     function handleInitOptions(headerKey, values) {

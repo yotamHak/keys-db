@@ -1,17 +1,17 @@
 import React, { useEffect, useState, } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { Table, Dimmer, Icon, Segment, Loader, Placeholder, Menu, Pagination, Dropdown, Header, Input, Grid, } from 'semantic-ui-react';
 import _ from 'lodash';
-import { useSelector, useDispatch } from "react-redux";
 
 import { reloadTable, setCurrentRows, setIsTableEmpty, showShareModal } from "../../../actions";
 import { TABLE_DEFAULT_OFFSET, TABLE_DEFAULT_LIMIT, TABLE_DEFAULT_ACTIVEPAGE, hasWritePermission, } from "../../../utils";
-import KeyRow from "../KeyRow/KeyRow";
-import NewModal from "../Modals/NewModal/NewModal";
-import SortDropdown from "../SortDropdown/SortDropdown";
-import DataFilters from "./DataFilters/DataFilters";
-import HeaderRow from "../HeaderRow/HeaderRow";
-import TableSettingsModal from "../Modals/TableSettingsModal/TableSettingsModal";
-import ShareModal from "../Modals/ShareModal/ShareModal";
+import KeyRow from "../KeyRow";
+import NewModal from "../Modals/NewModal";
+import SortDropdown from "../SortDropdown";
+import DataFilters from "../DataFilters";
+import HeaderRow from "../HeaderRow";
+import TableSettingsModal from "../Modals/TableSettingsModal";
+import ShareModal from "../Modals/ShareModal";
 
 import usePrevious from '../../../hooks/usePrevious'
 import Spreadsheets from "../../../lib/google/Spreadsheets";

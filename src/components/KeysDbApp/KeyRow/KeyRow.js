@@ -2,19 +2,19 @@ import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { Table, Button, } from 'semantic-ui-react';
 
-import KeyCell from "../Cells/KeyCell/KeyCell";
-import DateCell from "../Cells/DateCell/DateCell";
-import NoteCell from "../Cells/NoteCell/NoteCell";
-import UrlCell from "../Cells/UrlCell/UrlCell";
-import AppIdCell from "../Cells/AppIdCell/AppIdCell";
-import NameCell from "../Cells/NameCell/NameCell";
-import OptionsCell from "../Cells/OptionsCell/OptionsCell";
-import ActionsCell from "../Cells/ActionsCell/ActionsCell";
-import { getUrlsLocationAndValue, isDropdownType, getIndexById, } from "../../../utils";
-import SteamCardsCell from "../Cells/SteamCardsCell/SteamCardsCell";
-import SteamAchievementsCell from "../Cells/SteamAchievementsCell/SteamAchievementsCell";
-import SteamBundledCell from "../Cells/SteamBundledCell/SteamBundledCell";
+import KeyCell from "../Cells/KeyCell";
+import DateCell from "../Cells/DateCell";
+import NoteCell from "../Cells/NoteCell";
+import UrlCell from "../Cells/UrlCell";
+import AppIdCell from "../Cells/AppIdCell";
+import NameCell from "../Cells/NameCell";
+import OptionsCell from "../Cells/OptionsCell";
+import ActionsCell from "../Cells/ActionsCell";
+import SteamCardsCell from "../Cells/SteamCardsCell";
+import SteamAchievementsCell from "../Cells/SteamAchievementsCell";
+import SteamBundledCell from "../Cells/SteamBundledCell";
 
+import { getUrlsLocationAndValue, isDropdownType, getIndexById, } from "../../../utils";
 import Spreadsheets from "../../../lib/google/Spreadsheets";
 
 function KeyRow({ rowIndex }) {

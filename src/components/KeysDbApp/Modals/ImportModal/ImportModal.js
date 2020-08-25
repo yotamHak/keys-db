@@ -5,7 +5,7 @@ import { Modal, Header, Button, Segment, Grid, Form, List, Message, Table, Icon,
 import { useSelector, useDispatch } from "react-redux";
 import _ from "lodash";
 
-import ErrorBox from "../../../Authentication/ErrorBox/ErrorBox";
+import ErrorBox from "../../../ErrorBox";
 import { getLabelByIndex } from "../../../../utils"
 import { addHeaders, setNewRowChange, } from "../../../../actions";
 import SetColumnSettingsModal from "../SetColumnSettingsModal"

@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { setNewRowChange, reloadTable, addHeaders, } from "../../../../actions";
 import { cleanRedundentOptions, nextChar, getIndexById, hasWritePermission, } from "../../../../utils";
-import FieldSettings from "../../FieldSettings/FieldSettings";
+import FieldSettings from "../../FieldSettings";
 
 import useFormValidation from '../../../../hooks/useFormValidation';
 import validateTableSettings from '../../../../hooks/formValidations/validateTableSettings';

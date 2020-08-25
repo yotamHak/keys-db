@@ -3,7 +3,7 @@ import { Table, Popup, Header, Grid, Image } from "semantic-ui-react";
 import { useSelector, } from "react-redux";
 
 import { getValueByType, } from "../../../../utils";
-import GameInfoModal from "../../Modals/GameInfoModal/GameInfoModal";
+import GameInfoModal from "../../Modals/GameInfoModal";
 
 function NameCell({ name, rowIndex }) {
     const headers = useSelector((state) => state.table.headers)
