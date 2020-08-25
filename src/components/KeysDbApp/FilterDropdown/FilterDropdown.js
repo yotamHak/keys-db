@@ -41,7 +41,9 @@ function FilterDropdown() {
                                                             const filter = filters.filter(filter => filter.key === key);
                                                             return filter.length === 0 || filter[0].values.indexOf(value.value) === -1
                                                         })
-                                                        .map((value, index) => <Dropdown.Item onClick={() => filter(key, value.value)} key={index}>{value.value}</Dropdown.Item>)
+                                                        .map((value, index) => <Dropdown.Item onClick={() => filter(key, value.value)} key={index}>
+                                                            <span style={{ color: value.color }}>{value.value}</span>
+                                                        </Dropdown.Item>)
                                                 }
                                             </Dropdown.Menu>
                                         </Dropdown>
