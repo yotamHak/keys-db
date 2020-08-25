@@ -86,7 +86,7 @@ function ChangelogModal({ trigger }) {
             trigger={trigger}
             closeIcon={<Icon name="close" />}
             centered={false}
-            size={'large'}
+            size={'small'}
         >
             <Modal.Header as={'h1'}>Changelog</Modal.Header>
             <Modal.Content scrolling>
