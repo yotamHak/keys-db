@@ -6,6 +6,7 @@ export const changelog = [
         date: '25/8/2020',
         list: [
             'Table - Moved filter from table headers into it\'s own dropdown, near sorting.',
+            'Table - Some styling changes.',
         ]
     },
     {
