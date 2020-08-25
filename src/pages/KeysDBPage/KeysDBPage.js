@@ -46,13 +46,14 @@ function KeysDBPage(props) {
             return
         }
 
-        if (steam.loggedIn === true && !loadingOwnedGames && (steam.ownedGames === null || dateFns.differenceInMinutes(new Date(), steam.ownedGames.timestamp) > 10)) {
+        if (steam.loggedIn === true && !loadingOwnedGames && (steam.ownedGames === null || dateFns.differenceInDays(new Date(), steam.ownedGames.timestamp) > 1)) {
             setLoadingOwnedGames(true)
 
             SteamApi.GetOwnedGames(steam.id, steam.apiKey)
                 .then(response => {
                     if (!response.success) {
                         console.error(response.data)
+                        return
                     }
 
                     dispatch(steamSetOwnedGames(response.data.games))

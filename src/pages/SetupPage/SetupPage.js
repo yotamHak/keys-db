@@ -4,8 +4,8 @@ import { useSelector, } from "react-redux"
 import { Container, Step, Grid, } from "semantic-ui-react"
 
 import GoogleAuthentication from "../../google/GoogleAuthentication"
-import Settings from "../../components/KeysDbApp/Settings/Settings"
-import SteamLogin from "../../components/auth/SteamLogin/SteamLogin"
+import Settings from "../../components/KeysDbApp/Settings"
+import SteamLogin from "../../components/auth/SteamLogin"
 
 function SetupPage() {
     // const googleClientReady = useSelector((state) => state.authentication.googleClientReady)

@@ -3,6 +3,12 @@ import { Modal, Icon, List, Segment, Header, Container, } from "semantic-ui-reac
 
 export const changelog = [
     {
+        date: '25/8/2020',
+        list: [
+            'Table - Moved filter from table headers into it\'s own dropdown, near sorting.',
+        ]
+    },
+    {
         date: '23/8/2020',
         list: [
             'Table - You can now update ITAD information from the actions dropdown.',

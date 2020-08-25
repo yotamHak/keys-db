@@ -15,6 +15,7 @@ import ShareModal from "../Modals/ShareModal";
 
 import usePrevious from '../../../hooks/usePrevious'
 import Spreadsheets from "../../../lib/google/Spreadsheets";
+import FilterDropdown from "../FilterDropdown";
 
 function KeysTable() {
     const [loading, setLoading] = useState(false);
@@ -135,6 +136,10 @@ function KeysTable() {
                         <Menu>
                             <Menu.Item>
                                 <SortDropdown />
+                            </Menu.Item>
+
+                            <Menu.Item>
+                                <FilterDropdown />
                             </Menu.Item>
 
                             <Menu.Item>
