@@ -1,6 +1,7 @@
 // Authentication Action Types
 
 export const GOOGLE_LOGGED_IN = 'GOOGLE_LOGGED_IN';
+export const GOOGLE_LOGGED_OUT = 'GOOGLE_LOGGED_OUT';
 export const GOOGLE_CLIENT_READY = 'GOOGLE_CLIENT_READY';
 
 export const STEAM_SET_ID = 'STEAM_SET_ID';

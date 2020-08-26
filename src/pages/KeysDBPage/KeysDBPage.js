@@ -32,7 +32,7 @@ function KeysDBPage(props) {
 
     useEffect(() => {
         if (google.googleClientReady && (google.loggedIn === null || google.loggedIn === false)) {
-            history.push(`/login`)
+            history.push(`/get-started`)
         }
 
         if (prevSpreadsheetId && spreadsheetId) {

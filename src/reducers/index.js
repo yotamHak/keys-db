@@ -95,7 +95,7 @@ const initialAuthenticationState = {
         ownedGames: null,
     },
     google: {
-        loggedIn: null,
+        loggedIn: false,
         googleClientReady: false,
         profile: null,
     },
@@ -201,6 +201,15 @@ const authentication_reducer = (state = initialAuthenticationState, action) => {
                 itad: {
                     ...state.itad,
                     map: action.payload
+                }
+            }
+        case actionTypes.GOOGLE_LOGGED_OUT:
+            return {
+                ...state,
+                google: {
+                    googleClientReady: true,
+                    loggedIn: false,
+                    profile: null
                 }
             }
         case actionTypes.GOOGLE_LOGGED_IN:

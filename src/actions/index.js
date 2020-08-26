@@ -75,6 +75,11 @@ export const spreadsheetSetPermission = permission => {
     }
 }
 
+export const googleLoggedOut = () => {
+    return {
+        type: actionTypes.GOOGLE_LOGGED_OUT,
+    }
+}
 export const googleLoggedIn = profile => {
     return {
         type: actionTypes.GOOGLE_LOGGED_IN,

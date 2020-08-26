@@ -8,13 +8,14 @@ import { googleClientReady, googleLoggedIn } from "../actions";
 import { gapi } from 'gapi-script';
 
 function GoogleAuthentication({ dontLogin }) {
+
+    const dispatch = useDispatch()
+
     React.useEffect(() => {
         // window.gapi.load("client", this.initClient);
         // let auth2 = await loadAuth2(googleConfig.clientId, scopes);
         loadGoogle()
     }, []);
-
-    const dispatch = useDispatch()
 
     async function loadGoogle() { gapi.load("client:auth2", initClient); }
 

@@ -1,20 +1,31 @@
-import React, { useEffect, useState, } from "react"
+import React, { useEffect, useState, useCallback, } from "react"
 import { Menu, Dropdown, Image, Grid, Label, } from "semantic-ui-react";
 import { useSelector, useDispatch } from "react-redux";
 import { NavLink, } from "react-router-dom";
 import dateFns from 'date-fns';
 
 import { spreadsheetSetId, steamLoad, steamLogged, setupComplete, } from "../../actions";
-import GoogleAuthentication from "../../google/GoogleAuthentication";
 import ChangelogModal, { changelog } from "../KeysDbApp/Modals/ChangelogModal/ChangelogModal";
-import { parseSpreadsheetDate } from "../../utils";
+import { parseSpreadsheetDate, } from "../../utils";
+import useGapi from "../../hooks/useGapi";
+import googleConfig from "../../lib/google/config";
 
 function Header() {
     const google = useSelector((state) => state.authentication.google)
     const steam = useSelector((state) => state.authentication.steam)
     const spreadsheetId = useSelector((state) => state.authentication.spreadsheetId)
 
+    const [openedNotifications, setOpenedNotifications] = useState(false)
+
     const dispatch = useDispatch()
+    const googleApi = useGapi({
+        ...googleConfig,
+        onLoaded: useCallback(gapi => {
+            //   setApi(spreadsheetApi(gapi));
+        }, [])
+    });
+
+    const { isAuthenticated, isLoading, handleSignOut, } = googleApi;
 
     useEffect(() => {
         if (!steam.loggedIn && localStorage.getItem('steam')) {
@@ -24,7 +35,7 @@ function Header() {
         if (!spreadsheetId && localStorage.getItem('spreadsheetId')) {
             dispatch(spreadsheetSetId(localStorage.getItem('spreadsheetId')))
         }
-    }, [google, steam, spreadsheetId,])
+    }, [google, steam, spreadsheetId, isLoading, isAuthenticated])
 
     function handleLoginWithSteam() {
         dispatch(setupComplete(false))
@@ -36,11 +47,8 @@ function Header() {
         dispatch(steamLogged(false))
     }
 
-    const [openedNotifications, setOpenedNotifications] = useState(false)
-
     return (
         <React.Fragment>
-            <GoogleAuthentication dontLogin={true} />
             <Menu>
                 <NavLink to="/">
                     <Menu.Item name='Home' />
@@ -82,7 +90,7 @@ function Header() {
                                             display: 'flex',
                                             alignItems: 'center'
                                         }}>
-                                            <Image verticalAlign='middle' avatar src={google.profile.imageUrl} />
+                                            <Image verticalAlign='middle' avatar src={google.profile && google.profile.imageUrl} />
                                         </span>
                                     }
                                     // options={options}
@@ -104,7 +112,7 @@ function Header() {
                                                 {
                                                     google.loggedIn && google.profile
                                                         ? (
-                                                            <Grid.Row columns={'equal'}>
+                                                            <Grid.Row columns={'equal'} onClick={handleSignOut}>
                                                                 <Grid.Column floated='left' verticalAlign='middle' textAlign='left'>
                                                                     Logout from Google
                                                                 </Grid.Column>
@@ -160,7 +168,6 @@ function Header() {
             </Menu>
         </React.Fragment>
     )
-
 }
 
 export default Header;

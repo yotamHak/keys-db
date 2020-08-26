@@ -1,127 +1,34 @@
-import React, { useState, useEffect } from "react";
+import React, { } from "react";
+import { Button, Grid } from "semantic-ui-react";
 
-import GoogleLogin from "react-google-login";
-import { GoogleLogout } from "react-google-login";
-
-import googleConfig from "../../../google/config";
-
-import { useHistory } from "react-router-dom";
-import { Image, Segment } from "semantic-ui-react";
-
-import { gapi } from 'gapi-script';
-
-export function GoogleLoginComponent({ onLogin, onLogout }) {
-    const [loggedIn, setLoggedIn] = useState(false);
-    const [profile, setProfile] = useState(null);
-
-    const history = useHistory();
-
-    useEffect(() => {
-        if (loggedIn) {
-            loadGoogle()
-            onLogin()
-            // history.push("/settings");
-        } else {
-            onLogout()
-            // history.push("/");
-        }
-    }, [loggedIn])
-
-    async function loadGoogle() {
-        gapi.load("client:auth2", initClient);
-    }
-
-    function initClient() {
-        gapi.client
-            .init({
-                apiKey: googleConfig.apiKey,
-                clientId: googleConfig.clientId,
-                // Your API key will be automatically added to the Discovery Document URLs.
-                discoveryDocs: googleConfig.discoveryDocs,
-                scope: "https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/spreadsheets"
-            })
-            .then(() => {
-
-                // Listen for sign-in state changes.
-                gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
-
-                // Handle the initial sign-in state.
-                updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
-
-                // 3. Initialize and make the API request.
-                // load(onLoad);
-            });
-    };
-
-    function updateSigninStatus(isSignedIn) {
-        console.log(isSignedIn)
-        // var authorizeButton = document.getElementById('authorize_button');
-        // var signoutButton = document.getElementById('signout_button');
-
-        if (isSignedIn) {
-            // authorizeButton.style.display = 'none';
-            // signoutButton.style.display = 'block';
-            // load(onLoad);
-            // callbackOnSignIn()
-            // listMajors();
-        } else {
-            gapi.auth2.getAuthInstance().signIn();
-            // authorizeButton.style.display = 'block';
-            // signoutButton.style.display = 'none';
-        }
-    }
-
-    const responseGoogle = response => {
-        console.error(response);
-    };
-
-    const onLoginSuccess = response => {
-        console.log(response)
-        localStorage.setItem('userProfile', JSON.stringify(response.profileObj))
-        localStorage.setItem('gTokenId', response.tokenId)
-        setProfile(response.profileObj)
-        setLoggedIn(true);
-    }
-    const onLogoutSuccess = response => {
-        setLoggedIn(false);
-    }
-
+export function GoogleLoginComponent({ isAuthenticated, handleSignIn, handleSignOut, }) {
     return (
-        <Segment placeholder>
-            {loggedIn
-                ? (
-                    <React.Fragment>
-                        <Image avatar src={
-                            JSON.parse(localStorage.getItem('userProfile')).imageUrl.replace('=s96-c', '')
-                        } />
-                        <GoogleLogout
-                            clientId={googleConfig.clientId}
-                            buttonText="Logout"
-                            onLogoutSuccess={onLogoutSuccess}
-                        // render={renderProps => (
-                        //     <button onClick={renderProps.onClick} disabled={renderProps.disabled}>This is my custom Google button</button>
-                        // )}
-                        />
-                    </React.Fragment>
-                )
-                : (
-                    <GoogleLogin
-                        clientId={googleConfig.clientId}
-                        buttonText="Login"
-                        onSuccess={onLoginSuccess}
-                        onFailure={responseGoogle}
-                        cookiePolicy={"single_host_origin"}
-                        discoveryDocs={googleConfig.discoveryDocs}
-                        scope="https://www.googleapis.com/auth/spreadsheets"
-                        isSignedIn={true}
-                    // render={renderProps => (
-                    //     <button onClick={renderProps.onClick} disabled={renderProps.disabled}>This is my custom Google button</button>
-                    //   )}
-                    />
-                )
-
+        <>
+            {
+                <Button onClick={isAuthenticated ? handleSignOut : handleSignIn} basic style={{
+                    fontSize: '1em',
+                    fontWeight: '500',
+                    fontFamily: 'Roboto, sans-serif',
+                }}>
+                    <Grid verticalAlign='middle'>
+                        <Grid.Column>
+                            <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg">
+                                <g fill="#000" fillRule="evenodd">
+                                    <path d="M9 3.48c1.69 0 2.83.73 3.48 1.34l2.54-2.48C13.46.89 11.43 0 9 0 5.48 0 2.44 2.02.96 4.96l2.91 2.26C4.6 5.05 6.62 3.48 9 3.48z" fill="#EA4335" />
+                                    <path d="M17.64 9.2c0-.74-.06-1.28-.19-1.84H9v3.34h4.96c-.1.83-.64 2.08-1.84 2.92l2.84 2.2c1.7-1.57 2.68-3.88 2.68-6.62z" fill="#4285F4" />
+                                    <path d="M3.88 10.78A5.54 5.54 0 0 1 3.58 9c0-.62.11-1.22.29-1.78L.96 4.96A9.008 9.008 0 0 0 0 9c0 1.45.35 2.82.96 4.04l2.92-2.26z" fill="#FBBC05" />
+                                    <path d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.84-2.2c-.76.53-1.78.9-3.12.9-2.38 0-4.4-1.57-5.12-3.74L.97 13.04C2.45 15.98 5.48 18 9 18z" fill="#34A853" />
+                                    <path fill="none" d="M0 0h18v18H0z" />
+                                </g>
+                            </svg>
+                        </Grid.Column>
+                        <Grid.Column style={{ flexGrow: '1' }}>
+                            {isAuthenticated ? 'Sign out' : 'Sign in with Google'}
+                        </Grid.Column>
+                    </Grid>
+                </Button>
             }
-        </Segment>
+        </>
     )
 }
 
