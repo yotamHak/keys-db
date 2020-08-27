@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, } from "react"
+import React, { useEffect, } from "react"
 import { useHistory } from 'react-router-dom'
 import { useSelector, } from "react-redux"
 import { Container, Step, Grid, } from "semantic-ui-react"
@@ -10,36 +10,20 @@ import googleConfig from "../../lib/google/config"
 import { GoogleLoginComponent } from "../../components/auth/GoogleLoginComponent/GoogleLoginComponent"
 
 function SetupPage() {
-    // const googleClientReady = useSelector((state) => state.authentication.googleClientReady)
     const isSteamLogged = useSelector((state) => state.authentication.steam.loggedIn)
-    const isGoogleLogged = useSelector((state) => state.authentication.google.loggedIn)
     const setupComplete = useSelector((state) => state.authentication.setupComplete)
     const spreadsheetId = useSelector((state) => state.authentication.spreadsheetId)
     const steam = useSelector((state) => state.authentication.steam)
 
     const history = useHistory()
-
-    const googleApi = useGapi({
-        ...googleConfig,
-        onLoaded: useCallback(gapi => { }, [])
-    });
-
-    const { isAuthenticated, handleSignIn, currentUser, isLoading } = googleApi;
+    const googleApi = useGapi(googleConfig);
+    const { isAuthenticated, handleSignIn, isLoading, } = googleApi;
 
     useEffect(() => {
-        // console.log("isGoogleLogged", isGoogleLogged)
-        // console.log("isSteamLogged", isSteamLogged)
-        // console.log("steam.id", steam.id)
-        // console.log("setupComplete", setupComplete)
-
         if (setupComplete) {
             history.push(`/id/${spreadsheetId}`)
         }
-
-        // if (isAuthenticated && currentUser && isGoogleLogged === null) {
-        //     dispatch(googleLoggedIn(currentUser))
-        // }
-    }, [setupComplete, isAuthenticated, currentUser, isGoogleLogged])
+    }, [setupComplete,])
 
     return (
         <Grid>
