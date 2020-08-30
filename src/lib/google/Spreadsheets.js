@@ -483,33 +483,6 @@ async function Delete(spreadsheetId, sheetId, range) {
     return _batchUpdate(spreadsheetId, [_requests.DeleteRequest(sheetId, range)])
 }
 
-// DeveloperMetadata Related
-// async function GetDeveloperMetadata(spreadsheetId, id = SPREADSHEET_METADATA_HEADERS_ID) {
-//     return gapi.client.sheets.spreadsheets.developerMetadata.get({
-//         "spreadsheetId": spreadsheetId,
-//         "metadataId": id
-//     })
-//         .then(response => {
-//             if (response.status === 200) {
-//                 return {
-//                     success: true,
-//                     data: response.result
-//                 }
-//             } else {
-//                 return {
-//                     success: false,
-//                     data: response.errors
-//                 }
-//             }
-//         })
-//         .catch(response => {
-//             return {
-//                 success: false,
-//                 errors: response.result.error
-//             }
-//         })
-// }
-
 async function SaveSettings(spreadsheetId, sheetId, settings) {
     const updatedSettings = Object.keys(settings).reduce((result, settingKey, index) => ({
         ...result,
@@ -519,19 +492,21 @@ async function SaveSettings(spreadsheetId, sheetId, settings) {
         }
     }), {})
 
-    const updateDeveloperMetadataRequest = _requests.UpdateDeveloperMetadataRequest("headers", JSON.stringify(updatedSettings))
-    const updateSpreadsheetHeadersRequest = _requests.UpdateCellsRequest(sheetId, [Object.keys(updatedSettings).reduce((result, key) => (_.concat(result, [updatedSettings[key].label])), [])], 0, 0)
+    const requestsArray = [
+        _requests.UpdateDeveloperMetadataRequest("headers", JSON.stringify(updatedSettings)),
+        _requests.UpdateCellsRequest(sheetId, [Object.keys(updatedSettings).reduce((result, key) => (_.concat(result, [updatedSettings[key].label])), [])], 0, 0),
+    ]
 
-    return _batchUpdate(spreadsheetId, [updateDeveloperMetadataRequest, updateSpreadsheetHeadersRequest])
-        .then(response => (
-            response.success
-                ? {
-                    success: true,
-                    data: {
-                        updatedSettings: updatedSettings
-                    }
-                }
-                : response))
+    const batchUpdateResponse = await _batchUpdate(spreadsheetId, requestsArray)
+
+    return batchUpdateResponse.success
+        ? {
+            success: true,
+            data: {
+                updatedSettings: updatedSettings
+            }
+        }
+        : batchUpdateResponse
 }
 
 async function Initialize(spreadsheetId) {
@@ -577,50 +552,42 @@ async function Initialize(spreadsheetId) {
         }, {})
     }
 
-    return _searchDeveloperMetadataByIds(spreadsheetId, [SPREADSHEET_METADATA_HEADERS_ID, SPREADSHEET_METADATA_PERMISSIONS_ID, SPREADSHEET_METADATA_SHEET_ID])
-        .then(response => {
-            if (response.success) {
-                return {
-                    "success": true,
-                    ..._handleDeveloperMetadata(response.data)
-                }
-            } else {
-                let missingSheetId = false
+    const searchDeveloperMetadataByIdsResponse = await _searchDeveloperMetadataByIds(spreadsheetId, [SPREADSHEET_METADATA_HEADERS_ID, SPREADSHEET_METADATA_PERMISSIONS_ID, SPREADSHEET_METADATA_SHEET_ID])
 
-                const matchedMetadata = _handleDeveloperMetadata(response.data.matched)
-                const requests = response.data.missing.reduce((result, id) => {
-                    switch (id) {
-                        case SPREADSHEET_METADATA_HEADERS_ID:
-                            return _.concat(result, [_requests.CreateDeveloperMetadataRequest(SPREADSHEET_METADATA_HEADERS_ID, "headers", JSON.stringify(SPREADSHEET_METADATA_DEFAULT_SETTINGS))])
-                        case SPREADSHEET_METADATA_PERMISSIONS_ID:
-                            return _.concat(result, [_requests.CreateDeveloperMetadataRequest(SPREADSHEET_METADATA_PERMISSIONS_ID, "permissions", "owner")])
-                        case SPREADSHEET_METADATA_SHEET_ID:
-                            missingSheetId = true
-                            return result
-                        default:
-                            return result
-                    }
-                }, [])
+    if (searchDeveloperMetadataByIdsResponse.success) {
+        return {
+            "success": true,
+            ..._handleDeveloperMetadata(searchDeveloperMetadataByIdsResponse.data)
+        }
+    }
 
-                if (missingSheetId) {
-                    return _getSpreadsheet(spreadsheetId)
-                        .then(response => {
-                            const sheetId = response.data.sheets[0].properties.sheetId
+    let missingSheetId = false
 
-                            return _batchUpdate(spreadsheetId, _.concat(requests, [_requests.CreateDeveloperMetadataRequest(SPREADSHEET_METADATA_SHEET_ID, "sheetId", sheetId.toString())]))
-                                .then(response => {
-                                    return _handleBatchUpdateResponse(response, matchedMetadata)
-                                })
-                        })
-                } else {
-                    return _batchUpdate(spreadsheetId, requests)
-                        .then(response => {
-                            return _handleBatchUpdateResponse(response, matchedMetadata)
-                        })
-                }
-            }
-        })
-        .catch(response => ({ success: false, error: response.result.error.status }))
+    const matchedMetadata = _handleDeveloperMetadata(searchDeveloperMetadataByIdsResponse.data.matched)
+    const requests = searchDeveloperMetadataByIdsResponse.data.missing.reduce((result, id) => {
+        switch (id) {
+            case SPREADSHEET_METADATA_HEADERS_ID:
+                return _.concat(result, [_requests.CreateDeveloperMetadataRequest(SPREADSHEET_METADATA_HEADERS_ID, "headers", JSON.stringify(SPREADSHEET_METADATA_DEFAULT_SETTINGS))])
+            case SPREADSHEET_METADATA_PERMISSIONS_ID:
+                return _.concat(result, [_requests.CreateDeveloperMetadataRequest(SPREADSHEET_METADATA_PERMISSIONS_ID, "permissions", "owner")])
+            case SPREADSHEET_METADATA_SHEET_ID:
+                missingSheetId = true
+                return result
+            default:
+                return result
+        }
+    }, [])
+
+    if (missingSheetId) {
+        const getSpreadsheetResponse = await _getSpreadsheet(spreadsheetId)
+        const sheetId = getSpreadsheetResponse.data.sheets[0].properties.sheetId
+        const batchUpdateResponse = await _batchUpdate(spreadsheetId, _.concat(requests, [_requests.CreateDeveloperMetadataRequest(SPREADSHEET_METADATA_SHEET_ID, "sheetId", sheetId.toString())]))
+
+        return _handleBatchUpdateResponse(batchUpdateResponse, matchedMetadata)
+    }
+
+    const batchUpdateResponse = await _batchUpdate(spreadsheetId, requests)
+    return _handleBatchUpdateResponse(batchUpdateResponse, matchedMetadata)
 }
 
 async function GetSpreadsheet(spreadsheetId, includeData) {
@@ -628,46 +595,37 @@ async function GetSpreadsheet(spreadsheetId, includeData) {
 }
 
 async function GetFilteredData(spreadsheetId, titleQuery, offset, limit, orderBy, filters) {
-    return offset > 0
-        ? _query(spreadsheetId, titleQuery, offset, limit, orderBy, filters)
-            .then(response => {
-                if (response.success) {
-                    return {
-                        ...response,
-                        data: { rows: _parseTable(response.data).rows }
-                    }
-                } else {
-                    return _handleError(response)
-                }
-            })
-        : _queryCount(spreadsheetId, titleQuery, offset, limit, orderBy, filters)
-            .then(response => {
-                if (response.success) {
-                    const count = response.data.count
+    if (offset > 0) {
+        const queryResponse = await _query(spreadsheetId, titleQuery, offset, limit, orderBy, filters)
 
-                    return _query(spreadsheetId, titleQuery, offset, limit, orderBy, filters)
-                        .then(response => {
-                            if (response.success) {
-                                if (count === 1 && response.data.table.parsedNumHeaders === 0) {
-                                    return {
-                                        ...response,
-                                        data: { rows: [], count: 0 }
-                                    }
-                                }
+        if (queryResponse.success) {
+            return {
+                ...queryResponse,
+                data: { rows: _parseTable(queryResponse.data).rows }
+            }
+        } else {
+            return _handleError(queryResponse)
+        }
+    } else {
+        const queryCountResponse = await _queryCount(spreadsheetId, titleQuery, offset, limit, orderBy, filters)
 
-                                return {
-                                    ...response,
-                                    data: { rows: _parseTable(response.data).rows, count: count }
-                                }
-                            }
-                            else {
-                                return _handleError(response)
-                            }
-                        })
-                } else {
-                    return response
-                }
-            })
+        if (!queryCountResponse.success) { return queryCountResponse }
+
+        const count = queryCountResponse.data.count
+        const queryResponse = await _query(spreadsheetId, titleQuery, offset, limit, orderBy, filters)
+
+        if (!queryResponse.success) { return _handleError(queryResponse) }
+
+        return count === 1 && queryResponse.data.table.parsedNumHeaders === 0
+            ? {
+                ...queryResponse,
+                data: { rows: [], count: 0 }
+            }
+            : {
+                ...queryResponse,
+                data: { rows: _parseTable(queryResponse.data).rows, count: count }
+            }
+    }
 }
 
 async function ExportSpreadsheet(fromSpreadsheet, privateColumnsRange, filters, username, currentSettings) {
@@ -678,230 +636,213 @@ async function ExportSpreadsheet(fromSpreadsheet, privateColumnsRange, filters, 
         }
     }
 
-    return GetFilteredData(fromSpreadsheet, "", 0, 99999, null, filters).then(response => {
-        if (!response.success) { return handleError("GetFilteredData") }
+    const getFilteredDataResponse = await GetFilteredData(fromSpreadsheet, "", 0, 99999, null, filters)
 
-        const title = `${username}'s Collection`
+    if (!getFilteredDataResponse.success) { return handleError("GetFilteredData") }
 
-        const newRows = response.data.rows.reduce((result, row) => {
-            return _.concat(
-                result,
-                [row.reduce((result, col, index) => {
-                    return _.concat(
-                        result,
-                        privateColumnsRange.indexOf(index) > -1 ? [""] : [col]
-                    )
-                }, [])]
-            )
-        }, [])
+    const title = `${username}'s Collection`;
+    const newRows = getFilteredDataResponse.data.rows.reduce((result, row) => {
+        return _.concat(
+            result,
+            [row.reduce((result, col, index) => {
+                return _.concat(
+                    result,
+                    privateColumnsRange.indexOf(index) > -1 ? [""] : [col]
+                )
+            }, [])]
+        )
+    }, [])
 
-        return _createNewSpreadsheet(title).then(response => {
-            if (!response.success) { return handleError("_createNewSpreadsheet") }
+    const createNewSpreadsheetResponse = await _createNewSpreadsheet(title)
 
-            const newSpreadsheetId = response.data.spreadsheetId
-            const newSpreadsheetUrl = response.data.spreadsheetUrl
+    if (!createNewSpreadsheetResponse.success) { return handleError("_createNewSpreadsheet") }
 
-            return _copySheetToSpreadsheet(fromSpreadsheet, 0, newSpreadsheetId).then(response => {
-                if (!response.success) { return handleError("_copySheetToSpreadsheet") }
+    const newSpreadsheetId = createNewSpreadsheetResponse.data.spreadsheetId
+    const newSpreadsheetUrl = createNewSpreadsheetResponse.data.spreadsheetUrl
 
-                const newSheetId = response.data.sheetId
+    const copySheetToSpreadsheetResponse = await _copySheetToSpreadsheet(fromSpreadsheet, 0, newSpreadsheetId)
 
-                const deleteRowsRequest = _requests.DeleteDimensionRequest(newSheetId, "ROWS", 3)
-                const deleteSheetRequest = _requests.DeleteSheetRequest(0)
+    if (!copySheetToSpreadsheetResponse.success) { return handleError("_copySheetToSpreadsheet") }
 
-                return _batchUpdate(newSpreadsheetId, _.concat([deleteRowsRequest], [deleteSheetRequest])).then(response => {
-                    if (!response.success) { return handleError("_batchUpdate") }
+    const newSheetId = copySheetToSpreadsheetResponse.data.sheetId
+    const requestsArray = [
+        _requests.DeleteDimensionRequest(newSheetId, "ROWS", 3),
+        _requests.DeleteSheetRequest(0),
+    ]
 
-                    return Insert(newSpreadsheetId, newSheetId, newRows).then(response => {
-                        if (!response.success) { return handleError("Insert") }
+    const batchUpdateResponse = await _batchUpdate(newSpreadsheetId, requestsArray)
 
-                        let newId = 0
+    if (!batchUpdateResponse.success) { return handleError("_batchUpdate") }
 
-                        const cleanSettings = Object.keys(currentSettings).reduce((result, headerKey) => {
-                            if (currentSettings[headerKey].isPrivate) {
-                                return result
-                            } else {
-                                return {
-                                    ...result,
-                                    [headerKey]: {
-                                        ...currentSettings[headerKey],
-                                        id: getLabelByIndex(newId++)
-                                    }
-                                }
-                            }
-                        }, {})
+    const insertResponse = await Insert(newSpreadsheetId, newSheetId, newRows)
 
-                        const headersRequest = _requests.CreateDeveloperMetadataRequest(SPREADSHEET_METADATA_HEADERS_ID, "headers", JSON.stringify(cleanSettings))
-                        const permissionRequest = _requests.CreateDeveloperMetadataRequest(SPREADSHEET_METADATA_PERMISSIONS_ID, "permissions", "viewer")
-                        const deleteRequests = privateColumnsRange.reduce((result, id) => (_.concat(result, [_requests.DeleteDimensionRequest(newSheetId, "COLUMNS", id, id + 1)])), []).reverse()
+    if (!insertResponse.success) { return handleError("Insert") }
 
-                        return _batchUpdate(newSpreadsheetId, _.concat([headersRequest], [permissionRequest], deleteRequests)).then(response => {
-                            return response.success
-                                ? {
-                                    "success": true,
-                                    "data": {
-                                        "spreadsheetId": newSpreadsheetId,
-                                        "spreadsheetUrl": newSpreadsheetUrl
-                                    }
-                                }
-                                : handleError("_batchUpdate")
-                        })
-                    })
-                })
-            })
-        })
-    })
+    let newId = 0
+
+    const cleanSettings = Object.keys(currentSettings).reduce((result, headerKey) => {
+        if (currentSettings[headerKey].isPrivate) {
+            return result
+        } else {
+            return {
+                ...result,
+                [headerKey]: {
+                    ...currentSettings[headerKey],
+                    id: getLabelByIndex(newId++)
+                }
+            }
+        }
+    }, {})
+
+    const developerMetaDatarequestsArray = [
+        _requests.CreateDeveloperMetadataRequest(SPREADSHEET_METADATA_HEADERS_ID, "headers", JSON.stringify(cleanSettings)),
+        _requests.CreateDeveloperMetadataRequest(SPREADSHEET_METADATA_PERMISSIONS_ID, "permissions", "viewer"),
+        privateColumnsRange.reduce((result, id) => (_.concat(result, [_requests.DeleteDimensionRequest(newSheetId, "COLUMNS", id, id + 1)])), []).reverse(),
+    ]
+
+    const developerMetaDataBatchUpdateResponse = await _batchUpdate(newSpreadsheetId, developerMetaDatarequestsArray)
+
+    return developerMetaDataBatchUpdateResponse.success
+        ? {
+            "success": true,
+            "data": {
+                "spreadsheetId": newSpreadsheetId,
+                "spreadsheetUrl": newSpreadsheetUrl
+            }
+        }
+        : handleError("_batchUpdate")
 }
 
 async function CreateStartingSpreadsheet(title = "My Keys Collection", settings = SPREADSHEET_METADATA_DEFAULT_SETTINGS) {
-    return _createNewSpreadsheet(title)
-        .then(response => {
-            if (response.success) {
-                const newSpreadsheetId = response.data.spreadsheetId
-                const newSpreadsheetUrl = response.data.spreadsheetUrl
+    const createNewSpreadsheetResponse = await _createNewSpreadsheet(title)
 
-                return _copySheetToSpreadsheet(SPREADSHEET_TEMPLATE_SPREADSHEET_ID, 0, newSpreadsheetId)
-                    .then(response => {
-                        if (response.success) {
-                            const newSheetId = response.data.sheetId
-                            const deleteSheetRequest = _requests.DeleteSheetRequest(0)
-                            const headersRequest = _requests.CreateDeveloperMetadataRequest(SPREADSHEET_METADATA_HEADERS_ID, "headers", JSON.stringify(settings))
-                            const permissionRequest = _requests.CreateDeveloperMetadataRequest(SPREADSHEET_METADATA_PERMISSIONS_ID, "permissions", "owner")
-                            const sheetIdRequest = _requests.CreateDeveloperMetadataRequest(SPREADSHEET_METADATA_SHEET_ID, "sheetId", newSheetId.toString())
-                            const sheetPropsUpdateRequest = _requests.UpdateSheetPropertiesRequest(response.data.sheetId, { title: "Keys" })
+    if (!createNewSpreadsheetResponse.success) {
+        return {
+            success: false,
+            data: createNewSpreadsheetResponse
+        }
+    }
 
-                            return _batchUpdate(newSpreadsheetId, _.concat([headersRequest], [permissionRequest], [deleteSheetRequest], [sheetIdRequest], [sheetPropsUpdateRequest])).then(response => {
-                                return response.success
-                                    ? {
-                                        "success": true,
-                                        "data": {
-                                            "spreadsheetUrl": newSpreadsheetUrl,
-                                            "spreadsheetId": newSpreadsheetId,
-                                            "sheetId": newSheetId,
-                                        }
-                                    }
-                                    : {
-                                        success: false,
-                                        data: response
-                                    }
-                            })
-                        } else {
-                            return {
-                                success: false,
-                                data: response
-                            }
-                        }
-                    })
-            } else {
-                return {
-                    success: false,
-                    data: response
-                }
+    const newSpreadsheetId = createNewSpreadsheetResponse.data.spreadsheetId
+    const newSpreadsheetUrl = createNewSpreadsheetResponse.data.spreadsheetUrl
+
+    const copySheetToSpreadsheetResponse = await _copySheetToSpreadsheet(SPREADSHEET_TEMPLATE_SPREADSHEET_ID, 0, newSpreadsheetId)
+
+    if (!copySheetToSpreadsheetResponse.success) {
+        return {
+            success: false,
+            data: copySheetToSpreadsheetResponse
+        }
+    }
+
+    const newSheetId = copySheetToSpreadsheetResponse.data.sheetId
+    const requestsArray = [
+        _requests.DeleteSheetRequest(0),
+        _requests.CreateDeveloperMetadataRequest(SPREADSHEET_METADATA_HEADERS_ID, "headers", JSON.stringify(settings)),
+        _requests.CreateDeveloperMetadataRequest(SPREADSHEET_METADATA_PERMISSIONS_ID, "permissions", "owner"),
+        _requests.CreateDeveloperMetadataRequest(SPREADSHEET_METADATA_SHEET_ID, "sheetId", newSheetId.toString()),
+        _requests.UpdateSheetPropertiesRequest(copySheetToSpreadsheetResponse.data.sheetId, { title: "Keys" }),
+    ]
+
+    const batchUpdateResponse = await _batchUpdate(newSpreadsheetId, requestsArray)
+
+    return batchUpdateResponse.success
+        ? {
+            "success": true,
+            "data": {
+                "spreadsheetUrl": newSpreadsheetUrl,
+                "spreadsheetId": newSpreadsheetId,
+                "sheetId": newSheetId,
             }
-        })
+        }
+        : {
+            success: false,
+            data: batchUpdateResponse
+        }
 }
 
 async function InsertNewColumn(spreadsheetId, sheetId,) {
     const appendDimensionRequest = _requests.AppendDimensionRequest(sheetId, "COLUMNS", 1)
+    const batchUpdateResponse = await _batchUpdate(spreadsheetId, appendDimensionRequest)
 
-    return _batchUpdate(spreadsheetId, appendDimensionRequest).then(response => {
-        return response.success
-            ? {
-                "success": true,
-                "data": {
-                    columnId: getLabelByIndex(response.data.updatedSpreadsheet.sheets.find(sheet => sheet.properties.sheetId === sheetId).properties.gridProperties.columnCount - 1)
-                }
+    return batchUpdateResponse.success
+        ? {
+            "success": true,
+            "data": {
+                columnId: getLabelByIndex(batchUpdateResponse.data.updatedSpreadsheet.sheets.find(sheet => sheet.properties.sheetId === sheetId).properties.gridProperties.columnCount - 1)
             }
-            : {
-                success: false,
-                data: response
-            }
-    })
+        }
+        : {
+            success: false,
+            data: batchUpdateResponse
+        }
 }
 
 async function DeleteDimension(spreadsheetId, sheetId, dimension, startIndex, length) {
     const deleteDimensionRequest = _requests.DeleteDimensionRequest(sheetId, dimension, startIndex, length)
+    const batchUpdateResponse = await _batchUpdate(spreadsheetId, deleteDimensionRequest)
 
-    return _batchUpdate(spreadsheetId, deleteDimensionRequest).then(response => {
-        return response.success
-            ? {
-                "success": true,
-                "data": response.data
-            }
-            : {
-                success: false,
-                data: response
-            }
-    })
+    return batchUpdateResponse.success
+        ? {
+            "success": true,
+            "data": batchUpdateResponse.data
+        }
+        : {
+            success: false,
+            data: batchUpdateResponse
+        }
 }
 
 async function ImportSpreadsheet(headers, rows, settings) {
-    return _createNewSpreadsheet("My Keys Collection")
-        .then(response => {
-            if (!response.success) {
-                return {
-                    success: false,
-                    data: response
-                }
+    const createNewSpreadsheetResponse = await _createNewSpreadsheet("My Keys Collection")
+
+    if (!createNewSpreadsheetResponse.success) {
+        return {
+            success: false,
+            data: createNewSpreadsheetResponse
+        }
+    }
+
+    const newSpreadsheetId = createNewSpreadsheetResponse.data.spreadsheetId
+    const newSpreadsheetUrl = createNewSpreadsheetResponse.data.spreadsheetUrl
+
+    const copySheetToSpreadsheetResponse = await _copySheetToSpreadsheet(SPREADSHEET_IMPORT_TEMPLATE_SPREADSHEET_ID, 0, newSpreadsheetId)
+
+    if (!copySheetToSpreadsheetResponse.success) {
+        return {
+            success: false,
+            data: copySheetToSpreadsheetResponse
+        }
+    }
+
+    const newSheetId = copySheetToSpreadsheetResponse.data.sheetId
+    const requestsArray = [
+        _requests.CreateDeveloperMetadataRequest(SPREADSHEET_METADATA_HEADERS_ID, "headers", JSON.stringify(settings)),
+        _requests.CreateDeveloperMetadataRequest(SPREADSHEET_METADATA_PERMISSIONS_ID, "permissions", "owner"),
+        _requests.DeleteSheetRequest(0),
+        _requests.CreateDeveloperMetadataRequest(SPREADSHEET_METADATA_SHEET_ID, "sheetId", newSheetId.toString()),
+        _requests.UpdateSheetPropertiesRequest(newSheetId, { title: "Keys" }),
+        _requests.InsertDimensionRequest(newSheetId, "COLUMNS", 2, headers.length - 1),
+        _requests.InsertDimensionRequest(newSheetId, "ROWS", 3, rows.length - 1),
+        _requests.UpdateCellsRequest(newSheetId, [headers], 0, 1),
+        _requests.UpdateCellsRequest(newSheetId, rows, 2, 1),
+    ]
+
+    const batchUpdateResponse = await _batchUpdate(newSpreadsheetId, requestsArray)
+
+    return batchUpdateResponse.success
+        ? {
+            "success": true,
+            "data": {
+                "spreadsheetUrl": newSpreadsheetUrl,
+                "spreadsheetId": newSpreadsheetId,
+                "sheetId": newSheetId,
             }
-
-            const newSpreadsheetId = response.data.spreadsheetId
-            const newSpreadsheetUrl = response.data.spreadsheetUrl
-
-            return _copySheetToSpreadsheet(SPREADSHEET_IMPORT_TEMPLATE_SPREADSHEET_ID, 0, newSpreadsheetId)
-                .then(response => {
-                    if (!response.success) {
-                        return {
-                            success: false,
-                            data: response
-                        }
-                    }
-
-                    const newSheetId = response.data.sheetId
-
-                    const headersRequest = _requests.CreateDeveloperMetadataRequest(SPREADSHEET_METADATA_HEADERS_ID, "headers", JSON.stringify(settings))
-                    const permissionRequest = _requests.CreateDeveloperMetadataRequest(SPREADSHEET_METADATA_PERMISSIONS_ID, "permissions", "owner")
-                    const deleteSheetRequest = _requests.DeleteSheetRequest(0)
-                    const sheetIdRequest = _requests.CreateDeveloperMetadataRequest(SPREADSHEET_METADATA_SHEET_ID, "sheetId", newSheetId.toString())
-                    const sheetPropsUpdateRequest = _requests.UpdateSheetPropertiesRequest(response.data.sheetId, { title: "Keys" })
-
-                    const insertColumnsRequest = _requests.InsertDimensionRequest(newSheetId, "COLUMNS", 2, headers.length - 1)
-
-                    const insertRowsRequest = _requests.InsertDimensionRequest(newSheetId, "ROWS", 3, rows.length - 1)
-                    const updateHeaderRequest = _requests.UpdateCellsRequest(newSheetId, [headers], 0, 1)
-                    const updateRowsRequest = _requests.UpdateCellsRequest(newSheetId, rows, 2, 1)
-
-                    const requestsArray = [
-                        headersRequest,
-                        permissionRequest,
-                        deleteSheetRequest,
-                        sheetIdRequest,
-                        sheetPropsUpdateRequest,
-                        insertColumnsRequest,
-                        insertRowsRequest,
-                        updateHeaderRequest,
-                        updateRowsRequest,
-                    ]
-
-                    console.log("requests", requestsArray)
-
-                    return _batchUpdate(newSpreadsheetId, requestsArray).then(response => {
-                        return response.success
-                            ? {
-                                "success": true,
-                                "data": {
-                                    "spreadsheetUrl": newSpreadsheetUrl,
-                                    "spreadsheetId": newSpreadsheetId,
-                                    "sheetId": newSheetId,
-                                }
-                            }
-                            : {
-                                success: false,
-                                data: response
-                            }
-                    })
-                })
-        })
+        }
+        : {
+            success: false,
+            data: batchUpdateResponse
+        }
 }
 
 export default {
