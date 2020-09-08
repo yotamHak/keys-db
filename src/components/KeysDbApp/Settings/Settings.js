@@ -10,10 +10,10 @@ import useFormValidation from '../../../hooks/useFormValidation'
 import validateSettings from '../../../hooks/formValidations/validateSettings'
 import usePrevious from '../../../hooks/usePrevious'
 import useInterval from '../../../hooks/useInterval'
+import useLocalStorage from '../../../hooks/useLocalStorage';
 
 import SteamApi from '../../../lib/steam/SteamApi';
 import Spreadsheets from '../../../lib/google/Spreadsheets';
-
 
 function Settings() {
     const steam = useSelector((state) => state.authentication.steam)
@@ -26,16 +26,18 @@ function Settings() {
     const [isSaveSuccess, setIsSaveSuccess] = useState(false);
     const [isImportSuccess, setIsImportSuccess] = useState(false);
     const [isFinishedAlertTimerRunning, setIsFinishedAlertTimerRunning] = useState(false);
-
     const [creatingSpreadsheet, setCreatingSpreadsheet] = useState(false);
 
-    const INITIAL_STATE = steam.loggedIn || (JSON.parse(localStorage.getItem('steam')) && JSON.parse(localStorage.getItem('steam')).loggedIn)
+    const [steamStorage,] = useLocalStorage("steam", null)
+    const [spreadsheetIdStorage,] = useLocalStorage("spreadsheetId", null)
+
+    const INITIAL_STATE = steam.loggedIn || (JSON.parse(steamStorage) && JSON.parse(steamStorage).loggedIn)
         ? {
-            spreadsheetId: localStorage.getItem('spreadsheetId') || '',
-            steamApiKey: (JSON.parse(localStorage.getItem('steam')) && JSON.parse(localStorage.getItem('steam')).apiKey) || '',
+            spreadsheetId: spreadsheetIdStorage || '',
+            steamApiKey: (JSON.parse(steamStorage) && JSON.parse(steamStorage).apiKey) || '',
         }
         : {
-            spreadsheetId: localStorage.getItem('spreadsheetId') || '',
+            spreadsheetId: spreadsheetIdStorage || '',
         }
 
     const { handleSubmit, handleChange, values, errors, } = useFormValidation(INITIAL_STATE, validateSettings, handleUpdate);

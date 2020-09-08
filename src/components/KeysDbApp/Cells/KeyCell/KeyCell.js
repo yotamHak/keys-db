@@ -20,7 +20,6 @@ function KeyCell({ gameKey, rowIndex, onChange, header }) {
         e.target.focus();
 
         setCopySuccess('Copied!');
-
         setResetCopyFeedback(true)
     };
 

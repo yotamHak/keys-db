@@ -1,28 +1,31 @@
 import React, { useEffect, useState } from "react";
-
 import { useDispatch, useSelector } from "react-redux";
-import { steamSetId, steamLogged } from "../../../actions";
 import { Container, Message, List, Header, Button, } from "semantic-ui-react";
+
+import { steamSetId, steamLogged } from "../../../actions";
+import useLocalStorage from "../../../hooks/useLocalStorage";
 
 function SteamLogin() {
     const env = window.location.origin
-    const [steamId, setSteamId] = useState(localStorage.getItem('steam') && localStorage.getItem('steam').id)
+    const [steamStorage,] = useLocalStorage("steam", null)
+
+    const [steamId, setSteamId] = useState(steamStorage && steamStorage.id)
     const steam = useSelector((state) => state.authentication.steam)
     const dispatch = useDispatch()
 
     useEffect(() => {
         if (steam.loggedIn !== null) {
             if (steam.loggedIn) {                       // Steam logged in
-                console.log("Steam logged in")
+                // console.log("Steam logged in")
             } else {                                    // Steam isn't Logged in
-                console.log("Steam is logged out")
+                // console.log("Steam is logged out")
             }
         } else {                                        // Steam isn't initialized
             if (steamId) {
-                console.log("Steam isn't initialized but was signed before")
+                // console.log("Steam isn't initialized but was signed before")
                 dispatch(steamSetId(steamId))
             } else {
-                console.log("Steam isn't initialized and wasn't signed before")
+                // console.log("Steam isn't initialized and wasn't signed before")
                 setSteamId(getSteamId(window.location.search))
             }
         }

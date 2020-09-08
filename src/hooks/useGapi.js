@@ -2,7 +2,10 @@ import { useEffect, useState, } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { googleLoggedIn, googleLoggedOut, googleClientReady } from '../actions';
 import { useHistory } from 'react-router-dom';
+
 import { gapi } from 'gapi-script';
+
+import useLocalStorage from './useLocalStorage';
 
 // Custom hook to initialize and use the Google API
 function useGapi(options,) {
@@ -14,6 +17,8 @@ function useGapi(options,) {
 
     const dispatch = useDispatch();
     const history = useHistory();
+
+    const [, setGoogleTokenStorage] = useLocalStorage("gTokenId", null)
 
     const {
         apiKey,
@@ -58,7 +63,7 @@ function useGapi(options,) {
         if (!isSignedIn) {
             // gapi.auth2.getAuthInstance().signIn();
         } else {
-            localStorage.setItem('gTokenId', gapi.client.getToken().access_token)
+            setGoogleTokenStorage(gapi.client.getToken().access_token)
 
             const userInfo = gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile();
             const basicProfile = {
@@ -88,7 +93,7 @@ function useGapi(options,) {
     async function handleSignOut() {
         try {
             await gapi.auth2.getAuthInstance().signOut();
-            localStorage.removeItem('gTokenId');
+            setGoogleTokenStorage(null)
             setIsAuthenticated(false);
             dispatch(googleLoggedOut());
             history.push('/');

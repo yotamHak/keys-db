@@ -12,6 +12,7 @@ import usePrevious from '../../hooks/usePrevious'
 import SteamApi from "../../lib/steam/SteamApi";
 import ItadApi from "../../lib/itad/ItadApi";
 import Spreadsheets from "../../lib/google/Spreadsheets";
+import useLocalStorage from "../../hooks/useLocalStorage";
 
 function KeysDBPage(props) {
     const spreadsheetId = props.match.params.spreadsheetId || useSelector((state) => state.authentication.spreadsheetId)
@@ -26,6 +27,8 @@ function KeysDBPage(props) {
 
     const [loadingOwnedGames, setLoadingOwnedGames] = useState(false)
     const [loadingItadMap, setLoadingItadMap] = useState(false)
+
+    const [itadStorage,] = useLocalStorage("itad", null)
 
     const dispatch = useDispatch()
     const history = useHistory()
@@ -62,7 +65,7 @@ function KeysDBPage(props) {
         }
 
         if (!loadingItadMap && itad.map === null) {
-            const itadJson = JSON.parse(localStorage.getItem('itad'))
+            const itadJson = JSON.parse(itadStorage)
 
             if (itadJson && itadJson.map && dateFns.differenceInWeeks(new Date(), itadJson.map.timestamp) === 0) {
                 dispatch(itadSetMap(itadJson.map))

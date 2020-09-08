@@ -9,6 +9,7 @@ import ChangelogModal, { changelog } from "../KeysDbApp/Modals/ChangelogModal/Ch
 import { parseSpreadsheetDate, } from "../../utils";
 import useGapi from "../../hooks/useGapi";
 import googleConfig from "../../lib/google/config";
+import useLocalStorage from "../../hooks/useLocalStorage";
 
 function Header() {
     const google = useSelector((state) => state.authentication.google)
@@ -16,6 +17,9 @@ function Header() {
     const spreadsheetId = useSelector((state) => state.authentication.spreadsheetId)
 
     const [openedNotifications, setOpenedNotifications] = useState(false)
+
+    const [steamStorage,] = useLocalStorage("steam", null)
+    const [spreadsheetIdStorage,] = useLocalStorage("spreadsheetId", null)
 
     const dispatch = useDispatch()
     const googleApi = useGapi({
@@ -28,12 +32,12 @@ function Header() {
     const { isAuthenticated, isLoading, handleSignOut, } = googleApi;
 
     useEffect(() => {
-        if (!steam.loggedIn && localStorage.getItem('steam')) {
-            dispatch(steamLoad(JSON.parse(localStorage.getItem('steam'))))
+        if (!steam.loggedIn && steamStorage) {
+            dispatch(steamLoad(JSON.parse(steamStorage)))
         }
 
-        if (!spreadsheetId && localStorage.getItem('spreadsheetId')) {
-            dispatch(spreadsheetSetId(localStorage.getItem('spreadsheetId')))
+        if (!spreadsheetId && spreadsheetIdStorage) {
+            dispatch(spreadsheetSetId(spreadsheetIdStorage))
         }
     }, [google, steam, spreadsheetId, isLoading, isAuthenticated])
 
