@@ -31,5 +31,3 @@ export function GoogleLoginComponent({ isAuthenticated, handleSignIn, handleSign
         </>
     )
 }
-
-// https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.file 
