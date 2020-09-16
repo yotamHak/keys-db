@@ -1,5 +1,5 @@
 # The TL:DR
-[KeysDB](https://keys-db.web.app/) is your **private** CD-Keys Database that is safe and easy to use with plenty of features that will make your life easy! :clap:
+[KeysDB](https://keys-db.web.app/) is a completely **free** and **private** database for managing your collection of game keys, with features that appeal for regular gamers, traders and collectors. 👏
 
 # Introduction
 
