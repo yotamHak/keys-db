@@ -17,7 +17,6 @@ function useUrlParams(location) {
         if (urlParamsObject) {
             return urlParamsObject
         }
-        console.log("toParamObject")
 
         const params = new URLSearchParams(queryString);
         let paramObject = {};

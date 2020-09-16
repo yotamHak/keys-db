@@ -1,5 +1,5 @@
 import { useEffect, useState, } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch, } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import _ from 'lodash';
 
@@ -19,11 +19,13 @@ function useSteam(options) {
     const [steamId, setSteamId] = useState(steamStorage && steamStorage.id)
     const [isAuthenticated, setIsAuthenticated] = useState(steamId ? true : false);
 
-    const { toParamObject, urlParamsObject, } = useUrlParams(useLocation())
+    const { urlParamsObject, } = useUrlParams(useLocation())
 
     const dispatch = useDispatch();
 
     useEffect(() => {
+        // TODO: Clean url if there're params in it
+
         if (steamId) {
             setIsAuthenticated(true)
             // setSteamStorage(steamId)
@@ -38,7 +40,7 @@ function useSteam(options) {
     }, [steamId, urlParamsObject,])
 
     function handleSignIn() {
-        if (!_getSteamId(urlParamsObject)) {
+        if (_getSteamId(urlParamsObject)) {
             return
         }
 
