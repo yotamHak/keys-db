@@ -67,7 +67,19 @@ export const colorOptions = [
 
 export const genericSort = (a, b) => a < b ? -1 : a > b ? 1 : 0
 
+// Field Types related
+
 export const fieldTypes = [
+  { key: 'date', text: 'Date', value: 'date', description: 'Date field' },
+  { key: 'string', text: 'String', value: 'string', description: 'Plain text field' },
+  { key: 'number', text: 'Number', value: 'number', description: 'Number field' },
+  { key: 'text', text: 'Text', value: 'text', description: 'Long text field' },
+  { key: 'key', text: 'Key', value: 'key', description: 'Key field' },
+  { key: 'dropdown', text: 'Dropdown', value: 'dropdown', description: 'Multi-Option field' },
+  { key: 'url', text: 'URL', value: 'url', description: 'Url field' },
+].sort((a, b) => genericSort(`${a.icon}${a.text}`, `${b.icon}${b.text}`))
+
+export const uniqueSteamFieldTypes = [
   { key: 'steam_title', text: 'Title', value: 'steam_title', icon: 'steam', description: 'This will be used to gather Steam information' },
   { key: 'steam_url', text: 'URL', value: 'steam_url', icon: 'steam', description: 'Store URL, Auto-filled' },
   { key: 'steam_appid', text: 'App Id', value: 'steam_appid', icon: 'steam', description: 'AppID, Auto-filled' },
@@ -77,15 +89,28 @@ export const fieldTypes = [
   // { key: 'steam_dlc', text: 'DLC', value: 'steam_dlc', icon: 'steam', description: 'Is this a Steam DLC, Exclusive for Steam' },
   { key: 'steam_bundled', text: 'Bundled', value: 'steam_bundled', icon: 'steam', description: 'Times this game was bundled, Auto-filled' },
   { key: 'steam_ownership', text: 'Owned', value: 'steam_ownership', icon: 'steam', description: 'Ownership, Auto-filled' },
+]
 
-  { key: 'string', text: 'String', value: 'string', description: 'Plain text field' },
-  { key: 'number', text: 'Number', value: 'number', description: 'Number field' },
-  { key: 'date', text: 'Date', value: 'date', description: 'Date field' },
-  { key: 'text', text: 'Text', value: 'text', description: 'Long text field' },
-  { key: 'key', text: 'Key', value: 'key', description: 'Key field' },
-  { key: 'dropdown', text: 'Dropdown', value: 'dropdown', description: 'Multi-Option field' },
-  { key: 'url', text: 'URL', value: 'url', description: 'Url field' },
+export const uniqueFieldTypes = [
+  { key: 'created_on', text: 'Created On', value: 'created_on', description: 'Created on' },
+  { key: 'modified_on', text: 'Modified On', value: 'modified_on', description: 'Last modified on' },
+]
+
+export const getAllFieldTypes = () => [
+  ...uniqueFieldTypes,
+  ...uniqueSteamFieldTypes,
+  ...fieldTypes,
 ].sort((a, b) => genericSort(`${a.icon}${a.text}`, `${b.icon}${b.text}`))
+
+const _dropdownTypes = ['dropdown', 'steam_ownership', 'steam_cards', 'steam_achievements']
+
+export const isDropdownType = type => _dropdownTypes.find(item => type === item) ? true : false
+
+const _dateTypes = ['date', 'created_on', 'modified_on']
+
+export const isDateType = type => _dateTypes.find(item => type === item) ? true : false
+
+//---------------------------------------------------------------------------------------------------
 
 export const getDomain = (url) => url.replace(/^https?:\/\//i, "");
 
@@ -128,10 +153,6 @@ export const parseOptions = options => options.values
     color: option.color
   }])), [])
   .sort((a, b) => { return alphabetSort(a.text, b.text) })
-
-const _ignoredOptionTypes = ['dropdown', 'steam_ownership', 'steam_cards', 'steam_achievements']
-
-export const isDropdownType = type => _ignoredOptionTypes.find(item => type === item) ? true : false
 
 export const cleanRedundentOptions = headers => Object.keys(headers).reduce((result, key) => {
   if (!isDropdownType(headers[key].type) && headers[key].options) {

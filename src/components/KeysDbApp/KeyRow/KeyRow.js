@@ -14,7 +14,7 @@ import SteamCardsCell from "../Cells/SteamCardsCell";
 import SteamAchievementsCell from "../Cells/SteamAchievementsCell";
 import SteamBundledCell from "../Cells/SteamBundledCell";
 
-import { getUrlsLocationAndValue, isDropdownType, getIndexById, } from "../../../utils";
+import { getUrlsLocationAndValue, isDropdownType, getIndexById, isDateType } from "../../../utils";
 import Spreadsheets from "../../../lib/google/Spreadsheets";
 
 function KeyRow({ rowIndex }) {
@@ -114,7 +114,7 @@ function KeyRow({ rowIndex }) {
                 gameKey={gameHeaderValue}
                 key={rKey}
             />
-        } else if (header.type === 'date') {
+        } else if (isDateType(header.type)) {
             return <DateCell
                 rowIndex={rowIndex}
                 onChange={changeCallback}

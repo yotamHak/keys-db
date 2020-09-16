@@ -1,7 +1,7 @@
 import React from 'react';
 import { Form, Input, Grid, Popup, Icon, Checkbox, } from 'semantic-ui-react';
 
-import { isDropdownType, fieldTypes } from '../../../utils';
+import { isDropdownType, getAllFieldTypes } from '../../../utils';
 import ErrorBox from '../../ErrorBox';
 import OptionsEditor from '../OptionsEditor';
 
@@ -129,7 +129,7 @@ function FieldSettings({ headerKey, values, errors, handleChange, }) {
                                 /> Type
                             </label>
                             <Form.Select
-                                options={fieldTypes}
+                                options={getAllFieldTypes()}
                                 name={"type"}
                                 value={values["type"]}
                                 onChange={handleChangeWrapper}

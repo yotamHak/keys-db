@@ -46,7 +46,7 @@ function NewModal({ initialValue, isEdit, children }) {
     const steamOwnershipLabel = getLabelByType(headers, "steam_ownership")
     const steamAchievementsLabel = getLabelByType(headers, "steam_achievements")
     const steamBundledLabel = getLabelByType(headers, "steam_bundled")
-    const dateAddedLabel = getLabelByType(headers, "date")
+    const createdOnLabel = getLabelByType(headers, "created_on")
 
     function afterResponse() {
         handleClose();
@@ -184,7 +184,7 @@ function NewModal({ initialValue, isEdit, children }) {
     }
 
     function selectInput(header) {
-        if (header.label === dateAddedLabel && values[header.label] === "") {
+        if (header.label === createdOnLabel && values[header.label] === "") {
             values[header.label] = parseSpreadsheetDate(new Date())
         }
 
