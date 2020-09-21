@@ -100,7 +100,11 @@ function KeysDBPage(props) {
                         if (response.error === "PERMISSION_DENIED") {
                             dispatch(spreadsheetSetPermission("unauthorized"))
                             setError({ hasError: true, code: "unauthorized" })
-                        } else {
+                        } else if (response.error === "MISSING_SETTINGS") {
+                            dispatch(spreadsheetSetPermission("missing_settings"))
+                            setError({ hasError: true, code: "missing_settings" })
+                        }
+                        else {
                             dispatch(spreadsheetSetPermission("RESOURCE_EXHAUSTED"))
                             setError({ hasError: true, code: "RESOURCE_EXHAUSTED" })
                         }

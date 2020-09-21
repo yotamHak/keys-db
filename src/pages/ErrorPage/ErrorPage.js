@@ -8,6 +8,22 @@ function ErrorPage(props) {
 
     function showError(errorCode) {
         switch (errorCode) {
+            case 'missing_settings':
+                return (
+                    <Grid centered columns={2}>
+                        <Grid.Row>
+                            <Grid.Column textAlign='center'>
+                                <Message info>
+                                    <Message.Header>Missing Settings</Message.Header>
+                                    <p>
+                                        Looks like your spreadsheet is missing crucial settings, <br />
+                                        Try importing this spreadsheet and map the headers.
+                                    </p>
+                                </Message>
+                            </Grid.Column>
+                        </Grid.Row>
+                    </Grid>
+                )
             case 'unauthorized':
                 return (
                     <Grid centered columns={2}>
@@ -16,7 +32,7 @@ function ErrorPage(props) {
                                 <Message info>
                                     <Message.Header>Unauthorized</Message.Header>
                                     <p>
-                                        Seems like you're not authorized to view this, <br />
+                                        Looks like you're not authorized to view this, <br />
                                         Make sure the owner had shared correctly.
                                     </p>
                                 </Message>

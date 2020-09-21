@@ -561,13 +561,27 @@ async function Initialize(spreadsheetId) {
         }
     }
 
+    if (searchDeveloperMetadataByIdsResponse.data.missing.find(missingId => missingId === SPREADSHEET_METADATA_SHEET_ID)) {
+
+    }
+    if (searchDeveloperMetadataByIdsResponse.data.missing.find(missingId => missingId === SPREADSHEET_METADATA_PERMISSIONS_ID)) {
+
+    }
+    if (searchDeveloperMetadataByIdsResponse.data.missing.find(missingId => missingId === SPREADSHEET_METADATA_HEADERS_ID)) {
+        return {
+            "success": false,
+            "error": "MISSING_SETTINGS"
+        }
+    }
+
     let missingSheetId = false
 
     const matchedMetadata = _handleDeveloperMetadata(searchDeveloperMetadataByIdsResponse.data.matched)
     const requests = searchDeveloperMetadataByIdsResponse.data.missing.reduce((result, id) => {
         switch (id) {
-            case SPREADSHEET_METADATA_HEADERS_ID:
-                return _.concat(result, [_requests.CreateDeveloperMetadataRequest(SPREADSHEET_METADATA_HEADERS_ID, "headers", JSON.stringify(SPREADSHEET_METADATA_DEFAULT_SETTINGS))])
+            // case SPREADSHEET_METADATA_HEADERS_ID:
+            // Missing settings metadata
+            // return _.concat(result, [_requests.CreateDeveloperMetadataRequest(SPREADSHEET_METADATA_HEADERS_ID, "headers", JSON.stringify(SPREADSHEET_METADATA_DEFAULT_SETTINGS))])
             case SPREADSHEET_METADATA_PERMISSIONS_ID:
                 return _.concat(result, [_requests.CreateDeveloperMetadataRequest(SPREADSHEET_METADATA_PERMISSIONS_ID, "permissions", "owner")])
             case SPREADSHEET_METADATA_SHEET_ID:
@@ -587,6 +601,7 @@ async function Initialize(spreadsheetId) {
     }
 
     const batchUpdateResponse = await _batchUpdate(spreadsheetId, requests)
+
     return _handleBatchUpdateResponse(batchUpdateResponse, matchedMetadata)
 }
 
@@ -840,8 +855,8 @@ async function ImportSpreadsheet(headers, rows, settings) {
             }
         }
         : {
-            success: false,
-            data: batchUpdateResponse
+            "success": false,
+            "data": batchUpdateResponse
         }
 }
 
