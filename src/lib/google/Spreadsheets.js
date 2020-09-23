@@ -656,8 +656,8 @@ async function ExportSpreadsheet(fromSpreadsheet, privateColumnsRange, filters, 
     if (!getFilteredDataResponse.success) { return handleError("GetFilteredData") }
 
     const title = `${username}'s Collection`;
-    const newRows = getFilteredDataResponse.data.rows.reduce((result, row) => {
-        return _.concat(
+    const newRows = getFilteredDataResponse.data.rows.reduce((result, row) => (
+        _.concat(
             result,
             [row.reduce((result, col, index) => {
                 return _.concat(
@@ -666,7 +666,7 @@ async function ExportSpreadsheet(fromSpreadsheet, privateColumnsRange, filters, 
                 )
             }, [])]
         )
-    }, [])
+    ), [])
 
     const createNewSpreadsheetResponse = await _createNewSpreadsheet(title)
 
@@ -732,22 +732,15 @@ async function CreateStartingSpreadsheet(title = "My Keys Collection", settings 
     const createNewSpreadsheetResponse = await _createNewSpreadsheet(title)
 
     if (!createNewSpreadsheetResponse.success) {
-        return {
-            success: false,
-            data: createNewSpreadsheetResponse
-        }
+        return createNewSpreadsheetResponse
     }
 
     const newSpreadsheetId = createNewSpreadsheetResponse.data.spreadsheetId
     const newSpreadsheetUrl = createNewSpreadsheetResponse.data.spreadsheetUrl
-
     const copySheetToSpreadsheetResponse = await _copySheetToSpreadsheet(SPREADSHEET_TEMPLATE_SPREADSHEET_ID, 0, newSpreadsheetId)
 
     if (!copySheetToSpreadsheetResponse.success) {
-        return {
-            success: false,
-            data: copySheetToSpreadsheetResponse
-        }
+        return copySheetToSpreadsheetResponse
     }
 
     const newSheetId = copySheetToSpreadsheetResponse.data.sheetId
@@ -771,8 +764,8 @@ async function CreateStartingSpreadsheet(title = "My Keys Collection", settings 
             }
         }
         : {
-            success: false,
-            data: batchUpdateResponse
+            "success": false,
+            "data": batchUpdateResponse
         }
 }
 
@@ -784,12 +777,12 @@ async function InsertNewColumn(spreadsheetId, sheetId,) {
         ? {
             "success": true,
             "data": {
-                columnId: getLabelByIndex(batchUpdateResponse.data.updatedSpreadsheet.sheets.find(sheet => sheet.properties.sheetId === sheetId).properties.gridProperties.columnCount - 1)
+                "columnId": getLabelByIndex(batchUpdateResponse.data.updatedSpreadsheet.sheets.find(sheet => sheet.properties.sheetId === sheetId).properties.gridProperties.columnCount - 1)
             }
         }
         : {
-            success: false,
-            data: batchUpdateResponse
+            "success": false,
+            "data": batchUpdateResponse
         }
 }
 
@@ -803,8 +796,8 @@ async function DeleteDimension(spreadsheetId, sheetId, dimension, startIndex, le
             "data": batchUpdateResponse.data
         }
         : {
-            success: false,
-            data: batchUpdateResponse
+            "success": false,
+            "data": batchUpdateResponse
         }
 }
 
@@ -812,10 +805,7 @@ async function ImportSpreadsheet(headers, rows, settings) {
     const createNewSpreadsheetResponse = await _createNewSpreadsheet("My Keys Collection")
 
     if (!createNewSpreadsheetResponse.success) {
-        return {
-            success: false,
-            data: createNewSpreadsheetResponse
-        }
+        return createNewSpreadsheetResponse
     }
 
     const newSpreadsheetId = createNewSpreadsheetResponse.data.spreadsheetId
@@ -824,10 +814,7 @@ async function ImportSpreadsheet(headers, rows, settings) {
     const copySheetToSpreadsheetResponse = await _copySheetToSpreadsheet(SPREADSHEET_IMPORT_TEMPLATE_SPREADSHEET_ID, 0, newSpreadsheetId)
 
     if (!copySheetToSpreadsheetResponse.success) {
-        return {
-            success: false,
-            data: copySheetToSpreadsheetResponse
-        }
+        return copySheetToSpreadsheetResponse
     }
 
     const newSheetId = copySheetToSpreadsheetResponse.data.sheetId
