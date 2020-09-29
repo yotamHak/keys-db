@@ -3,6 +3,7 @@ import { Modal, Icon, List, Segment, Header, Container, } from "semantic-ui-reac
 
 export const changelog = [
     {
+        version: '0.5.7.1',
         date: '25/8/2020',
         list: [
             'Table - Moved filter from table headers into it\'s own dropdown, near sorting.',
@@ -10,6 +11,7 @@ export const changelog = [
         ]
     },
     {
+        version: '0.5.7',
         date: '23/8/2020',
         list: [
             'Table - You can now update ITAD information from the actions dropdown.',
@@ -17,6 +19,7 @@ export const changelog = [
         ]
     },
     {
+        version: '0.5.6',
         date: '20/8/2020',
         list: [
             'Table - Hovering for at least 1 second on game title will show popover of the games title and the games image from Steam.',
@@ -24,6 +27,7 @@ export const changelog = [
         ]
     },
     {
+        version: '0.5.5',
         date: '19/8/2020',
         list: [
             'Settings - You can now add and delete fields.',
@@ -33,6 +37,7 @@ export const changelog = [
         ]
     },
     {
+        version: '0.5.4.1',
         date: '12/8/2020',
         list: [
             'Game Info - Changed loading to give a better feedback.',
@@ -40,6 +45,7 @@ export const changelog = [
         ]
     },
     {
+        version: '0.5.4',
         date: '11/8/2020',
         list: [
             'New\\Edit Key - Date have a date picker.',
@@ -49,12 +55,14 @@ export const changelog = [
         ]
     },
     {
+        version: '0.5.3',
         date: '10/8/2020',
         list: [
             'Added TOS and Privacy Policy to comply with Google OAuth verification request.',
         ]
     },
     {
+        version: '0.5.2',
         date: '9/8/2020',
         list: [
             'Import is now available.',
@@ -64,12 +72,14 @@ export const changelog = [
         ]
     },
     {
+        version: '0.5.1',
         date: '2/8/2020',
         list: [
             'Options - Options are now editable.',
         ]
     },
     {
+        version: '0.5',
         date: '1/8/2020',
         list: [
             'Game Info - Game categories fix.',
@@ -96,7 +106,7 @@ function ChangelogModal({ trigger }) {
                         {
                             changelog.map((changelist, index) => (
                                 <Segment key={index}>
-                                    <Header as={'h3'}>{changelist.date}</Header>
+                                    <Header as={'h3'}>{changelist.version}</Header>
                                     <List bulleted>
                                         {
                                             changelist.list.map((listitem, index) => (
