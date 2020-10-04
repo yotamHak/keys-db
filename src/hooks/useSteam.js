@@ -14,28 +14,26 @@ function useSteam(options) {
         returnTo,
     } = options;
 
-    const [steamStorage, setSteamStorage] = useLocalStorage("steam", null)
+    const [steamStorage,] = useLocalStorage("steam", null)
 
     const [steamId, setSteamId] = useState(steamStorage && steamStorage.id)
     const [isAuthenticated, setIsAuthenticated] = useState(steamId ? true : false);
 
-    const { urlParamsObject, } = useUrlParams(useLocation())
+    const { urlParamsObject, cleanUrl } = useUrlParams(useLocation())
 
     const dispatch = useDispatch();
 
     useEffect(() => {
-        // TODO: Clean url if there're params in it
-
         if (steamId) {
             setIsAuthenticated(true)
-            // setSteamStorage(steamId)
             dispatch(steamSetId(steamId))
         } else {
             if (urlParamsObject === null || !_getSteamId(urlParamsObject)) {
                 return
             }
 
-            setSteamId(urlParamsObject['openid.claimed_id'])
+            setSteamId(urlParamsObject['openid.claimed_id'][0].replace('https://steamcommunity.com/openid/id/', ''))
+            cleanUrl()
         }
     }, [steamId, urlParamsObject,])
 

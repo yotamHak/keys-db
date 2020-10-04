@@ -41,37 +41,6 @@ function useUrlParams(location) {
         return paramObject
     }
 
-    // const toParamObject = (queryString = location.search) => {
-    //     if (urlParamsObject) {
-    //         return urlParamsObject
-    //     }
-    //     console.log("toParamObject")
-
-    //     const params = new URLSearchParams(queryString);
-    //     let paramObject = {};
-
-    //     params.forEach((value, key) => {
-    //         if (paramObject[key]) {
-    //             paramObject = {
-    //                 ...paramObject,
-    //                 [key]: [
-    //                     ...paramObject[key],
-    //                     value,
-    //                 ],
-    //             };
-    //         } else {
-    //             paramObject = {
-    //                 ...paramObject,
-    //                 [key]: [value],
-    //             };
-    //         }
-    //     });
-
-    //     setUrlParamsObject(paramObject)
-
-    //     return paramObject;
-    // };
-
     const toQueryString = (paramObject) => {
         let queryString = '';
 
@@ -94,22 +63,15 @@ function useUrlParams(location) {
         return queryString !== '' ? queryString : '?';
     };
 
-    // const cleanUrl = () => {
-    //     const remove = (key, value) => {
-    //         // First get the current params get()
-    //         const thisParam = get(param).filter((val) => val !== value);
-    //         const newParamObject = {
-    //             ...toParamObject(search), // from useLocation
-    //             [param]: thisParam,
-    //         };
-    //         push(`${toQueryString(newParamObject)}`); // from useHistory
-    //     };
-    // }
+    const cleanUrl = () => {
+        window.history.replaceState({}, document.title, `${location.pathname}`);
+    }
 
     return {
         urlParamsObject,
         toParamObject,
-        toQueryString
+        toQueryString,
+        cleanUrl,
     }
 }
 
