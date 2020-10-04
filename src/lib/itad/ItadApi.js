@@ -23,7 +23,7 @@ function _encodeName(str) {
     return str;
 }
 
-async function GetInfoAboutBundles(title) {
+function GetInfoAboutBundles(title) {
     return axios.get(`https://api.isthereanydeal.com/v01/game/bundles/?key=${apiKey}&plains=${_encodeName(title)}`)
         .then(response => (
             {
@@ -43,8 +43,9 @@ async function GetInfoAboutBundles(title) {
             }))
 }
 
-async function GetOverview(name, appid, type) {
+function GetOverview(name, appid, type) {
     const plainName = _encodeName(name);
+
     return axios.get(`https://api.isthereanydeal.com/v01/game/overview/?key=${apiKey}&allowed=steam&plains=${plainName}${appid ? `&ids=${type}/${appid}` : ''}`)
         .then(response => {
             if (response.status === 200) {
@@ -67,7 +68,7 @@ async function GetOverview(name, appid, type) {
         })
 }
 
-async function GetInfoAboutGame(gameName) {
+function GetInfoAboutGame(gameName) {
     const plainName = _encodeName(gameName);
     return axios.get(`https://api.isthereanydeal.com/v01/game/info/?key=${apiKey}&plains=${plainName}`)
         .then(response => {
@@ -78,15 +79,15 @@ async function GetInfoAboutGame(gameName) {
         })
 }
 
-async function GetPlain(gameName) { return axios.get(`https://api.isthereanydeal.com/v02/game/plain/?key=${apiKey}&title=${gameName}`); }
+function GetPlain(gameName) { return axios.get(`https://api.isthereanydeal.com/v02/game/plain/?key=${apiKey}&title=${gameName}`); }
 
-async function FindGame(query) { return axios.get(`https://api.isthereanydeal.com/v01/search/search/?key=${apiKey}&q=${query}&shops=steam`); }
+function FindGame(query) { return axios.get(`https://api.isthereanydeal.com/v01/search/search/?key=${apiKey}&q=${query}&shops=steam`); }
 
 function GetPlainName(map, appid) {
     return map.data[`app/${appid}`] || map.data[`sub/${appid}`] || map.data[`bundle/${appid}`]
 }
 
-async function GetMap(shop = 'steam') {
+function GetMap(shop = 'steam') {
     return axios.get(`https://api.isthereanydeal.com/v01/game/map/?key=${apiKey}&shop=${shop}&type=id:plain`)
         .then(response => {
             if (response.status === 200 && !_.isEmpty(response.data.data)) {

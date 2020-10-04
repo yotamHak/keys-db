@@ -4,7 +4,7 @@ import { corsLink } from '../../utils'
 
 // https://wiki.teamfortress.com/wiki/User:RJackson/StorefrontAPI#Known_methods
 
-async function _get(url, params = {}) {
+function _get(url, params = {}) {
     return axios.get(url, {
         headers: {
             'Access-Control-Allow-Origin': '*',
@@ -32,7 +32,7 @@ async function _get(url, params = {}) {
         }));
 }
 
-async function GetPackageDetails(packageid) {
+function GetPackageDetails(packageid) {
     return _get(`${corsLink('https://store.steampowered.com/api/packagedetails/')}`, {
         params: {
             packageids: packageid,
@@ -40,7 +40,7 @@ async function GetPackageDetails(packageid) {
     })
 }
 
-async function GetAppDetails(appid) {
+function GetAppDetails(appid) {
     return _get(`${corsLink('https://store.steampowered.com/api/appdetails/')}`, {
         params: {
             appids: appid,
@@ -48,7 +48,7 @@ async function GetAppDetails(appid) {
     })
 }
 
-async function GetOwnedGames(steamId, steamApiKey) {
+function GetOwnedGames(steamId, steamApiKey) {
     // return fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/')}`,
     // {
     //     params: {
@@ -92,7 +92,7 @@ async function GetOwnedGames(steamId, steamApiKey) {
         })
 }
 
-async function GetUserInfo(steamId, steamApiKey) {
+function GetUserInfo(steamId, steamApiKey) {
     return _get(corsLink(`https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/`), {
         params: {
             steamids: steamId,
