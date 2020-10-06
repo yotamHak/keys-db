@@ -80,28 +80,39 @@ function fillEndingDate(endingIn) {
     endingDateElement.val(formatDate(new Date(new Date().getTime() + endingIn * 60000)));
 }
 
+function runOnEvent() {
+    this.callback(this.value);
+    $(document).off(this.event);
+}
+
 params.forEach((param, paramKey) => {
     switch (paramKey) {
         case `appid`:
             fillGameName(param);
             break;
         case `key`:
-            $(document).on("fillKey", function (event) {
-                fillGameKey(param);
-                $(document).off("fillKey");
-            }).bind(param);
+            $(document).on("fillKey",
+                runOnEvent.bind({
+                    "callback": fillGameKey,
+                    "event": "fillKey",
+                    "value": param
+                }));
             break;
         case `starting-time-offset`:
-            $(document).on("fillStartingDateOffset", function (event) {
-                fillStartingDateOffset(param);
-                $(document).off("fillStartingDateOffset");
-            }).bind(param);
+            $(document).on("fillStartingDateOffset",
+                runOnEvent.bind({
+                    "callback": fillStartingDateOffset,
+                    "event": "fillStartingDateOffset",
+                    "value": param
+                }));
             break;
         case `time-active`:
-            $(document).on("fillEndingDate", function (event) {
-                fillEndingDate(param);
-                $(document).off("fillEndingDate");
-            }).bind(param);
+            $(document).on("fillEndingDate",
+                runOnEvent.bind({
+                    "callback": fillEndingDate,
+                    "event": "fillEndingDate",
+                    "value": param
+                }));
             break;
         default:
     }
