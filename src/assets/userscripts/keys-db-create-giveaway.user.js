@@ -44,10 +44,6 @@ function formatDate(date) {
     return formattedDate;
 }
 
-function setValueAndTriggerEvent(element, value, eventType) {
-    element.val(value).trigger(eventType);
-}
-
 function getUrlParams() {
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
@@ -55,67 +51,59 @@ function getUrlParams() {
     return urlParams
 }
 
-function fillGameName(appid) {
-    const gameInput = $(`input.js__autocomplete-name`);
-    setValueAndTriggerEvent(gameInput, appid, 'keyup');
-}
-
-function selectGiveawayType(type = `key`) {
-    const giveawayTypeKeyValue = form.find(`[data-checkbox-value=${type}]`);
-    giveawayTypeKeyValue.click();
-}
-
-function fillGameKey(key) {
-    const keyTextarea = form.find('textarea[name="key_string"]');
-    setValueAndTriggerEvent(keyTextarea, key, 'keyup');
-}
-
-function fillStartingDateOffset(startingOffset) {
-    const startingDateElement = form.find("input[name='start_time']");
-    startingDateElement.val(formatDate(new Date(new Date().getTime() + startingOffset * 60000)));
-}
-
-function fillEndingDate(endingIn) {
-    const endingDateElement = form.find("input[name='end_time']");
-    endingDateElement.val(formatDate(new Date(new Date().getTime() + endingIn * 60000)));
-}
-
 function runOnEvent() {
-    this.callback(this.value);
-    $(document).off(this.event);
+    if (this.value) {
+        this.element.val(this.value);
+    }
+
+    if (this.triggerEventName) {
+        this.element.trigger(this.triggerEventName);
+    }
+
+    if (this.event) {
+        $(document).off(this.event);
+    }
 }
 
 params.forEach((param, paramKey) => {
     switch (paramKey) {
         case `appid`:
-            fillGameName(param);
+            runOnEvent.bind({
+                "element": form.find(`input.js__autocomplete-name`),
+                "value": param,
+                "triggerEventName": "keyup",
+            })();
             break;
         case `key`:
             $(document).on("fillKey",
                 runOnEvent.bind({
-                    "callback": fillGameKey,
                     "event": "fillKey",
-                    "value": param
+                    "element": form.find('textarea[name="key_string"]'),
+                    "value": param,
+                    "triggerEventName": "keyup",
                 }));
             break;
         case `starting-time-offset`:
             $(document).on("fillStartingDateOffset",
                 runOnEvent.bind({
-                    "callback": fillStartingDateOffset,
                     "event": "fillStartingDateOffset",
-                    "value": param
+                    "element": form.find("input[name='start_time']"),
+                    "value": formatDate(new Date(new Date().getTime() + param * 60000))
                 }));
             break;
         case `time-active`:
             $(document).on("fillEndingDate",
                 runOnEvent.bind({
-                    "callback": fillEndingDate,
                     "event": "fillEndingDate",
-                    "value": param
+                    "element": form.find("input[name='end_time']"),
+                    "value": formatDate(new Date(new Date().getTime() + param * 60000))
                 }));
             break;
         default:
     }
 });
 
-selectGiveawayType();
+runOnEvent.bind({
+    "element": form.find(`[data-checkbox-value=key]`),
+    "triggerEventName": "click",
+})();
