@@ -2,7 +2,7 @@
 // @name         Keys-DB Create Giveaway
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @downloadURL  https://github.com/yotamHak/keys-db/tree/master/src/assets/userscripts/raw/master/Steamgifts_GA_creator.user.js
+// @downloadURL  https://github.com/yotamHak/keys-db/raw/master/src/assets/userscripts/keys-db-create-giveaway.user.js
 // @description  Handles setting giveaway from keys-db
 // @author       Keys-DB
 // @match        https://www.steamgifts.com/giveaways/new*
