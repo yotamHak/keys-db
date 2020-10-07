@@ -10,6 +10,7 @@ import NewModal from "../../Modals/NewModal";
 import Spreadsheets from "../../../../lib/google/Spreadsheets";
 import ItadApi from "../../../../lib/itad/ItadApi";
 import SteamApi from "../../../../lib/steam/SteamApi";
+import CreateSteamgiftsGiveawayModal from "../../Modals/CreateSteamgiftsGiveawayModal";
 
 function ActionsCell({ index, changesCallback }) {
     const [prompt, setPrompt] = useState(false)
@@ -133,10 +134,17 @@ function ActionsCell({ index, changesCallback }) {
                             <Dropdown.Menu className={hasWritePermission(permission) ? "actions-menu" : ""}>
                                 {
                                     steamAppId && steamTitle && (
-                                        <GameInfoModal
-                                            appId={steamAppId}
-                                            title={steamTitle}
-                                        />
+                                        <>
+                                            <GameInfoModal
+                                                appId={steamAppId}
+                                                title={steamTitle}
+                                            />
+                                            <CreateSteamgiftsGiveawayModal
+                                                appId={steamAppId}
+                                                rowIndex={index}
+                                            />
+                                        </>
+
                                     )
                                 }
                                 {
