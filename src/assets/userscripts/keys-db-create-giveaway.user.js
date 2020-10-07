@@ -14,26 +14,6 @@
 const params = getUrlParams();
 const form = $('.form__submit-button.js__submit-form').closest('form');
 
-$(document).on('ajaxSuccess.batch', (e, xhr, settings) => {
-    if (settings.data.match(`${params.get('appid')}`)) {
-        const result = JSON.parse(xhr.responseText).html.match(`${params.get('appid')}`);
-
-        if (result) {
-            const node = result.input.match(`data-autocomplete-id=\"(\\d+)\"`);
-
-            if (node) {
-                $(`[data-autocomplete-id=${node[1]}]`).click();
-            } else {
-                console.log("Game not found");
-            }
-
-            $(document).trigger("fillKey");
-            $(document).trigger("fillStartingDateOffset");
-            $(document).trigger("fillEndingDate");
-        }
-    }
-});
-
 function formatDate(date) {
     let formattedDate = $.datepicker.formatDate('M d, yy', date);
     const hours = date.getHours() % 12 < 10 ? '0' + date.getHours() % 12 : date.getHours() % 12;
@@ -65,45 +45,67 @@ function runOnEvent() {
     }
 }
 
-params.forEach((param, paramKey) => {
-    switch (paramKey) {
-        case `appid`:
-            runOnEvent.bind({
-                "element": form.find(`input.js__autocomplete-name`),
-                "value": param,
-                "triggerEventName": "keyup",
-            })();
-            break;
-        case `key`:
-            $(document).on("fillKey",
+$(document).on('ajaxSuccess.batch', (e, xhr, settings) => {
+    if (settings.data.match(`${params.get('appid')}`)) {
+        const result = JSON.parse(xhr.responseText).html.match(`${params.get('appid')}`);
+
+        if (result) {
+            const node = result.input.match(`data-autocomplete-id=\"(\\d+)\"`);
+
+            if (node) {
+                $(`[data-autocomplete-id=${node[1]}]`).click();
+            } else {
+                console.log("Game not found");
+            }
+
+            $(document).trigger("fillKey");
+            $(document).trigger("fillStartingDateOffset");
+            $(document).trigger("fillEndingDate");
+        }
+    }
+})
+
+$(document).ready(() => {
+    params.forEach((param, paramKey) => {
+        switch (paramKey) {
+            case `appid`:
                 runOnEvent.bind({
-                    "event": "fillKey",
-                    "element": form.find('textarea[name="key_string"]'),
+                    "element": form.find(`input.js__autocomplete-name`),
                     "value": param,
                     "triggerEventName": "keyup",
-                }));
-            break;
-        case `starting-time-offset`:
-            $(document).on("fillStartingDateOffset",
-                runOnEvent.bind({
-                    "event": "fillStartingDateOffset",
-                    "element": form.find("input[name='start_time']"),
-                    "value": formatDate(new Date(new Date().getTime() + param * 60000))
-                }));
-            break;
-        case `time-active`:
-            $(document).on("fillEndingDate",
-                runOnEvent.bind({
-                    "event": "fillEndingDate",
-                    "element": form.find("input[name='end_time']"),
-                    "value": formatDate(new Date(new Date().getTime() + param * 60000))
-                }));
-            break;
-        default:
-    }
-});
+                })();
+                break;
+            case `key`:
+                $(document).on("fillKey",
+                    runOnEvent.bind({
+                        "event": "fillKey",
+                        "element": form.find('textarea[name="key_string"]'),
+                        "value": param,
+                        "triggerEventName": "keyup",
+                    }));
+                break;
+            case `starting-time-offset`:
+                $(document).on("fillStartingDateOffset",
+                    runOnEvent.bind({
+                        "event": "fillStartingDateOffset",
+                        "element": form.find("input[name='start_time']"),
+                        "value": formatDate(new Date(new Date().getTime() + param * 60000))
+                    }));
+                break;
+            case `time-active`:
+                $(document).on("fillEndingDate",
+                    runOnEvent.bind({
+                        "event": "fillEndingDate",
+                        "element": form.find("input[name='end_time']"),
+                        "value": formatDate(new Date(new Date().getTime() + param * 60000))
+                    }));
+                break;
+            default:
+        }
+    });
 
-runOnEvent.bind({
-    "element": form.find(`[data-checkbox-value=key]`),
-    "triggerEventName": "click",
-})();
+    runOnEvent.bind({
+        "element": form.find(`[data-checkbox-value=key]`),
+        "triggerEventName": "click",
+    })();
+})
