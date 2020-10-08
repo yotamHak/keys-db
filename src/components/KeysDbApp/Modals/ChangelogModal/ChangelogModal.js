@@ -3,6 +3,13 @@ import { Modal, Icon, List, Segment, Header, Container, } from "semantic-ui-reac
 
 export const changelog = [
     {
+        version: '0.5.9',
+        date: '8/10/2020',
+        list: [
+            'Table - New Create SteamGift giveaway feature, can be found in the actions dropdown.',
+        ]
+    },
+    {
         version: '0.5.8.1',
         date: '4/10/2020',
         list: [

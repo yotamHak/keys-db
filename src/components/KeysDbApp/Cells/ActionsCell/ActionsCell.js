@@ -140,7 +140,6 @@ function ActionsCell({ index, changesCallback }) {
                                                 title={steamTitle}
                                             />
                                             <CreateSteamgiftsGiveawayModal
-                                                appId={steamAppId}
                                                 rowIndex={index}
                                             />
                                         </>

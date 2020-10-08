@@ -1,7 +1,8 @@
 // ==UserScript==
 // @name         Keys-DB Create Giveaway
-// @namespace    http://tampermonkey.net/
-// @version      0.1
+// @namespace    https://github.com/yotamHak/keys-db
+// @version      0.2
+// @updateURL    https://github.com/yotamHak/keys-db/raw/master/src/assets/userscripts/keys-db-create-giveaway.meta.js
 // @downloadURL  https://github.com/yotamHak/keys-db/raw/master/src/assets/userscripts/keys-db-create-giveaway.user.js
 // @description  Handles setting giveaway from keys-db
 // @author       Keys-DB
@@ -31,12 +32,13 @@ function getUrlParams() {
     return urlParams
 }
 
-function runOnEvent() {
+function runEvent() {
     if (this.value) {
         this.element.val(this.value);
     }
 
     if (this.triggerEventName) {
+        console.log(this)
         this.element.trigger(this.triggerEventName);
     }
 
@@ -54,14 +56,13 @@ $(document).on('ajaxSuccess.batch', (e, xhr, settings) => {
 
             if (node) {
                 $(`[data-autocomplete-id=${node[1]}]`).click();
-            } else {
-                console.log("Game not found");
             }
-
-            $(document).trigger("fillKey");
-            $(document).trigger("fillStartingDateOffset");
-            $(document).trigger("fillEndingDate");
+        } else {
+            console.log("Game not found, filling title...");
+            $(document).trigger("fillTitle");
         }
+
+        $(document).trigger("fillKey");
     }
 })
 
@@ -69,15 +70,24 @@ $(document).ready(() => {
     params.forEach((param, paramKey) => {
         switch (paramKey) {
             case `appid`:
-                runOnEvent.bind({
+                runEvent.bind({
                     "element": form.find(`input.js__autocomplete-name`),
                     "value": param,
                     "triggerEventName": "keyup",
                 })();
                 break;
+            case `title`:
+                $(document).on("fillTitle",
+                    runEvent.bind({
+                        "event": "fillTitle",
+                        "element": form.find(`input.js__autocomplete-name`),
+                        "value": param,
+                        "triggerEventName": "focus",
+                    }));
+                break;
             case `key`:
                 $(document).on("fillKey",
-                    runOnEvent.bind({
+                    runEvent.bind({
                         "event": "fillKey",
                         "element": form.find('textarea[name="key_string"]'),
                         "value": param,
@@ -85,26 +95,25 @@ $(document).ready(() => {
                     }));
                 break;
             case `starting-time-offset`:
-                $(document).on("fillStartingDateOffset",
-                    runOnEvent.bind({
-                        "event": "fillStartingDateOffset",
-                        "element": form.find("input[name='start_time']"),
-                        "value": formatDate(new Date(new Date().getTime() + param * 60000))
-                    }));
+                runEvent.bind({
+                    "event": "fillStartingDateOffset",
+                    "element": form.find("input[name='start_time']"),
+                    "value": formatDate(new Date(new Date().getTime() + param * 60000))
+                })();
                 break;
             case `time-active`:
-                $(document).on("fillEndingDate",
-                    runOnEvent.bind({
-                        "event": "fillEndingDate",
-                        "element": form.find("input[name='end_time']"),
-                        "value": formatDate(new Date(new Date().getTime() + param * 60000))
-                    }));
+                runEvent.bind({
+                    "event": "fillEndingDate",
+                    "element": form.find("input[name='end_time']"),
+                    "value": formatDate(new Date(new Date().getTime() + param * 60000))
+                })();
                 break;
             default:
+                break;
         }
     });
 
-    runOnEvent.bind({
+    runEvent.bind({
         "element": form.find(`[data-checkbox-value=key]`),
         "triggerEventName": "click",
     })();
