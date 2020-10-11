@@ -2,7 +2,7 @@ import React, { useState, } from "react";
 import { Modal, Button, Confirm, Container, Segment, Form, } from "semantic-ui-react";
 import { useSelector, useDispatch } from "react-redux";
 
-import { setNewRowChange } from "../../../../actions";
+import { setNewRowChange } from "../../../../actions/TableActions";
 import FieldSettings from "../../FieldSettings";
 
 import useFormValidation from '../../../../hooks/useFormValidation'

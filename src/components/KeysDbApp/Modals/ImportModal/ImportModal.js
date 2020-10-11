@@ -6,8 +6,8 @@ import { useSelector, useDispatch } from "react-redux";
 import _ from "lodash";
 
 import ErrorBox from "../../../ErrorBox";
-import { getLabelByIndex } from "../../../../utils"
-import { addHeaders, setNewRowChange, } from "../../../../actions";
+import { getLabelByIndex } from "../../../../utils";
+import { addHeaders, setNewRowChange, } from "../../../../actions/TableActions";
 import SetColumnSettingsModal from "../SetColumnSettingsModal"
 
 import useFormValidation from '../../../../hooks/useFormValidation';

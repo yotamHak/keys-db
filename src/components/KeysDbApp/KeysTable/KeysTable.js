@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { Table, Dimmer, Icon, Segment, Loader, Placeholder, Menu, Pagination, Dropdown, Header, Input, Grid, } from 'semantic-ui-react';
 import _ from 'lodash';
 
-import { reloadTable, setCurrentRows, setIsTableEmpty, showShareModal } from "../../../actions";
+
 import { TABLE_DEFAULT_OFFSET, TABLE_DEFAULT_LIMIT, TABLE_DEFAULT_ACTIVEPAGE, hasWritePermission, } from "../../../utils";
 import KeyRow from "../KeyRow";
 import NewModal from "../Modals/NewModal";
@@ -16,6 +16,7 @@ import ShareModal from "../Modals/ShareModal";
 import usePrevious from '../../../hooks/usePrevious'
 import Spreadsheets from "../../../lib/google/Spreadsheets";
 import FilterDropdown from "../FilterDropdown";
+import { reloadTable, setCurrentRows, setIsTableEmpty, showShareModal } from "../../../actions/TableActions";
 
 function KeysTable() {
     const [loading, setLoading] = useState(false);

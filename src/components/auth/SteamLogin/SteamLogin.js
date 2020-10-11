@@ -2,7 +2,7 @@ import React from "react";
 import { useDispatch, } from "react-redux";
 import { Container, Message, List, Header, Button, } from "semantic-ui-react";
 
-import { steamLogged } from "../../../actions";
+import { steamLogged } from "../../../actions/AuthenticationActions";
 import SteamLoginComponent from "../SteamLoginComponent/SteamLoginComponent";
 import useSteam from "../../../hooks/useSteam";
 

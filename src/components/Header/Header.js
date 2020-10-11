@@ -4,12 +4,12 @@ import { useSelector, useDispatch } from "react-redux";
 import { NavLink, } from "react-router-dom";
 import dateFns from 'date-fns';
 
-import { spreadsheetSetId, steamLoad, steamLogged, setupComplete, } from "../../actions";
 import ChangelogModal, { changelog } from "../KeysDbApp/Modals/ChangelogModal/ChangelogModal";
 import { parseSpreadsheetDate, } from "../../utils";
 import useGapi from "../../hooks/useGapi";
 import googleConfig from "../../lib/google/config";
 import useLocalStorage from "../../hooks/useLocalStorage";
+import { setupComplete, spreadsheetSetId, steamLoad, steamLogged } from "../../actions/AuthenticationActions";
 
 function Header() {
     const google = useSelector((state) => state.authentication.google)

@@ -1,7 +1,8 @@
 import React from "react";
 import { Header, Dropdown, Grid, Button, Icon } from "semantic-ui-react";
 import { useSelector, useDispatch } from "react-redux";
-import { changeOrderby } from "../../../actions";
+
+import { changeOrderby } from "../../../actions/TableActions";
 
 function SortDropdown() {
     const headers = useSelector((state) => state.table.headers)

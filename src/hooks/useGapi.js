@@ -1,10 +1,9 @@
 import { useEffect, useState, } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { googleLoggedIn, googleLoggedOut, googleClientReady } from '../actions';
 import { useHistory } from 'react-router-dom';
-
 import { gapi } from 'gapi-script';
 
+import { googleLoggedIn, googleLoggedOut, googleClientReady } from '../actions/AuthenticationActions';
 import useLocalStorage from './useLocalStorage';
 
 // Custom hook to initialize and use the Google API

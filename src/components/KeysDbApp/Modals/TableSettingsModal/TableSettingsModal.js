@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 
-import { setNewRowChange, reloadTable, addHeaders, } from "../../../../actions";
+import { setNewRowChange, reloadTable, addHeaders, } from "../../../../actions/TableActions";
 import { cleanRedundentOptions, nextChar, getIndexById, hasWritePermission, } from "../../../../utils";
 import FieldSettings from "../../FieldSettings";
 

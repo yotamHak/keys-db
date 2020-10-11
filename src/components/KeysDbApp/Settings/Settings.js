@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Button, Form, Grid, Header, Message, Segment, } from 'semantic-ui-react'
 
 import ErrorBox from '../../ErrorBox';
-import { setupComplete, spreadsheetSetId, steamSetApiKey, steamSetProfile, steamLogged } from '../../../actions';
+import { setupComplete, spreadsheetSetId, steamSetApiKey, steamSetProfile, steamLogged } from '../../../actions/AuthenticationActions';
 import ImportModal from '../Modals/ImportModal';
 
 import useFormValidation from '../../../hooks/useFormValidation'
