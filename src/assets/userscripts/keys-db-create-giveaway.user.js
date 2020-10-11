@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Keys-DB Create Giveaway
 // @namespace    https://github.com/yotamHak/keys-db
-// @version      0.2
+// @version      0.22
 // @updateURL    https://github.com/yotamHak/keys-db/raw/master/src/assets/userscripts/keys-db-create-giveaway.meta.js
 // @downloadURL  https://github.com/yotamHak/keys-db/raw/master/src/assets/userscripts/keys-db-create-giveaway.user.js
 // @description  Handles setting giveaway from keys-db
@@ -38,7 +38,6 @@ function runEvent() {
     }
 
     if (this.triggerEventName) {
-        console.log(this)
         this.element.trigger(this.triggerEventName);
     }
 
@@ -113,8 +112,10 @@ $(document).ready(() => {
         }
     });
 
-    runEvent.bind({
-        "element": form.find(`[data-checkbox-value=key]`),
-        "triggerEventName": "click",
-    })();
+    if (params.values.length > 0) {
+        runEvent.bind({
+            "element": form.find(`[data-checkbox-value=key]`),
+            "triggerEventName": "click",
+        })();
+    }
 })
