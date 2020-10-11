@@ -4,7 +4,7 @@ import { Table, Dimmer, Icon, Segment, Loader, Placeholder, Menu, Pagination, Dr
 import _ from 'lodash';
 
 
-import { TABLE_DEFAULT_OFFSET, TABLE_DEFAULT_LIMIT, TABLE_DEFAULT_ACTIVEPAGE, hasWritePermission, } from "../../../utils";
+import { hasWritePermission, } from "../../../utils";
 import KeyRow from "../KeyRow";
 import NewModal from "../Modals/NewModal";
 import SortDropdown from "../SortDropdown";
@@ -17,6 +17,7 @@ import usePrevious from '../../../hooks/usePrevious'
 import Spreadsheets from "../../../lib/google/Spreadsheets";
 import FilterDropdown from "../FilterDropdown";
 import { reloadTable, setCurrentRows, setIsTableEmpty, showShareModal } from "../../../actions/TableActions";
+import { TABLE_DEFAULT_ACTIVEPAGE, TABLE_DEFAULT_LIMIT, TABLE_DEFAULT_OFFSET } from "../../../constants/tableConstants";
 
 function KeysTable() {
     const [loading, setLoading] = useState(false);

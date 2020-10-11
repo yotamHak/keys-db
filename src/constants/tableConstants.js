@@ -1,0 +1,3 @@
+export const TABLE_DEFAULT_OFFSET = 0
+export const TABLE_DEFAULT_LIMIT = 24
+export const TABLE_DEFAULT_ACTIVEPAGE = 1

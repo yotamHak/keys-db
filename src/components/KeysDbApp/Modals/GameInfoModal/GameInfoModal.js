@@ -6,7 +6,7 @@ import dateFns from 'date-fns';
 import AwesomeSlider from 'react-awesome-slider';
 import withAutoplay from 'react-awesome-slider/dist/autoplay';
 
-import { STEAM_CATEGORIES, } from "../../../../utils";
+import { STEAM_CATEGORIES, } from "../../../../constants/steamConstants";
 import ItadApi from "../../../../lib/itad/ItadApi";
 import SteamApi from "../../../../lib/steam/SteamApi";
 

@@ -2,53 +2,9 @@ import _ from 'lodash';
 import moment from 'moment'
 
 const _alphabet = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
-export const SPREADSHEET_METADATA_HEADERS_ID = 1986
-export const SPREADSHEET_METADATA_PERMISSIONS_ID = 1988
-export const SPREADSHEET_METADATA_SHEET_ID = 1910
-export const SPREADSHEET_METADATA_DEFAULT_SETTINGS = { "ID": { "id": "A", "label": "ID", "type": "number", "pattern": "General", "display": false }, "Title": { "id": "B", "label": "Title", "type": "steam_title", "isPrivate": false, "display": true, "isFilter": false, "sortable": false }, "Status": { "id": "C", "label": "Status", "type": "dropdown", "isPrivate": false, "options": { "allowEdit": false, "values": [{ "value": "Used", "color": "red" }, { "value": "Unused", "color": "green" }, { "value": "Traded", "color": "yellow" }, { "value": "Gifted", "color": "orange" }] }, "display": true, "isFilter": true, "sortable": true }, "Key": { "id": "D", "label": "Key", "type": "key", "isPrivate": true, "display": true, "isFilter": false, "sortable": false }, "From": { "id": "E", "label": "From", "type": "dropdown", "isPrivate": false, "options": { "allowEdit": true, "values": [{ "value": "Fanatical", "color": "green" }, { "value": "Indiegala", "color": "red" }, { "value": "Other", "color": "grey" }, { "value": "Amazon", "color": "brown" }, { "value": "Alienware", "color": "blue" }, { "value": "AMD", "color": "orange" }, { "value": "Indiegamestand", "color": "pink" }, { "value": "Sega", "color": "blue" }, { "value": "DigitalHomicide", "color": "brown" }, { "value": "Humblebundle", "color": "blue" }] }, "display": true, "isFilter": true, "sortable": true }, "Own Status": { "id": "F", "label": "Own Status", "type": "steam_ownership", "isPrivate": false, "options": { "allowEdit": false, "values": [{ "value": "Own", "color": "green" }, { "value": "Missing", "color": "red" }] }, "display": true, "isFilter": true, "sortable": true }, "Date Added": { "id": "G", "label": "Date Added", "type": "date", "pattern": "dd-mm-yyyy", "isPrivate": true, "display": true, "isFilter": true, "sortable": true }, "Note": { "id": "H", "label": "Note", "type": "text", "isPrivate": true, "display": true, "isFilter": false, "sortable": false }, "isthereanydeal URL": { "id": "I", "label": "isthereanydeal URL", "type": "url", "isPrivate": false, "display": true, "isFilter": false, "sortable": false }, "Steam URL": { "id": "J", "label": "Steam URL", "type": "steam_url", "isPrivate": false, "display": true, "isFilter": false, "sortable": false }, "Cards": { "id": "K", "label": "Cards", "type": "steam_cards", "isPrivate": false, "options": { "allowEdit": false, "values": [{ "value": "Have", "color": "green" }, { "value": "Missing", "color": "red" }] }, "display": true, "isFilter": true, "sortable": true }, "AppId": { "id": "L", "label": "AppId", "type": "steam_appid", "pattern": "General", "isPrivate": false, "display": true, "isFilter": false, "sortable": false } }
-export const SPREADSHEET_TEMPLATE_SPREADSHEET_ID = '13WFCn_RDuz9ZaCS4fj5VkpCUTz8HuIhSTYRjSXC-7bU'
-export const SPREADSHEET_IMPORT_TEMPLATE_SPREADSHEET_ID = '1qlzwzis9pyxI_C2s534oOPDjCaMp8ou_nTQ_SClZTxg'
-export const TABLE_DEFAULT_OFFSET = 0
-export const TABLE_DEFAULT_LIMIT = 24
-export const TABLE_DEFAULT_ACTIVEPAGE = 1
-export const STEAM_CATEGORIES = {
-  1: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_multiPlayer.png',
-  2: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_singlePlayer.png',
-  6: 'https://steamstore-a.akamaihd.net/public/images/ico/ico_mod_hl2.gif',
-  7: 'https://steamstore-a.akamaihd.net/public/images/ico/ico_mod_hl.gif',
-  8: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_vac.png',
-  9: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_coop.png',
-  13: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_cc.png',
-  14: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_commentary.png',
-  15: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_stats.png',
-  16: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_sdk.png',
-  17: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_editor.png',
-  18: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_partial_controller.png',
-  19: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_sdk.png',
-  20: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_multiPlayer.png',
-  21: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_dlc.png',
-  22: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_achievements.png',
-  23: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_cloud.png',
-  24: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_coop.png',
-  25: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_leaderboards.png',
-  27: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_multiPlayer.png',
-  28: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_controller.png',
-  29: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_cards.png',
-  30: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_workshop.png',
-  32: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_turn_notifications.png',
-  35: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_cart.png',
-  36: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_multiPlayer.png',
-  37: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_multiPlayer.png',
-  38: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_coop.png',
-  39: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_coop.png',
-  40: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_collectibles.png',
-  41: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_remote_play.png',
-  42: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_remote_play.png',
-  43: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_remote_play.png',
-  44: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_remote_play_together.png',
-  47: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_multiPlayer.png',
-  48: 'https://steamstore-a.akamaihd.net/public/images/v6/ico/ico_coop.png',
-}
+
+
+
 export const colorOptions = [
   { key: 'red', text: 'Red', value: 'red', label: { color: 'red', circular: true, empty: true }, },
   { key: 'orange', text: 'Orange', value: 'orange', label: { color: 'orange', circular: true, empty: true }, },
