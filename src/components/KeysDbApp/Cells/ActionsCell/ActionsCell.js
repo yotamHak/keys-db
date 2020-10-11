@@ -2,8 +2,8 @@ import React, { useState, useEffect, } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Table, Dropdown, Confirm, Icon, } from "semantic-ui-react";
 
-import { parseSpreadsheetDate, hasWritePermission, getValueByType, getValueById, getLabelByType, fillValueIfFieldExist, } from "../../../../utils";
-import { reloadTable } from "../../../../actions/TableActions";
+import { parseSpreadsheetDate, hasWritePermission, getValueByType, getValueById, getLabelByType, fillValueIfFieldExist, getIndexById, } from "../../../../utils";
+import { reloadTable, setNewRowChange } from "../../../../actions/TableActions";
 import GameInfoModal from "../../Modals/GameInfoModal";
 import NewModal from "../../Modals/NewModal";
 
@@ -118,9 +118,21 @@ function ActionsCell({ index, changesCallback }) {
                 newRowValues = fillValueIfFieldExist(steamAchievementsLabel, newRowValues, () => response.data.achievements ? 'Have' : 'Missing')
             })
 
-        if (Object.keys(newRowValues).reduce((result, key) => `${newRowValues[key].value}` !== `${values[key]}` ? [...result, key] : result, []).length > 0) {
-            setHasChanges(newRowValues)
-        }
+        // if (Object.keys(newRowValues).reduce((result, key) => `${newRowValues[key].value}` !== `${values[key]}` ? [...result, key] : result, []).length > 0) {
+        //     debugger
+        //     setHasChanges(newRowValues)
+        // }
+
+        Object.keys(newRowValues)
+            .reduce((result, key) => `${newRowValues[key].value}` !== `${values[key]}` ? [...result, key] : result, [])
+            .forEach(key => {
+                debugger
+                console.log(newRowValues[key])
+                dispatch(setNewRowChange(index, {
+                    ...gameData,
+                    [getIndexById(newRowValues[key].id)]: newRowValues[key].value
+                }))
+            })
 
         setRefreshingItadData(false)
     }

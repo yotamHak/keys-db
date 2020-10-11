@@ -16,6 +16,10 @@ function HeaderRow() {
             return result
         }
 
+        if (headers[headerKey].type === 'key_platform') {
+            return result
+        }
+
         if (urlsInGameData.length > 0 && index === urlsInGameData[urlsInGameData.length - 1].index) {
             return _.concat(result, ["URLs"])
         }

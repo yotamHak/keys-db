@@ -1,4 +1,5 @@
 import * as actionTypes from '../../actions/types';
+import _ from 'lodash';
 
 // Table Reducer
 const initialTableState = {
@@ -67,6 +68,11 @@ export const table_reducer = (state = initialTableState, action) => {
                     ...state.changes,
                     [action.payload.id]: action.payload.row
                 }
+            }
+        case actionTypes.REMOVE_NEW_ROW_CHANGE:
+            return {
+                ...state,
+                changes: _.omit(state.changes, action.payload)
             }
         case actionTypes.SET_IS_TABLE_EMPTY:
             return {

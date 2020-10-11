@@ -53,6 +53,13 @@ export const setNewRowChange = (id, row) => {
     }
 }
 
+export const removeNewRowChange = (id) => {
+    return {
+        type: actionTypes.REMOVE_NEW_ROW_CHANGE,
+        payload: id
+    }
+}
+
 export const setIsTableEmpty = state => {
     return {
         type: actionTypes.SET_IS_TABLE_EMPTY,

@@ -30,6 +30,7 @@ export const SET_CURRENT_ROWS = 'SET_CURRENT_ROWS';
 export const SET_IS_TABLE_EMPTY = 'SET_IS_TABLE_EMPTY';
 
 export const SET_NEW_ROW_CHANGE = 'SET_NEW_ROW';
+export const REMOVE_NEW_ROW_CHANGE = 'REMOVE_NEW_ROW';
 
 export const SHOW_SHARE_MODAL = 'SHOW_SHARE_MODAL';
 

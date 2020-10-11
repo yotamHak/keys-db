@@ -29,6 +29,7 @@ export const fieldTypes = [
   { key: 'number', text: 'Number', value: 'number', description: 'Number field' },
   { key: 'text', text: 'Text', value: 'text', description: 'Long text field' },
   { key: 'key', text: 'Key', value: 'key', description: 'Key field' },
+  { key: 'key_platform', text: 'Key Platform', value: 'key_platform', description: 'Key Platform field' },
   { key: 'dropdown', text: 'Dropdown', value: 'dropdown', description: 'Multi-Option field' },
   { key: 'url', text: 'URL', value: 'url', description: 'Url field' },
 ].sort((a, b) => genericSort(`${a.icon}${a.text}`, `${b.icon}${b.text}`))
@@ -37,7 +38,7 @@ export const uniqueSteamFieldTypes = [
   { key: 'steam_title', text: 'Title', value: 'steam_title', icon: 'steam', description: 'This will be used to gather Steam information' },
   { key: 'steam_url', text: 'URL', value: 'steam_url', icon: 'steam', description: 'Store URL, Auto-filled' },
   { key: 'steam_appid', text: 'App Id', value: 'steam_appid', icon: 'steam', description: 'AppID, Auto-filled' },
-  { key: 'steam_key', text: 'Key', value: 'steam_key', icon: 'steam', description: 'Key' },
+  // { key: 'steam_key', text: 'Key', value: 'steam_key', icon: 'steam', description: 'Key' },
   { key: 'steam_cards', text: 'Cards', value: 'steam_cards', icon: 'steam', description: 'Cards, Auto-filled' },
   { key: 'steam_achievements', text: 'Achievements', icon: 'steam', value: 'steam_achievements', description: 'Achievements, Auto-filled' },
   // { key: 'steam_dlc', text: 'DLC', value: 'steam_dlc', icon: 'steam', description: 'Is this a Steam DLC, Exclusive for Steam' },
@@ -56,7 +57,7 @@ export const getAllFieldTypes = () => [
   ...fieldTypes,
 ].sort((a, b) => genericSort(`${a.icon}${a.text}`, `${b.icon}${b.text}`))
 
-const _dropdownTypes = ['dropdown', 'steam_ownership', 'steam_cards', 'steam_achievements']
+const _dropdownTypes = ['dropdown', 'steam_ownership', 'steam_cards', 'steam_achievements', 'key_platform']
 
 export const isDropdownType = type => _dropdownTypes.find(item => type === item) ? true : false
 
@@ -137,17 +138,14 @@ export function fillValueIfFieldExist(label, values, onExist) {
 export const getIndexByLabel = (label, headers) => {
   return _alphabet.indexOf(headers[label].id)
 }
+export const getIndexById = id => _alphabet.indexOf(id)
+export const getIndexByType = (headers, type) => _alphabet.indexOf(headers[Object.keys(headers).find(key => headers[key].type === type)].id)
 
-export const getIndexById = (id,) => _alphabet.indexOf(id)
+// export const getValueByLabel = (label, headers, gameData) => gameData[getIndexByLabel(label, headers)]
 
+export const getLabelByIndex = index => _alphabet[index]
 
-export function getValueByType(dataObject, headers, type) {
-  try {
-    return dataObject[getIndexByType(headers, type)]
-  } catch (error) {
-    return null
-  }
-}
+export const getLabelByType = (headers, type) => Object.keys(headers).find(key => headers[key].type === type)
 
 export function getValueById(dataObject, id) {
   try {
@@ -156,14 +154,13 @@ export function getValueById(dataObject, id) {
     return null
   }
 }
-
-// export const getValueByLabel = (label, headers, gameData) => gameData[getIndexByLabel(label, headers)]
-
-export const getLabelByIndex = index => _alphabet[index]
-
-export const getLabelByType = (headers, type) => Object.keys(headers).find(key => headers[key].type === type)
-
-export const getIndexByType = (headers, type) => _alphabet.indexOf(headers[Object.keys(headers).find(key => headers[key].type === type)].id)
+export function getValueByType(dataObject, headers, type) {
+  try {
+    return dataObject[getIndexByType(headers, type)]
+  } catch (error) {
+    return null
+  }
+}
 
 export const nextChar = c => c === 'Z' ? 'A' : String.fromCharCode(c.charCodeAt(0) + 1)
 

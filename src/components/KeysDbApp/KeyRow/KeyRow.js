@@ -1,6 +1,7 @@
-import React, { useState } from "react";
-import { useSelector } from "react-redux";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Table, Button, } from 'semantic-ui-react';
+import _ from 'lodash';
 
 import KeyCell from "../Cells/KeyCell";
 import DateCell from "../Cells/DateCell";
@@ -16,6 +17,7 @@ import SteamBundledCell from "../Cells/SteamBundledCell";
 
 import { getUrlsLocationAndValue, isDropdownType, getIndexById, isDateType } from "../../../utils";
 import Spreadsheets from "../../../lib/google/Spreadsheets";
+import { removeNewRowChange } from "../../../actions/TableActions";
 
 function KeyRow({ rowIndex }) {
     const [hasChanges, setHasChanges] = useState(false);
@@ -25,8 +27,14 @@ function KeyRow({ rowIndex }) {
     const sheetId = useSelector((state) => state.authentication.currentSheetId)
     const headers = useSelector((state) => state.table.headers)
     const gameData = useSelector((state) => state.table.rows[rowIndex])
+    const rowChanges = useSelector((state) => state.table.changes[rowIndex])
 
     const urlsInGameData = getUrlsLocationAndValue(headers, gameData);
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        rowChanges && setHasChanges(true)
+    }, [rowChanges])
 
     function rowChangesCallback(changedRow) {
         Object.keys(changedRow).forEach(header => {
@@ -41,6 +49,7 @@ function KeyRow({ rowIndex }) {
 
     function selectCell(index, header, gameHeaderValue) {
         if (header.label === "ID") { return }
+        if (header.type === "key_platform") { return }
 
         const rKey = `${rowIndex}-${header.id}-${gameHeaderValue}`;
 
@@ -141,15 +150,15 @@ function KeyRow({ rowIndex }) {
         }
     }
 
-    function saveChanges(gameData) {
+    function saveChanges(rowIndex, rowChanges) {
         setIsSaving(true)
 
-        Spreadsheets.Update(spreadsheetId, sheetId, gameData, gameData[0])
+        Spreadsheets.Update(spreadsheetId, sheetId, rowChanges, rowChanges[0])
             .then(response => {
-                console.log(response)
+                dispatch(removeNewRowChange(rowIndex))
                 setHasChanges(false)
             })
-            .finally(response => {
+            .finally(() => {
                 setIsSaving(false)
             })
     }
@@ -159,7 +168,7 @@ function KeyRow({ rowIndex }) {
             {
                 hasChanges
                     ? <Table.Cell singleLine>
-                        <Button icon='save' onClick={() => { saveChanges(gameData) }} loading={isSaving} circular basic size='mini' />
+                        <Button icon='save' onClick={() => { saveChanges(rowIndex, _.toArray(rowChanges)) }} loading={isSaving} circular basic size='mini' />
                     </Table.Cell>
                     : <ActionsCell index={rowIndex} changesCallback={rowChangesCallback} />
             }
