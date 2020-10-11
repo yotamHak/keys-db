@@ -1,9 +1,7 @@
 import _ from 'lodash';
-import moment from 'moment'
+import moment from 'moment';
 
 const _alphabet = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
-
-
 
 export const colorOptions = [
   { key: 'red', text: 'Red', value: 'red', label: { color: 'red', circular: true, empty: true }, },
