@@ -136,7 +136,6 @@ function KeyCell({ gameKey, rowIndex, header }) {
                                         type='text'
                                         defaultValue={gameKey}
                                         className="full-width"
-                                        // onChange={(e, { value }) => { onChange(header, value) }}
                                         onChange={(e, { value }) => handleChange(e, value, header.id)}
                                         action
                                     >

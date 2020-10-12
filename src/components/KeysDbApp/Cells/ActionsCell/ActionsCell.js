@@ -2,7 +2,7 @@ import React, { useState, useEffect, } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Table, Dropdown, Confirm, Icon, } from "semantic-ui-react";
 
-import { parseSpreadsheetDate, hasWritePermission, getValueByType, getValueById, getLabelByType, fillValueIfFieldExist, getIndexById, } from "../../../../utils";
+import { parseSpreadsheetDate, hasWritePermission, getValueByType, getValueById, getLabelByType, fillValueIfFieldExist, } from "../../../../utils";
 import { reloadTable, setNewRowChange } from "../../../../actions/TableActions";
 import GameInfoModal from "../../Modals/GameInfoModal";
 import NewModal from "../../Modals/NewModal";
@@ -12,12 +12,11 @@ import ItadApi from "../../../../lib/itad/ItadApi";
 import SteamApi from "../../../../lib/steam/SteamApi";
 import CreateSteamgiftsGiveawayModal from "../../Modals/CreateSteamgiftsGiveawayModal";
 
-function ActionsCell({ index, changesCallback }) {
+function ActionsCell({ index }) {
     const [prompt, setPrompt] = useState(false)
     const [steamAppId, setSteamAppId] = useState(null)
     const [steamTitle, setSteamTitle] = useState(null)
     const [refreshingItadData, setRefreshingItadData] = useState(false)
-    const [hasChanges, setHasChanges] = useState(false)
 
     const spreadsheetId = useSelector((state) => state.authentication.currentSpreadsheetId)
     const sheetId = useSelector((state) => state.authentication.currentSheetId)
@@ -42,11 +41,6 @@ function ActionsCell({ index, changesCallback }) {
 
         if (refreshingItadData) {
             handleRefreshItadData()
-        }
-
-        if (hasChanges) {
-            changesCallback(hasChanges)
-            setHasChanges(false)
         }
     }, [headers, refreshingItadData,])
 
@@ -118,21 +112,9 @@ function ActionsCell({ index, changesCallback }) {
                 newRowValues = fillValueIfFieldExist(steamAchievementsLabel, newRowValues, () => response.data.achievements ? 'Have' : 'Missing')
             })
 
-        // if (Object.keys(newRowValues).reduce((result, key) => `${newRowValues[key].value}` !== `${values[key]}` ? [...result, key] : result, []).length > 0) {
-        //     debugger
-        //     setHasChanges(newRowValues)
-        // }
-
-        Object.keys(newRowValues)
-            .reduce((result, key) => `${newRowValues[key].value}` !== `${values[key]}` ? [...result, key] : result, [])
-            .forEach(key => {
-                debugger
-                console.log(newRowValues[key])
-                dispatch(setNewRowChange(index, {
-                    ...gameData,
-                    [getIndexById(newRowValues[key].id)]: newRowValues[key].value
-                }))
-            })
+        if (Object.keys(newRowValues).reduce((result, key) => `${newRowValues[key].value}` !== `${values[key]}` ? [...result, key] : result, []).length > 0) {
+            dispatch(setNewRowChange(index, Object.keys(newRowValues).reduce((result, key) => [...result, newRowValues[key].value], [])))
+        }
 
         setRefreshingItadData(false)
     }

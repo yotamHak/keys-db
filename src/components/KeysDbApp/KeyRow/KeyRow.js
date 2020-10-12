@@ -36,12 +36,6 @@ function KeyRow({ rowIndex }) {
         rowChanges && setHasChanges(true)
     }, [rowChanges])
 
-    function rowChangesCallback(changedRow) {
-        Object.keys(changedRow).forEach(header => {
-            changeCallback(changedRow[header], changedRow[header].value)
-        })
-    }
-
     function changeCallback(header, changedValue) {
         gameData[getIndexById(header.id, headers)] = changedValue;
         setHasChanges(true)
@@ -170,11 +164,11 @@ function KeyRow({ rowIndex }) {
                     ? <Table.Cell singleLine>
                         <Button icon='save' onClick={() => { saveChanges(rowIndex, _.toArray(rowChanges)) }} loading={isSaving} circular basic size='mini' />
                     </Table.Cell>
-                    : <ActionsCell index={rowIndex} changesCallback={rowChangesCallback} />
+                    : <ActionsCell index={rowIndex} />
             }
 
             {
-                gameData && Object.keys(headers).map((key, index) => { return selectCell(index, headers[key], gameData[index]) })
+                gameData && Object.keys(headers).map((key, index) => { return selectCell(index, headers[key], (rowChanges && rowChanges[index]) || gameData[index]) })
             }
         </Table.Row>
     );
