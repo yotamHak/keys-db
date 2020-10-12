@@ -159,6 +159,7 @@ function KeyCell({ gameKey, rowIndex, header }) {
                                         onChange={(e, { value }) => handleChange(e, value, header.id)}
                                         action
                                     >
+                                        <input />
                                         {actions()}
                                     </Input>
                                 )
