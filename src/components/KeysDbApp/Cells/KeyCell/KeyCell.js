@@ -143,7 +143,7 @@ function KeyCell({ gameKey, rowIndex, header }) {
                                         <Select
                                             compact
                                             options={options}
-                                            defaultValue={getValueByType(gameData, headers, 'key_platform') || 'Steam'}
+                                            defaultValue={getValueByType(gameData, headers, 'key_platform') || ''}
                                             onChange={(e, { value }) => handleChange(e, value, headers[keyPlatformKey].id)}
                                         />
                                         <input />

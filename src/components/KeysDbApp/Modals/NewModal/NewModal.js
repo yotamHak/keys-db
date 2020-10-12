@@ -46,7 +46,7 @@ function NewModal({ initialValue, isEdit, children }) {
     const steamOwnershipLabel = getLabelByType(headers, "steam_ownership")
     const steamAchievementsLabel = getLabelByType(headers, "steam_achievements")
     const steamBundledLabel = getLabelByType(headers, "steam_bundled")
-    const createdOnLabel = getLabelByType(headers, "created_on")
+    const createdOnLabel = getLabelByType(headers, "created_on") || getLabelByType(headers, "date")
 
     function afterResponse() {
         handleClose();

@@ -16,6 +16,10 @@ body {
   cursor: pointer;
 }
 
+.full-width {
+  width: 100%;
+}
+
 .cursor-auto {
   cursor: auto !important;
 }
