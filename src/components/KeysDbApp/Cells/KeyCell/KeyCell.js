@@ -10,6 +10,7 @@ import { setNewRowChange } from "../../../../actions/TableActions";
 function KeyCell({ gameKey, rowIndex, header }) {
     const headers = useSelector((state) => state.table.headers)
     const gameData = useSelector((state) => state.table.rows[rowIndex])
+    const rowChanges = useSelector((state) => state.table.changes[rowIndex])
 
     const [, setCopySuccess] = useState(null);
     const [resetCopyFeedback, setResetCopyFeedback] = useState(false);
@@ -37,6 +38,102 @@ function KeyCell({ gameKey, rowIndex, header }) {
         setCopySuccess('Copied!');
         setResetCopyFeedback(true)
     };
+
+    function handleActivationButton(platform, gameKey) {
+        if (isUrl(gameKey)) {
+            return (
+                <Popup
+                    size='mini'
+                    content={"Open link"}
+                    position='top center'
+                    trigger={
+                        <Button
+                            color='teal'
+                            icon
+                            as='a'
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            href={gameKey}
+                        >
+                            <Icon name='world' />
+                        </Button>
+                    }
+                />
+            )
+        }
+
+        switch (platform) {
+            case "Steam":
+                return (
+                    <Popup
+                        size='mini'
+                        content={"Activate on Steam"}
+                        position='top center'
+                        trigger={
+                            <Button
+                                color='teal'
+                                icon
+                                as='a'
+                                target='_blank'
+                                rel='noopener noreferrer'
+                                href={`https://store.steampowered.com/account/registerkey?key=${gameKey}`}
+                            >
+                                <Icon name='steam' />
+                            </Button>
+                        }
+                    />
+                )
+            case "GOG":
+                return (
+                    <Popup
+                        size='mini'
+                        content={"Activate on GOG"}
+                        position='top center'
+                        trigger={
+                            <Button
+                                color='teal'
+                                icon
+                                as='a'
+                                target='_blank'
+                                rel='noopener noreferrer'
+                                href={`https://www.gog.com/redeem/${gameKey}`}
+                            >
+                                <Icon name='key' />
+                            </Button>
+                        }
+                    />
+                )
+            case "Microsoft":
+                return (
+                    <Popup
+                        size='mini'
+                        content={"Activate on Microsoft"}
+                        position='top center'
+                        trigger={
+                            <Button
+                                color='teal'
+                                icon
+                                as='a'
+                                target='_blank'
+                                rel='noopener noreferrer'
+                                href={`https://redeem.microsoft.com/`}
+                            >
+                                <Icon name='key' />
+                            </Button>
+                        }
+                    />
+                )
+            default:
+                return
+        }
+    }
+
+    function handleChange(e, value, headerId) {
+        dispatch(setNewRowChange(rowIndex, {
+            ...gameData,
+            [getIndexById(headerId)]: value
+        }))
+    }
 
     const actions = () => (
         <>
@@ -68,60 +165,10 @@ function KeyCell({ gameKey, rowIndex, header }) {
                     )
             }
             {
-                isSteamKey(gameKey) && (
-                    <Popup
-                        size='mini'
-                        content={"Activate on Steam"}
-                        position='top center'
-                        trigger={
-                            <Button
-                                color='teal'
-                                icon
-                                as='a'
-                                target='_blank'
-                                rel='noopener noreferrer'
-                                href={`https://store.steampowered.com/account/registerkey?key=${gameKey}`}
-                            >
-                                <Icon name='key' />
-                            </Button>
-                        }
-                    />
-                )
-            }
-            {
-                isUrl(gameKey) && (
-                    <Popup
-                        size='mini'
-                        content={"Open link"}
-                        position='top center'
-                        trigger={
-                            <Button
-                                color='teal'
-                                icon
-                                as='a'
-                                target='_blank'
-                                rel='noopener noreferrer'
-                                href={gameKey}
-                            >
-                                <Icon name='world' />
-                            </Button>
-                        }
-                    />
-                )
+                handleActivationButton(getValueByType(rowChanges || gameData, headers, "key_platform"), gameKey)
             }
         </>
     )
-
-    function handleActivationButton() {
-
-    }
-
-    function handleChange(e, value, headerId) {
-        dispatch(setNewRowChange(rowIndex, {
-            ...gameData,
-            [getIndexById(headerId)]: value
-        }))
-    }
 
     return (
         <Table.Cell singleLine>

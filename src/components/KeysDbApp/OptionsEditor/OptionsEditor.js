@@ -44,12 +44,45 @@ function OptionsEditor({ headerKey, type, options, onInitOptions, onOptionsChang
         ],
     }
 
+    const startingDropdownValues = {
+        'key_platform': [
+            {
+                value: 'Steam',
+                color: 'blue',
+            },
+            {
+                value: 'GOG',
+                color: 'purple',
+            },
+            {
+                value: 'Epic Game Store',
+                color: 'grey',
+            },
+            {
+                value: 'Uplay',
+                color: 'black',
+            },
+            {
+                value: 'Origin',
+                color: 'orange',
+            },
+            {
+                value: 'Microsoft',
+                color: 'green',
+            },
+            {
+                value: 'BattleNet',
+                color: 'blue',
+            },
+        ],
+    }
+
     const INITIAL_STATE = { value: '', color: "black" }
     const { handleSubmit, handleChange, reset, values, errors } = useFormValidation(INITIAL_STATE, validateOption, addNewOption);
 
     useEffect(() => {
         if (options === undefined || ((prevType !== undefined) && type !== prevType)) {
-            onInitOptions(headerKey, defaultDropdownValues[type])
+            onInitOptions(headerKey, startingDropdownValues[type] || defaultDropdownValues[type], defaultDropdownValues[type] ? false : true)
         }
     }, [options, type])
 

@@ -217,6 +217,7 @@ function KeysTable() {
                                         ? _.times(limit).map((item, index) => (
                                             <Table.Row key={index}>
                                                 {
+                                                    // _.times(Object.keys(headers).filter(headerKey => shouldAddField(headers, null, getIndexByLabel(headerKey))).length)
                                                     _.times(Object.keys(headers).length - 1)
                                                         .map((key, index) => (
                                                             <Table.Cell key={index}>

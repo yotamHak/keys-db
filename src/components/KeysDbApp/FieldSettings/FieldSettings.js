@@ -6,11 +6,11 @@ import ErrorBox from '../../ErrorBox';
 import OptionsEditor from '../OptionsEditor';
 
 function FieldSettings({ headerKey, values, errors, handleChange, }) {
-    function handleInitOptions(headerKey, values) {
+    function handleInitOptions(headerKey, values, allowEdit) {
         handleChange(null, {
             name: 'options',
             value: {
-                allowEdit: values ? false : true,
+                allowEdit: allowEdit,
                 values: values || [],
             }
         },
