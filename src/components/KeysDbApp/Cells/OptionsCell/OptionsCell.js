@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Table, Dropdown } from "semantic-ui-react";
 import _ from 'lodash';
 
-import { parseOptions, hasWritePermission, getIndexById, getIndexByLabel } from "../../../../utils";
+import { parseOptions, hasWritePermission, getIndexById } from "../../../../utils";
 import { setNewRowChange } from "../../../../actions/TableActions";
 
 function OptionsCell({ rowIndex, title, header, onChange }) {

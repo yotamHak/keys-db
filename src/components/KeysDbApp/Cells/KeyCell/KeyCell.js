@@ -2,7 +2,7 @@ import React, { useRef, useState, } from "react";
 import { Table, Icon, Grid, Popup, Input, Button, Select } from "semantic-ui-react";
 import _ from 'lodash';
 
-import { getIndexById, getLabelByType, getValueByType, isSteamKey, isUrl } from "../../../../utils";
+import { getIndexById, getLabelByType, getValueByType, isUrl } from "../../../../utils";
 import useInterval from '../../../../hooks/useInterval'
 import { useDispatch, useSelector } from "react-redux";
 import { setNewRowChange } from "../../../../actions/TableActions";
