@@ -71,7 +71,7 @@ function OptionsEditor({ headerKey, type, options, onInitOptions, onOptionsChang
                 color: 'green',
             },
             {
-                value: 'BattleNet',
+                value: 'Battle.net',
                 color: 'blue',
             },
         ],
