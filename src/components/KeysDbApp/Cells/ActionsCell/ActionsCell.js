@@ -17,6 +17,7 @@ function ActionsCell({ index }) {
     const [steamAppId, setSteamAppId] = useState(null)
     const [steamTitle, setSteamTitle] = useState(null)
     const [refreshingItadData, setRefreshingItadData] = useState(false)
+    const [hasChanges, setHasChanges] = useState(false)
 
     const spreadsheetId = useSelector((state) => state.authentication.currentSpreadsheetId)
     const sheetId = useSelector((state) => state.authentication.currentSheetId)
@@ -41,6 +42,10 @@ function ActionsCell({ index }) {
 
         if (refreshingItadData) {
             handleRefreshItadData()
+        }
+        if (hasChanges) {
+            dispatch(setNewRowChange(index, Object.keys(hasChanges).reduce((result, key) => [...result, hasChanges[key].value], [])))
+            setHasChanges(false)
         }
     }, [headers, refreshingItadData,])
 
@@ -113,7 +118,7 @@ function ActionsCell({ index }) {
             })
 
         if (Object.keys(newRowValues).reduce((result, key) => `${newRowValues[key].value}` !== `${values[key]}` ? [...result, key] : result, []).length > 0) {
-            dispatch(setNewRowChange(index, Object.keys(newRowValues).reduce((result, key) => [...result, newRowValues[key].value], [])))
+            setHasChanges(newRowValues);
         }
 
         setRefreshingItadData(false)

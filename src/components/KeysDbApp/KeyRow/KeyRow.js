@@ -15,7 +15,7 @@ import SteamCardsCell from "../Cells/SteamCardsCell";
 import SteamAchievementsCell from "../Cells/SteamAchievementsCell";
 import SteamBundledCell from "../Cells/SteamBundledCell";
 
-import { getUrlsLocationAndValue, isDropdownType, getIndexById, isDateType } from "../../../utils";
+import { getUrlsLocationAndValue, isDropdownType, getIndexById, isDateType, shouldAddField, isUrlType } from "../../../utils";
 import Spreadsheets from "../../../lib/google/Spreadsheets";
 import { removeNewRowChange } from "../../../actions/TableActions";
 
@@ -42,20 +42,9 @@ function KeyRow({ rowIndex }) {
     }
 
     function selectCell(index, header, gameHeaderValue) {
-        if (header.label === "ID") { return }
-        if (header.type === "key_platform") { return }
+        if (!shouldAddField(headers, gameData, header.id)) return
 
         const rKey = `${rowIndex}-${header.id}-${gameHeaderValue}`;
-
-        if (urlsInGameData.length > 0 && index === urlsInGameData[urlsInGameData.length - 1].index) {
-            return <UrlCell
-                rowIndex={rowIndex}
-                urls={urlsInGameData}
-                key={rKey}
-            />
-        }
-
-        if (urlsInGameData.find(item => item.index === index)) { return }
 
         if (header.type === 'steam_cards') {
             return <SteamCardsCell
@@ -76,14 +65,6 @@ function KeyRow({ rowIndex }) {
                 rowIndex={rowIndex}
                 key={rKey}
                 value={gameHeaderValue}
-            />
-        } else if (isDropdownType(header.type)) {
-            return <OptionsCell
-                rowIndex={rowIndex}
-                onChange={changeCallback}
-                header={header}
-                title={gameHeaderValue}
-                key={rKey}
             />
         } else if (header.type === 'steam_title') {
             return <NameCell
@@ -117,6 +98,22 @@ function KeyRow({ rowIndex }) {
                 gameKey={gameHeaderValue}
                 key={rKey}
             />
+        } else if (header.type === 'text') {
+            return <NoteCell
+                rowIndex={rowIndex}
+                onChange={changeCallback}
+                header={header}
+                note={gameHeaderValue}
+                key={rKey}
+            />
+        } else if (isDropdownType(header.type)) {
+            return <OptionsCell
+                rowIndex={rowIndex}
+                onChange={changeCallback}
+                header={header}
+                title={gameHeaderValue}
+                key={rKey}
+            />
         } else if (isDateType(header.type)) {
             return <DateCell
                 rowIndex={rowIndex}
@@ -125,12 +122,10 @@ function KeyRow({ rowIndex }) {
                 dateAdded={gameHeaderValue}
                 key={rKey}
             />
-        } else if (header.type === 'text') {
-            return <NoteCell
+        } else if (isUrlType(header.type)) {
+            return <UrlCell
                 rowIndex={rowIndex}
-                onChange={changeCallback}
-                header={header}
-                note={gameHeaderValue}
+                urls={urlsInGameData}
                 key={rKey}
             />
         } else {

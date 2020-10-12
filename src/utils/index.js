@@ -62,8 +62,10 @@ const _dropdownTypes = ['dropdown', 'steam_ownership', 'steam_cards', 'steam_ach
 export const isDropdownType = type => _dropdownTypes.find(item => type === item) ? true : false
 
 const _dateTypes = ['date', 'created_on', 'modified_on']
+const _UrlTypes = ['url', 'steam_url']
 
 export const isDateType = type => _dateTypes.find(item => type === item) ? true : false
+export const isUrlType = type => _UrlTypes.find(item => type === item) ? true : false
 
 //---------------------------------------------------------------------------------------------------
 
@@ -133,6 +135,23 @@ export function fillValueIfFieldExist(label, values, onExist) {
   }
 
   return values
+}
+
+export function shouldAddField(headers, rowData, headerId) {
+  const headerKey = Object.keys(headers).find(headerKey => headers[headerKey].id === headerId);
+  const urlsInGameData = getUrlsLocationAndValue(headers, rowData);
+  const index = getIndexById(headerId);
+
+  if (urlsInGameData.length > 0 && index === urlsInGameData[urlsInGameData.length - 1].index) {
+    return false;
+  }
+
+  if (headers[headerKey].label === "ID" || headers[headerKey].type === "key_platform" // || headers[headerKey].display === false
+  ) {
+    return false
+  }
+
+  return true
 }
 
 export const getIndexByLabel = (label, headers) => {
