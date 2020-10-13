@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 
-import { setNewRowChange, reloadTable, addHeaders, } from "../../../../store/actions/TableActions";
+import { setNewRowChange, reloadTable, addHeaders, removeNewRowChange, } from "../../../../store/actions/TableActions";
 import { cleanRedundentOptions, nextChar, getIndexById, hasWritePermission, } from "../../../../utils";
 import FieldSettings from "../../FieldSettings";
 
@@ -31,28 +31,24 @@ function TableSettingsModal() {
     const { handleSubmit, handleChange, handleSetNewValue, reset, values, errors } = useFormValidation(INITIAL_STATE, validateTableSettings, onSubmit);
 
     useEffect(() => {
-        if (!tableHeadersChanges) {
-            dispatch(setNewRowChange('headers', headers))
-        }
-
-        if (isSaving) {
-            Spreadsheets.SaveSettings(spreadsheetId, sheetId, tableHeadersChanges)
-                .then(response => {
-                    if (response.success) {
-                        dispatch(addHeaders(response.data.updatedSettings))
-                        dispatch(reloadTable(true))
-                        setIsSaving(false)
-                        handleClose()
-                    }
-                })
-        }
+        isSaving && Spreadsheets.SaveSettings(spreadsheetId, sheetId, tableHeadersChanges)
+            .then(response => {
+                if (response.success) {
+                    dispatch(addHeaders(response.data.updatedSettings))
+                    dispatch(reloadTable(true))
+                    setIsSaving(false)
+                    handleClose()
+                }
+            })
     }, [tableHeadersChanges,])
 
     function handleOpen() {
+        dispatch(setNewRowChange('headers', headers))
         setModalOpen(true)
     }
 
     function handleClose() {
+        dispatch(removeNewRowChange('headers'))
         setModalOpen(false)
     }
 
