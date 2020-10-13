@@ -154,9 +154,9 @@ export function shouldAddField(headers, rowData, headerId) {
   return true
 }
 
-export const getIndexByLabel = (label, headers) => {
-  return _alphabet.indexOf(headers[label].id)
-}
+export const getKeyById = (headers, id) => Object.keys(headers).find(key => headers[key].id === id)
+
+export const getIndexByLabel = (label, headers) => _alphabet.indexOf(headers[label].id)
 export const getIndexById = id => _alphabet.indexOf(id)
 export const getIndexByType = (headers, type) => _alphabet.indexOf(headers[Object.keys(headers).find(key => headers[key].type === type)].id)
 

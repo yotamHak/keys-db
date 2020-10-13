@@ -3,8 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { Table, Dimmer, Icon, Segment, Loader, Placeholder, Menu, Pagination, Dropdown, Header, Input, Grid, } from 'semantic-ui-react';
 import _ from 'lodash';
 
-
-import { hasWritePermission, } from "../../../utils";
+import { getIndexByLabel, getKeyById, hasWritePermission, shouldAddField, } from "../../../utils";
 import KeyRow from "../KeyRow";
 import NewModal from "../Modals/NewModal";
 import SortDropdown from "../SortDropdown";
@@ -93,7 +92,7 @@ function KeysTable() {
                     console.log(response.errors)
                 }
             })
-            .finally(response => {
+            .finally(() => {
                 setLoading(false)
                 if (isSearching) setIsSearching(false)
             })
@@ -217,8 +216,7 @@ function KeysTable() {
                                         ? _.times(limit).map((item, index) => (
                                             <Table.Row key={index}>
                                                 {
-                                                    // _.times(Object.keys(headers).filter(headerKey => shouldAddField(headers, null, getIndexByLabel(headerKey))).length)
-                                                    _.times(Object.keys(headers).length - 1)
+                                                    _.times(Object.keys(headers).filter(headerKey => shouldAddField(headers, null, headers[headerKey].id)).length + 1)
                                                         .map((key, index) => (
                                                             <Table.Cell key={index}>
                                                                 <Placeholder>
