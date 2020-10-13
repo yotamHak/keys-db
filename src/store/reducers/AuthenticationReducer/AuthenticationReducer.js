@@ -1,4 +1,4 @@
-import * as actionTypes from '../../actions/types';
+import * as actionTypes from '../../actionTypes/AuthenticationActionTypes';
 
 const initialAuthenticationState = {
     steam: {

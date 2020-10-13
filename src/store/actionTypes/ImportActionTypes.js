@@ -1,0 +1,4 @@
+// Import Action Types
+
+export const SET_IMPORTED_HEADERS = 'SET_IMPORTED_HEADERS';
+export const SET_IMPORTED_HEADER = 'SET_IMPORTED_HEADER';

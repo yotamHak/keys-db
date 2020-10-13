@@ -1,4 +1,4 @@
-import * as actionTypes from '../../actions/types';
+import * as actionTypes from '../../actionTypes/TableActionTypes';
 import _ from 'lodash';
 
 // Table Reducer

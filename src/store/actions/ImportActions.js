@@ -1,4 +1,4 @@
-import * as actionTypes from './types';
+import * as actionTypes from '../actionTypes/ImportActionTypes';
 
 // Import Actions
 export const setImportedHeaders = headers => {

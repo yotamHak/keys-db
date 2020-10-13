@@ -1,4 +1,4 @@
-import * as actionTypes from './types';
+import * as actionTypes from '../actionTypes/TableActionTypes';
 
 // Table Actions
 export const setCurrentRows = rows => {

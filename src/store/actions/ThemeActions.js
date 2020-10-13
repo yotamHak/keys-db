@@ -1,4 +1,4 @@
-import * as actionTypes from './types';
+import * as actionTypes from '../actionTypes/ThemeActionTypes';
 
 // Theme Actions
 export const changeTheme = () => {

@@ -1,0 +1,15 @@
+// Table Action Types
+
+export const ADD_HEADERS = 'ADD_HEADERS';
+export const REMOVE_HEADERS = 'REMOVE_HEADERS';
+export const RESET_TABLE_PARAMS = 'RESET_TABLE_PARAMS';
+export const RELOAD_TABLE = 'RELOAD_TABLE';
+export const CHANGE_ORDER_BY = 'CHANGE_ORDER_BY';
+export const CHANGE_PAGE_SIZE = 'CHANGE_PAGE_SIZE';
+export const SET_CURRENT_ROWS = 'SET_CURRENT_ROWS';
+export const SET_IS_TABLE_EMPTY = 'SET_IS_TABLE_EMPTY';
+
+export const SET_NEW_ROW_CHANGE = 'SET_NEW_ROW';
+export const REMOVE_NEW_ROW_CHANGE = 'REMOVE_NEW_ROW';
+
+export const SHOW_SHARE_MODAL = 'SHOW_SHARE_MODAL';
