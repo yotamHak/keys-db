@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { Modal, Search, Segment, Header, Item, Icon, Container, Form, Label, Button, } from "semantic-ui-react";
 import _ from 'lodash';
 
-import { reloadTable } from "../../../../actions/TableActions";
+import { reloadTable } from "../../../../store/actions/TableActions";
 import { parseSpreadsheetDate, parseOptions, genericSort, isDropdownType, getLabelByType, fillValueIfFieldExist } from "../../../../utils";
 import ErrorBox from "../../../ErrorBox";
 

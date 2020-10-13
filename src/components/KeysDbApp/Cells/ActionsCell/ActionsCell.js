@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { Table, Dropdown, Confirm, Icon, } from "semantic-ui-react";
 
 import { parseSpreadsheetDate, hasWritePermission, getValueByType, getValueById, getLabelByType, fillValueIfFieldExist, } from "../../../../utils";
-import { reloadTable, setNewRowChange } from "../../../../actions/TableActions";
+import { reloadTable, setNewRowChange } from "../../../../store/actions/TableActions";
 import GameInfoModal from "../../Modals/GameInfoModal";
 import NewModal from "../../Modals/NewModal";
 

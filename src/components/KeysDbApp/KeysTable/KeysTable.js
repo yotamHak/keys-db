@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { Table, Dimmer, Icon, Segment, Loader, Placeholder, Menu, Pagination, Dropdown, Header, Input, Grid, } from 'semantic-ui-react';
 import _ from 'lodash';
 
-import { getIndexByLabel, getKeyById, hasWritePermission, shouldAddField, } from "../../../utils";
+import { hasWritePermission, shouldAddField, } from "../../../utils";
 import KeyRow from "../KeyRow";
 import NewModal from "../Modals/NewModal";
 import SortDropdown from "../SortDropdown";
@@ -15,7 +15,7 @@ import ShareModal from "../Modals/ShareModal";
 import usePrevious from '../../../hooks/usePrevious'
 import Spreadsheets from "../../../lib/google/Spreadsheets";
 import FilterDropdown from "../FilterDropdown";
-import { reloadTable, setCurrentRows, setIsTableEmpty, showShareModal } from "../../../actions/TableActions";
+import { reloadTable, setCurrentRows, setIsTableEmpty, showShareModal } from "../../../store/actions/TableActions";
 import { TABLE_DEFAULT_ACTIVEPAGE, TABLE_DEFAULT_LIMIT, TABLE_DEFAULT_OFFSET } from "../../../constants/tableConstants";
 
 function KeysTable() {

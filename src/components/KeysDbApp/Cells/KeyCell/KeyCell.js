@@ -5,7 +5,7 @@ import _ from 'lodash';
 import { getIndexById, getLabelByType, getValueByType, isUrl } from "../../../../utils";
 import useInterval from '../../../../hooks/useInterval'
 import { useDispatch, useSelector } from "react-redux";
-import { setNewRowChange } from "../../../../actions/TableActions";
+import { setNewRowChange } from "../../../../store/actions/TableActions";
 
 function KeyCell({ gameKey, rowIndex, header }) {
     const headers = useSelector((state) => state.table.headers)

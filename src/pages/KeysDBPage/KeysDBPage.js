@@ -5,8 +5,8 @@ import { Dimmer, Loader } from "semantic-ui-react";
 import dateFns from 'date-fns'
 
 import KeysTable from "../../components/KeysDbApp/KeysTable/KeysTable";
-import { addHeaders, } from "../../actions/TableActions";
-import { itadSetMap, spreadsheetSetPermission, setCurrentSpreadsheetId, steamSetOwnedGames, setCurrentSheetId, } from "../../actions/AuthenticationActions";
+import { addHeaders, } from "../../store/actions/TableActions";
+import { itadSetMap, spreadsheetSetPermission, setCurrentSpreadsheetId, steamSetOwnedGames, setCurrentSheetId, } from "../../store/actions/AuthenticationActions";
 
 import usePrevious from '../../hooks/usePrevious'
 

@@ -4,7 +4,7 @@ import { Table, Dropdown } from "semantic-ui-react";
 import _ from 'lodash';
 
 import { parseOptions, hasWritePermission, getIndexById } from "../../../../utils";
-import { setNewRowChange } from "../../../../actions/TableActions";
+import { setNewRowChange } from "../../../../store/actions/TableActions";
 
 function OptionsCell({ rowIndex, title, header, onChange }) {
     const headers = useSelector((state) => state.table.headers)

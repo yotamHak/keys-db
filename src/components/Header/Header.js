@@ -9,7 +9,7 @@ import { parseSpreadsheetDate, } from "../../utils";
 import useGapi from "../../hooks/useGapi";
 import googleConfig from "../../lib/google/config";
 import useLocalStorage from "../../hooks/useLocalStorage";
-import { setupComplete, spreadsheetSetId, steamLoad, steamLogged } from "../../actions/AuthenticationActions";
+import { setupComplete, spreadsheetSetId, steamLoad, steamLogged } from "../../store/actions/AuthenticationActions";
 
 function Header() {
     const google = useSelector((state) => state.authentication.google)

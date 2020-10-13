@@ -26,6 +26,14 @@ export const table_reducer = (state = initialTableState, action) => {
                 ...state,
                 rows: action.payload
             }
+        case actionTypes.UPDATE_ROW:
+            return {
+                ...state,
+                rows: state.rows.reduce((result, row, index) =>
+                    index === action.payload.index
+                        ? [...result, action.payload.row]
+                        : [...result, row], [])
+            }
         case actionTypes.CHANGE_PAGE_SIZE:
             return {
                 ...state,

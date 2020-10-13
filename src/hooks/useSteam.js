@@ -3,7 +3,7 @@ import { useDispatch, } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import _ from 'lodash';
 
-import { steamSetId } from '../actions/AuthenticationActions';
+import { steamSetId } from '../store/actions/AuthenticationActions';
 import useLocalStorage from './useLocalStorage';
 import useUrlParams from './useUrlParams';
 

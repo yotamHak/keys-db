@@ -2,7 +2,7 @@ import React from "react";
 import { List, Label, Icon } from 'semantic-ui-react';
 import { useSelector, useDispatch } from "react-redux";
 
-import { removeFilter } from "../../../actions/FilterActions";
+import { removeFilter } from "../../../store/actions/FilterActions";
 
 function DataFilters() {
     const dispatch = useDispatch()

@@ -2,7 +2,7 @@ import React, { useState, } from "react";
 import { Modal, Button, Confirm, Container, Message, Segment, Label, List, Grid, Icon, } from "semantic-ui-react";
 import { useSelector, useDispatch } from "react-redux";
 
-import { showShareModal } from "../../../../actions/TableActions";
+import { showShareModal } from "../../../../store/actions/TableActions";
 import { getPrivateColumns } from "../../../../utils";
 import DataFilters from "../../DataFilters";
 import Spreadsheets from "../../../../lib/google/Spreadsheets";

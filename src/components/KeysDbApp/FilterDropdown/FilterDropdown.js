@@ -1,8 +1,8 @@
 import React from "react";
 import { Header, Dropdown, } from "semantic-ui-react";
 import { useSelector, useDispatch } from "react-redux";
-import { resetTableParams } from "../../../actions/TableActions";
-import { addFilter } from "../../../actions/FilterActions";
+import { resetTableParams } from "../../../store/actions/TableActions";
+import { addFilter } from "../../../store/actions/FilterActions";
 
 function FilterDropdown() {
     const headers = useSelector((state) => state.table.headers)

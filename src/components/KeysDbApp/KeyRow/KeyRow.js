@@ -17,7 +17,7 @@ import SteamBundledCell from "../Cells/SteamBundledCell";
 
 import { getUrlsLocationAndValue, isDropdownType, getIndexById, isDateType, shouldAddField, isUrlType } from "../../../utils";
 import Spreadsheets from "../../../lib/google/Spreadsheets";
-import { removeNewRowChange } from "../../../actions/TableActions";
+import { removeNewRowChange, updateRow } from "../../../store/actions/TableActions";
 
 function KeyRow({ rowIndex }) {
     const [hasChanges, setHasChanges] = useState(false);
@@ -144,6 +144,7 @@ function KeyRow({ rowIndex }) {
 
         Spreadsheets.Update(spreadsheetId, sheetId, rowChanges, rowChanges[0])
             .then(response => {
+                dispatch(updateRow(rowIndex, rowChanges))
                 dispatch(removeNewRowChange(rowIndex))
                 setHasChanges(false)
             })
