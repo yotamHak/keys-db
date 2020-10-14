@@ -3,6 +3,13 @@ import { Modal, Icon, List, Segment, Header, Container, } from "semantic-ui-reac
 
 export const changelog = [
     {
+        version: '0.6.2',
+        date: '14/10/2020',
+        list: [
+            'New\\Edit Key - Key platform is now integrated to the key input.',
+        ]
+    },
+    {
         version: '0.6.1',
         date: '13/10/2020',
         list: [
