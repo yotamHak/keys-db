@@ -8,6 +8,7 @@ import HeaderCell from "../Cells/HeaderCell";
 import { isUrlType, shouldAddField, } from "../../../utils";
 
 function HeaderRow() {
+    // const rowChanges = useSelector((state) => state.table.changes)
     const headers = useSelector((state) => state.table.headers)
 
     const headersToDisplay = Object.keys(headers).reduce((result, headerKey, index) => {

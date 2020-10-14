@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { Modal, Search, Segment, Header, Item, Icon, Container, Form, Label, Button, } from "semantic-ui-react";
+import { Modal, Search, Segment, Header, Item, Icon, Container, Form, Label, Button, Input, Select, } from "semantic-ui-react";
 import _ from 'lodash';
 
 import { reloadTable } from "../../../../store/actions/TableActions";
@@ -187,9 +187,12 @@ function NewModal({ initialValue, isEdit, children }) {
         if (header.label === createdOnLabel && values[header.label] === "") {
             values[header.label] = parseSpreadsheetDate(new Date())
         }
+        if (header.type === 'key_platform') { return }
 
         const label = header.label
         const headerKey = Object.keys(headers).find(headerKey => headers[headerKey].label === header.label)
+
+        const steamKeyPlatformLabel = getLabelByType(headers, "key_platform")
 
         if (isDropdownType(header.type)) {
             const options = parseOptions(header.options)
@@ -227,6 +230,28 @@ function NewModal({ initialValue, isEdit, children }) {
                 value={values[headerKey]}
                 key={label}
             />
+        } else if (header.type === 'key' && steamKeyPlatformLabel) {
+            const options = parseOptions(headers[steamKeyPlatformLabel].options)
+
+            return (
+                <Form.Input
+                    type='text'
+                    name={headerKey}
+                    value={values[headerKey]}
+                    label={label}
+                    onChange={handleChange}
+                    key={headerKey}
+                >
+                    <Select
+                        compact
+                        name={steamKeyPlatformLabel}
+                        options={options}
+                        value={values[steamKeyPlatformLabel]}
+                        onChange={handleChange}
+                    />
+                    <input />
+                </Form.Input>
+            )
         } else {
             return (
                 <Form.Input
