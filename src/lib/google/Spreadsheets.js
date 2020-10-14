@@ -606,6 +606,11 @@ async function Initialize(spreadsheetId) {
 }
 
 async function GetSpreadsheet(spreadsheetId, includeData) {
+    if (spreadsheetId === null) {
+        console.log("Missing spreadsheet id")
+        return
+    }
+
     return _getSpreadsheet(spreadsheetId, includeData)
 }
 
