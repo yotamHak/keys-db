@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { Modal, Search, Segment, Header, Item, Icon, Container, Form, Label, Button, Input, Select, } from "semantic-ui-react";
+import { Modal, Search, Segment, Header, Item, Icon, Container, Form, Label, Button, Select, } from "semantic-ui-react";
 import _ from 'lodash';
 
 import { reloadTable } from "../../../../store/actions/TableActions";
@@ -13,7 +13,6 @@ import ItadApi from "../../../../lib/itad/ItadApi";
 
 import useFormValidation from '../../../../hooks/useFormValidation';
 import validateNewKey from '../../../../hooks/formValidations/validateNewKey';
-
 
 function NewModal({ initialValue, isEdit, children }) {
     const headers = useSelector((state) => state.table.headers)
