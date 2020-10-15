@@ -2,13 +2,14 @@ import React, { useEffect, useState, } from "react"
 import { useSelector, } from "react-redux"
 import { Container, Grid, Header, Dimmer, Loader, Statistic, Icon, Segment, } from "semantic-ui-react"
 import _ from "lodash";
+import moment from 'moment';
 
 import Spreadsheets from "../../lib/google/Spreadsheets"
 import useRecharts from "../../hooks/useRecharts";
-import { getIndexById, getLabelByType, isDropdownType, parseOptions } from "../../utils"
+import { getIndexById, isDropdownType, parseOptions } from "../../utils"
 
 function StatisticsPage(props) {
-    const [hasError, setHasError] = useState(false);
+    const [setHasError] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [spreadsheetData, setSpreadsheetData] = useState(null);
 
@@ -51,11 +52,44 @@ function StatisticsPage(props) {
 
     function parseData(headers, headerKey, rowsData) {
         if (isDropdownType(headers[headerKey].type)) {
-            return parseDropdownType();
+            return {
+                chart: "pie",
+                data: parseDropdownType()
+            }
         } else if (headers[headerKey].type === "created_on") {
-            console.log('a')
+            return {
+                chart: "line",
+                data: parseDateType("Keys Added")
+            }
         } else {
             return null
+        }
+
+        function parseDateType(dataKey) {
+            const results = rowsData.reduce((result, row) => {
+                const date = row[getIndexById(headers[headerKey].id)];
+
+                if (moment(date).isValid()) {
+                    const formattedDate = moment(date).format("YYYY-MM");
+                    return {
+                        ...result,
+                        [formattedDate]: result[formattedDate] ? result[formattedDate] + 1 : 1
+                    };
+                } else {
+                    return result;
+                }
+            }, {});
+
+            return _.zip(Object.keys(results), Object.values(results))
+                .reduce((result, item) => {
+                    return [
+                        ...result,
+                        {
+                            "name": item[0],
+                            [dataKey]: item[1] ? item[1] : 0
+                        }
+                    ];
+                }, []);
         }
 
         function parseDropdownType() {
@@ -105,10 +139,6 @@ function StatisticsPage(props) {
             const sheetId = getMetadataValueByKey(spreadsheetData.developerMetadata, "sheetId")
             const sheetData = getSheetData(spreadsheetData.sheets, parseInt(sheetId))
 
-            const allDropdownKeys = Object.keys(headers).filter(headerKey => {
-                return isDropdownType(headers[headerKey].type)
-            })
-
             const charts = Object.keys(headers).reduce((result, key) => {
                 const data = parseData(headers, key, sheetData.rows)
 
@@ -123,11 +153,27 @@ function StatisticsPage(props) {
                     : result
             }, [])
 
-            setSpreadsheetData({
+            const newSpreadsheetData = {
                 url: `${spreadsheetData.spreadsheetUrl}#gid=${sheetId}`,
                 ...sheetData,
-                charts: _.chunk(charts, 3)
-            })
+                charts: charts.reduce((result, chart) => ({
+                    ...result,
+                    [chart.data.chart]: [
+                        ...result[chart.data.chart],
+                        {
+                            label: chart.label,
+                            data: chart.data.data
+                        }
+                    ]
+                }), {
+                    "pie": [],
+                    "line": []
+                })
+            }
+
+            console.log(newSpreadsheetData)
+
+            setSpreadsheetData(newSpreadsheetData)
         } catch (error) {
             setHasError(error)
         }
@@ -180,71 +226,52 @@ function StatisticsPage(props) {
 
                             <Segment vertical>
                                 <Grid>
-                                    <Grid.Row>
-                                        <Grid.Column>
-                                            {
-                                                renderLineChart()
-                                            }
-                                        </Grid.Column>
-                                    </Grid.Row>
                                     {
-                                        spreadsheetData.charts.map((chartChunk, index) => (
-                                            <Grid.Row columns={chartChunk.length} key={index}>
-                                                {
-                                                    chartChunk.map((chart, index) => (
-                                                        <Grid.Column key={index}>
-                                                            <Header as='h2' textAlign='center'>{chart.label}</Header>
-                                                            <Container textAlign='center'>
+                                        Object.keys(spreadsheetData.charts).map((chartType => {
+                                            switch (chartType) {
+                                                case "pie":
+                                                    return _.chunk(spreadsheetData.charts[chartType], 3)
+                                                        .map((chartChunk, index) => (
+                                                            <Grid.Row columns={chartChunk.length} key={index}>
                                                                 {
-                                                                    renderPieChart(chart.data)
+                                                                    chartChunk.map((chart, index) => (
+                                                                        <Grid.Column key={index}>
+                                                                            <Header as='h2' textAlign='center'>{chart.label}</Header>
+                                                                            <Container textAlign='center'>
+                                                                                {
+                                                                                    renderPieChart(chart.data)
+                                                                                }
+                                                                            </Container>
+                                                                        </Grid.Column>
+                                                                    ))
                                                                 }
-                                                            </Container>
-                                                        </Grid.Column>
-                                                    ))
-                                                }
-                                            </Grid.Row>
-                                        ))
+                                                            </Grid.Row>
+                                                        ))
+                                                case "line":
+                                                    return _.chunk(spreadsheetData.charts[chartType], 1)
+                                                        .map((chartChunk, index) => (
+                                                            <Grid.Row columns={chartChunk.length} key={index}>
+                                                                {
+                                                                    chartChunk.map((chart, index) => (
+                                                                        <Grid.Column key={index}>
+                                                                            <Header as='h2' textAlign='center'>{chart.label}</Header>
+                                                                            {
+                                                                                renderLineChart(chart.data, "Keys Added")
+                                                                            }
+                                                                        </Grid.Column>
+                                                                    ))
+                                                                }
+                                                            </Grid.Row>
+                                                        ))
+
+                                                default:
+                                                    return <></>
+                                            }
+                                        }))
                                     }
                                 </Grid>
                             </Segment>
                         </Segment.Group>
-                        // <Container textAlign='center'>
-
-                        //     <Grid>
-                        //         <Grid.Row>
-                        //             <Grid.Column>
-                        //                 {
-                        //                     <Header as='h2'>{`${spreadsheetData.properties.title} Statistics`}</Header>
-                        //                 }
-                        //             </Grid.Column>
-                        //         </Grid.Row>
-                        //         <Grid.Row>
-                        //             <Grid.Column>
-                        //                 <Statistic.Group widths='2'>
-                        //                     <a
-                        //                         title={spreadsheetData.url}
-                        //                         as='a'
-                        //                         target='_blank'
-                        //                         rel='noopener noreferrer'
-                        //                         href={spreadsheetData.url}
-                        //                     >
-                        //                         <Statistic>
-                        //                             <Statistic.Value>
-                        //                                 <Icon name='google drive' />
-                        //                             </Statistic.Value>
-                        //                             <Statistic.Label>Url</Statistic.Label>
-                        //                         </Statistic>
-                        //                     </a>
-
-                        //                     <Statistic>
-                        //                         <Statistic.Value>{spreadsheetData.properties.gridProperties.rowCount - 2}</Statistic.Value>
-                        //                         <Statistic.Label>Total Keys</Statistic.Label>
-                        //                     </Statistic>
-                        //                 </Statistic.Group>
-                        //             </Grid.Column>
-                        //         </Grid.Row>
-                        //     </Grid>
-                        // </Container>
                     )
             }
         </>
