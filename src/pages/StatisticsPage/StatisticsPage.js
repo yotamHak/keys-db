@@ -4,6 +4,8 @@ import { Container, Grid, Header, Dimmer, Loader, Statistic, Icon, Segment, } fr
 import _ from "lodash";
 
 import Spreadsheets from "../../lib/google/Spreadsheets"
+import useRecharts from "../../hooks/useRecharts";
+import { getIndexById, getLabelByType, isDropdownType, parseOptions } from "../../utils"
 
 function StatisticsPage(props) {
     const [hasError, setHasError] = useState(false);
@@ -16,7 +18,7 @@ function StatisticsPage(props) {
 
     useEffect(() => {
         (spreadsheetData === null && google.googleClientReady && spreadsheetId) && loadSpreadsheetData(spreadsheetId)
-    }, [google.googleClientReady])
+    }, [google.googleClientReady, spreadsheetData])
 
     function loadSpreadsheetData(spreadsheetId) {
         setIsLoading(true)
@@ -47,6 +49,47 @@ function StatisticsPage(props) {
         ], [])
     }
 
+    function parseData(headers, headerKey, rowsData) {
+        if (isDropdownType(headers[headerKey].type)) {
+            return parseDropdownType();
+        } else if (headers[headerKey].type === "created_on") {
+            console.log('a')
+        } else {
+            return null
+        }
+
+        function parseDropdownType() {
+            const options = parseOptions(headers[headerKey].options);
+
+            const startingOptions = options.reduce((result, option) => ({
+                ...result,
+                [option.text]: 0
+            }), {});
+
+            const results = rowsData.reduce((result, row) => {
+                const option = row[getIndexById(headers[headerKey].id)];
+
+                return option
+                    ? {
+                        ...result,
+                        [option]: result[option] + 1
+                    }
+                    : result; // data unfilled
+            }, startingOptions);
+
+            return _.zip(Object.keys(results), Object.values(results))
+                .reduce((result, item) => {
+                    return [
+                        ...result,
+                        {
+                            "name": item[0],
+                            "value": item[1] ? item[1] : 0
+                        }
+                    ];
+                }, []);
+        }
+    }
+
     function getSheetData(sheets, sheetId) {
         const sheet = sheets.find(sheet => sheet.properties.sheetId === sheetId)
 
@@ -58,17 +101,39 @@ function StatisticsPage(props) {
 
     function handleSpreadsheetData(spreadsheetData) {
         try {
+            const headers = JSON.parse(getMetadataValueByKey(spreadsheetData.developerMetadata, "headers"))
             const sheetId = getMetadataValueByKey(spreadsheetData.developerMetadata, "sheetId")
             const sheetData = getSheetData(spreadsheetData.sheets, parseInt(sheetId))
-            console.log(sheetData)
+
+            const allDropdownKeys = Object.keys(headers).filter(headerKey => {
+                return isDropdownType(headers[headerKey].type)
+            })
+
+            const charts = Object.keys(headers).reduce((result, key) => {
+                const data = parseData(headers, key, sheetData.rows)
+
+                return data
+                    ? [
+                        ...result,
+                        {
+                            label: headers[key].label,
+                            data: parseData(headers, key, sheetData.rows)
+                        }
+                    ]
+                    : result
+            }, [])
+
             setSpreadsheetData({
                 url: `${spreadsheetData.spreadsheetUrl}#gid=${sheetId}`,
-                ...sheetData
+                ...sheetData,
+                charts: _.chunk(charts, 3)
             })
         } catch (error) {
             setHasError(error)
         }
     }
+
+    const { renderPieChart, renderLineChart } = useRecharts()
 
     return (
         <>
@@ -102,7 +167,11 @@ function StatisticsPage(props) {
                                             <Statistic.Label>Url</Statistic.Label>
                                         </Statistic>
                                         <Statistic>
-                                            <Statistic.Value>{spreadsheetData.properties.gridProperties.rowCount - 2}</Statistic.Value>
+                                            <Statistic.Value>{
+                                                spreadsheetData.properties.gridProperties.rowCount - 2 > 0
+                                                    ? spreadsheetData.properties.gridProperties.rowCount - 2
+                                                    : 0
+                                            }</Statistic.Value>
                                             <Statistic.Label>Total Keys</Statistic.Label>
                                         </Statistic>
                                     </Statistic.Group>
@@ -113,12 +182,29 @@ function StatisticsPage(props) {
                                 <Grid>
                                     <Grid.Row>
                                         <Grid.Column>
+                                            {
+                                                renderLineChart()
+                                            }
                                         </Grid.Column>
                                     </Grid.Row>
-                                    <Grid.Row>
-                                        <Grid.Column>
-                                        </Grid.Column>
-                                    </Grid.Row>
+                                    {
+                                        spreadsheetData.charts.map((chartChunk, index) => (
+                                            <Grid.Row columns={chartChunk.length} key={index}>
+                                                {
+                                                    chartChunk.map((chart, index) => (
+                                                        <Grid.Column key={index}>
+                                                            <Header as='h2' textAlign='center'>{chart.label}</Header>
+                                                            <Container textAlign='center'>
+                                                                {
+                                                                    renderPieChart(chart.data)
+                                                                }
+                                                            </Container>
+                                                        </Grid.Column>
+                                                    ))
+                                                }
+                                            </Grid.Row>
+                                        ))
+                                    }
                                 </Grid>
                             </Segment>
                         </Segment.Group>
