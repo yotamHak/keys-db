@@ -1,5 +1,5 @@
 import React, { useEffect, useState, } from "react"
-import { useSelector, } from "react-redux"
+import { useDispatch, useSelector, } from "react-redux"
 import { Container, Grid, Header, Dimmer, Loader, Statistic, Icon, Segment, } from "semantic-ui-react"
 import _ from "lodash";
 import moment from 'moment';
@@ -7,19 +7,42 @@ import moment from 'moment';
 import Spreadsheets from "../../lib/google/Spreadsheets"
 import useRecharts from "../../hooks/useRecharts";
 import { getIndexById, isDropdownType, parseOptions } from "../../utils"
+import { loadStatisticsCharts, loadStatisticsSpreadsheet } from "../../store/actions/StatisticsActions";
+import useLocalStorage from "../../hooks/useLocalStorage";
 
 function StatisticsPage(props) {
     const [setHasError] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
-    const [spreadsheetData, setSpreadsheetData] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const dispatch = useDispatch()
 
     const spreadsheetId = props.match.params.spreadsheetId;
 
     const google = useSelector((state) => state.authentication.google)
 
+    const spreadsheetData = useSelector((state) => state.statistics.spreadsheetData)
+    const charts = useSelector((state) => state.statistics.charts)
+
+    const [spreadsheetDataStorage, setSpreadsheetDataStorage] = useLocalStorage("statisticsSpreadsheet", null)
+    const [chartsStorage, setChartsStorage] = useLocalStorage("statisticsCharts", null)
+
     useEffect(() => {
-        (spreadsheetData === null && google.googleClientReady && spreadsheetId) && loadSpreadsheetData(spreadsheetId)
-    }, [google.googleClientReady, spreadsheetData])
+        if (spreadsheetDataStorage === null && google.googleClientReady && spreadsheetId) {
+            loadSpreadsheetData(spreadsheetId);
+        }
+
+        if (spreadsheetDataStorage && spreadsheetData === null) {
+            dispatch(loadStatisticsSpreadsheet(JSON.parse(spreadsheetDataStorage)))
+        }
+
+        if (spreadsheetData && chartsStorage === null) {
+            handleCharts(spreadsheetData.headers, spreadsheetData.rows)
+        }
+
+        if (chartsStorage && charts === null) {
+            dispatch(loadStatisticsCharts(JSON.parse(chartsStorage)))
+        }
+    }, [google.googleClientReady, spreadsheetDataStorage, spreadsheetData, chartsStorage])
 
     function loadSpreadsheetData(spreadsheetId) {
         setIsLoading(true)
@@ -37,6 +60,64 @@ function StatisticsPage(props) {
             .finally(() => {
                 setIsLoading(false)
             })
+    }
+
+    function handleCharts(headers, rowsData) {
+        console.log("handleCharts", [headers, rowsData])
+
+        // {
+        //     index: 0,
+        //     label: "Own"
+        //     type: 'pie',
+        //     data: []
+        // }
+
+        // const headersToParse = Object.keys(headers).reduce((result, headerKey) => { },[])
+
+        const charts = Object.keys(headers).reduce((result, key) => {
+            const data = parseData(headers, key, rowsData)
+
+            return data
+                ? [
+                    ...result,
+                    {
+                        label: headers[key].label,
+                        data: parseData(headers, key, rowsData)
+                    }
+                ]
+                : result
+        }, [])
+        const parsedCharts = charts.reduce((result, chart) => ({
+            ...result,
+            [chart.data.chart]: [
+                ...result[chart.data.chart],
+                {
+                    label: chart.label,
+                    data: chart.data.data
+                }
+            ]
+        }), {
+            "pie": [],
+            "line": []
+        })
+
+        setChartsStorage(JSON.stringify(parsedCharts))
+    }
+
+    function handleSpreadsheetData(spreadsheetData) {
+        try {
+            const headers = JSON.parse(getMetadataValueByKey(spreadsheetData.developerMetadata, "headers"))
+            const sheetId = getMetadataValueByKey(spreadsheetData.developerMetadata, "sheetId")
+            const sheetData = getSheetData(spreadsheetData.sheets, parseInt(sheetId))
+
+            setSpreadsheetDataStorage(JSON.stringify({
+                url: `${spreadsheetData.spreadsheetUrl}#gid=${sheetId}`,
+                headers: headers,
+                ...sheetData,
+            }))
+        } catch (error) {
+            setHasError(error)
+        }
     }
 
     function getMetadataValueByKey(spreadsheetMetadata, key) {
@@ -133,52 +214,6 @@ function StatisticsPage(props) {
         }
     }
 
-    function handleSpreadsheetData(spreadsheetData) {
-        try {
-            const headers = JSON.parse(getMetadataValueByKey(spreadsheetData.developerMetadata, "headers"))
-            const sheetId = getMetadataValueByKey(spreadsheetData.developerMetadata, "sheetId")
-            const sheetData = getSheetData(spreadsheetData.sheets, parseInt(sheetId))
-
-            const charts = Object.keys(headers).reduce((result, key) => {
-                const data = parseData(headers, key, sheetData.rows)
-
-                return data
-                    ? [
-                        ...result,
-                        {
-                            label: headers[key].label,
-                            data: parseData(headers, key, sheetData.rows)
-                        }
-                    ]
-                    : result
-            }, [])
-
-            const newSpreadsheetData = {
-                url: `${spreadsheetData.spreadsheetUrl}#gid=${sheetId}`,
-                ...sheetData,
-                charts: charts.reduce((result, chart) => ({
-                    ...result,
-                    [chart.data.chart]: [
-                        ...result[chart.data.chart],
-                        {
-                            label: chart.label,
-                            data: chart.data.data
-                        }
-                    ]
-                }), {
-                    "pie": [],
-                    "line": []
-                })
-            }
-
-            console.log(newSpreadsheetData)
-
-            setSpreadsheetData(newSpreadsheetData)
-        } catch (error) {
-            setHasError(error)
-        }
-    }
-
     const { renderPieChart, renderLineChart } = useRecharts()
 
     return (
@@ -227,10 +262,10 @@ function StatisticsPage(props) {
                             <Segment vertical>
                                 <Grid>
                                     {
-                                        Object.keys(spreadsheetData.charts).map((chartType => {
+                                        charts && Object.keys(charts).map((chartType => {
                                             switch (chartType) {
                                                 case "pie":
-                                                    return _.chunk(spreadsheetData.charts[chartType], 3)
+                                                    return _.chunk(charts[chartType], 3)
                                                         .map((chartChunk, index) => (
                                                             <Grid.Row columns={chartChunk.length} key={index}>
                                                                 {
@@ -248,7 +283,7 @@ function StatisticsPage(props) {
                                                             </Grid.Row>
                                                         ))
                                                 case "line":
-                                                    return _.chunk(spreadsheetData.charts[chartType], 1)
+                                                    return _.chunk(charts[chartType], 1)
                                                         .map((chartChunk, index) => (
                                                             <Grid.Row columns={chartChunk.length} key={index}>
                                                                 {

@@ -62,7 +62,7 @@ function useRecharts(options,) {
                 width={width * 0.9}
                 height={300}
                 data={data}
-                margin={{ left: width * 0.05 }}
+                margin={{ left: width * 0.075 }}
             >
                 <XAxis dataKey="name" />
                 <YAxis />
