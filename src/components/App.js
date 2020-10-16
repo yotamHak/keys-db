@@ -24,8 +24,8 @@ function App() {
                         <Route path="/terms-and-conditions" component={TermsAndContitionsPage} />
                         <Route path="/settings" component={Settings} />
                         <Route path="/error/:error" component={ErrorPage} />
+                        <Route path="/id/:spreadsheetId/statistics" component={StatisticsPage} />
                         <Route path="/id/:spreadsheetId" component={KeysDBPage} />
-                        <Route path="/statistics/:spreadsheetId" component={StatisticsPage} />
                         {/* <Route path="/id/:spreadsheetId/statistics" component={KeysDBPage} /> */}
                         <Route exact path="/" component={Home} />
                     </Switch>

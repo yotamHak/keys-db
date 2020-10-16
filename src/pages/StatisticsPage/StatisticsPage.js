@@ -11,6 +11,64 @@ import { loadStatisticsCharts, loadStatisticsSpreadsheet } from "../../store/act
 import useLocalStorage from "../../hooks/useLocalStorage";
 
 function StatisticsPage(props) {
+    const COLOR_PALLETES = [
+        //https://learnui.design/tools/data-color-picker.html#divergent
+        //https://color.adobe.com/explore
+        [
+            "#020540",
+            "#3b2a62",
+            "#6b5187",
+            "#9c7cad",
+            "#cdaad5",
+            "#ffdbff",
+            "#ffb7e8",
+            "#ff90c3",
+            "#ff6591",
+            "#ff3855",
+            "#f20505",
+        ],
+        [
+            "#52188c",
+            "#902888",
+            "#bb4986",
+            "#d9708a",
+            "#ef9997",
+            "#ffc2b0",
+            "#ffbb93",
+            "#f5b875",
+            "#e2b957",
+            "#c6bb3b",
+            "#9ebf26",
+        ],
+        [
+            "#8bc3d9",
+            "#a4cae7",
+            "#bdd1f1",
+            "#d6d9f8",
+            "#ece1fc",
+            "#ffeaff",
+            "#fcc6e8",
+            "#fd9fc5",
+            '#fa7798',
+            "#ef4e62",
+            "#d92525",
+        ],
+        [
+            "#0ed2e9",
+            "#26dbdb",
+            "#50e2c8",
+            "#77e8b4",
+            "#9eeba0",
+            "#c4ed8f",
+            "#cbce60",
+            "#d2ae37",
+            "#d8891a",
+            "#db6016",
+            "#d92525",
+        ],
+
+    ]
+
     const [setHasError] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -54,7 +112,6 @@ function StatisticsPage(props) {
                     setHasError("Failed to get data")
                 }
 
-                console.log(response.data)
                 handleSpreadsheetData(response.data)
             })
             .finally(() => {
@@ -63,8 +120,6 @@ function StatisticsPage(props) {
     }
 
     function handleCharts(headers, rowsData) {
-        console.log("handleCharts", [headers, rowsData])
-
         // {
         //     index: 0,
         //     label: "Own"
@@ -82,7 +137,7 @@ function StatisticsPage(props) {
                     ...result,
                     {
                         label: headers[key].label,
-                        data: parseData(headers, key, rowsData)
+                        data: data
                     }
                 ]
                 : result
@@ -170,7 +225,8 @@ function StatisticsPage(props) {
                             [dataKey]: item[1] ? item[1] : 0
                         }
                     ];
-                }, []);
+                }, [])
+                .sort((a, b) => moment(a.name, "YYYY-MM").isBefore(moment(b.name, "YYYY-MM")) ? -1 : 1);
         }
 
         function parseDropdownType() {
@@ -274,7 +330,7 @@ function StatisticsPage(props) {
                                                                             <Header as='h2' textAlign='center'>{chart.label}</Header>
                                                                             <Container textAlign='center'>
                                                                                 {
-                                                                                    renderPieChart(chart.data)
+                                                                                    renderPieChart(chart.data, false, COLOR_PALLETES[index % COLOR_PALLETES.length])
                                                                                 }
                                                                             </Container>
                                                                         </Grid.Column>

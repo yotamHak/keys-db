@@ -1,13 +1,14 @@
 import React, { } from 'react';
 import { CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart, Tooltip, XAxis, YAxis } from 'recharts';
 import { Card } from 'semantic-ui-react';
+
 import useWindowDimensions from './useWindowDimensions';
 
-
-function useRecharts(options,) {
+function useRecharts() {
     const { width } = useWindowDimensions();
 
-    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+
+
     const RADIAN = Math.PI / 180;
 
     const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
@@ -31,7 +32,7 @@ function useRecharts(options,) {
         )
         : null
 
-    function renderPieChart(data) {
+    function renderPieChart(data, isDonut = false, colors = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042']) {
         return (
             <PieChart width={(width / 3) - 28} height={500}>
                 <Pie
@@ -40,14 +41,14 @@ function useRecharts(options,) {
                     nameKey={"name"}
                     cx={"50%"}
                     cy={"50%"}
-                    // innerRadius={75}
+                    innerRadius={isDonut}
                     outerRadius={150}
                     labelLine={false}
                     label={renderCustomizedLabel}
-                    fill="#8884d8"
+                // fill="#8884d8"
                 >
                     {
-                        data.map((entry, index) => <Cell fill={COLORS[index % COLORS.length]} key={index} />)
+                        data.map((entry, index) => <Cell fill={colors[index % colors.length]} key={index} />)
                     }
                 </Pie>
 
