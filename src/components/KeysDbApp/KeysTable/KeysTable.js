@@ -121,6 +121,9 @@ function KeysTable() {
         filtersSegment: {
             segment: { minHeight: '5.5em', alignItems: 'center', display: 'flex' },
             row: { height: '100%', alignItems: 'center', display: 'flex' }
+        },
+        table: {
+            stickyHeader: { position: "sticky", top: "0", zIndex: "99" }
         }
     }
 
@@ -206,8 +209,8 @@ function KeysTable() {
                     </Segment>
 
                     <Segment size="mini" key={`table-segment`}>
-                        <Table selectable celled striped compact>
-                            <Table.Header>
+                        <Table selectable celled striped compact stackable>
+                            <Table.Header style={style.table.stickyHeader}>
                                 <HeaderRow />
                             </Table.Header>
                             <Table.Body>
