@@ -30,6 +30,9 @@ function Home() {
 
     const importExportSegmentImages = [
         {
+            source: require('../../assets/images/statistics.png')
+        },
+        {
             source: require('../../assets/images/Export 10-8-20.png')
         },
         {
@@ -69,6 +72,10 @@ function Home() {
     ]
 
     const importExport = [
+        {
+            header: `Statistics`,
+            paragraph: `Get an overview of your collection with a dynamic statistic page.`
+        },
         {
             header: `Import`,
             paragraph: `Already have a spreadsheet? no worries, you can import your spreadsheet and remap your headers.`

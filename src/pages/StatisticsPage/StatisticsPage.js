@@ -1,6 +1,6 @@
 import React, { useEffect, useState, } from "react"
 import { useDispatch, useSelector, } from "react-redux"
-import { Container, Grid, Header, Dimmer, Loader, Statistic, Icon, Segment, } from "semantic-ui-react"
+import { Container, Grid, Header, Dimmer, Loader, Statistic, Icon, Segment, Divider, } from "semantic-ui-react"
 import _ from "lodash";
 import moment from 'moment';
 
@@ -110,6 +110,7 @@ function StatisticsPage(props) {
                 ]
                 : result
         }, [])
+
         const parsedCharts = charts.reduce((result, chart) => ({
             ...result,
             [chart.data.chart]: [
@@ -121,8 +122,8 @@ function StatisticsPage(props) {
                 }
             ]
         }), {
+            "line": [],
             "pie": [],
-            "line": []
         })
 
         setChartsStorage(JSON.stringify(parsedCharts))
@@ -236,12 +237,21 @@ function StatisticsPage(props) {
                     )
                     : spreadsheetData && (
                         <Segment.Group>
-                            <Segment vertical textAlign='center'>
-                                <Header as='h2'>{`${spreadsheetData.properties.title} Statistics`}</Header>
+                            <Segment basic vertical textAlign='center'>
+                                <Header as='h1'>{`${spreadsheetData.properties.title} Statistics`}</Header>
                             </Segment>
-                            <Segment vertical>
+
+                            <Segment basic vertical>
                                 <Container textAlign='center'>
                                     <Statistic.Group widths='2'>
+                                        <Statistic>
+                                            <Statistic.Value>{
+                                                spreadsheetData.properties.gridProperties.rowCount - 2 > 0
+                                                    ? spreadsheetData.properties.gridProperties.rowCount - 2
+                                                    : 0
+                                            }</Statistic.Value>
+                                            <Statistic.Label>Total Keys</Statistic.Label>
+                                        </Statistic>
                                         <Statistic>
                                             <Statistic.Value>
                                                 <a
@@ -256,19 +266,13 @@ function StatisticsPage(props) {
                                             </Statistic.Value>
                                             <Statistic.Label>Url</Statistic.Label>
                                         </Statistic>
-                                        <Statistic>
-                                            <Statistic.Value>{
-                                                spreadsheetData.properties.gridProperties.rowCount - 2 > 0
-                                                    ? spreadsheetData.properties.gridProperties.rowCount - 2
-                                                    : 0
-                                            }</Statistic.Value>
-                                            <Statistic.Label>Total Keys</Statistic.Label>
-                                        </Statistic>
                                     </Statistic.Group>
                                 </Container>
                             </Segment>
 
-                            <Segment vertical>
+                            <Divider />
+
+                            <Segment basic vertical>
                                 <Grid>
                                     {
                                         charts && Object.keys(charts).map((chartType => {
@@ -280,7 +284,7 @@ function StatisticsPage(props) {
                                                                 {
                                                                     chartChunk.map((chart, index) => (
                                                                         <Grid.Column key={chart.index}>
-                                                                            <Header as='h2' textAlign='center'>{chart.label}</Header>
+                                                                            <Header as='h3' textAlign='center'>{chart.label}</Header>
                                                                             <Container textAlign='center'>
                                                                                 {
                                                                                     renderPieChart(chart.data, 0, COLOR_PALLETES[chart.index % COLOR_PALLETES.length])
@@ -298,7 +302,7 @@ function StatisticsPage(props) {
                                                                 {
                                                                     chartChunk.map((chart, index) => (
                                                                         <Grid.Column key={chart.index}>
-                                                                            <Header as='h2' textAlign='center'>{chart.label}</Header>
+                                                                            <Header as='h3' textAlign='center'>{chart.label}</Header>
                                                                             {
                                                                                 renderLineChart(chart.data, "Keys Added")
                                                                             }
