@@ -3,6 +3,13 @@ import { Modal, Icon, List, Segment, Header, Container, } from "semantic-ui-reac
 
 export const changelog = [
     {
+        version: '0.6.3',
+        date: '14/10/2020',
+        list: [
+            'Statistics Page - A brand new page showing your keys collection statistics.',
+        ]
+    },
+    {
         version: '0.6.2',
         date: '14/10/2020',
         list: [
