@@ -9,66 +9,9 @@ import useRecharts from "../../hooks/useRecharts";
 import { getIndexById, isDropdownType, parseOptions } from "../../utils"
 import { loadStatisticsCharts, loadStatisticsSpreadsheet } from "../../store/actions/StatisticsActions";
 import useLocalStorage from "../../hooks/useLocalStorage";
+import { COLOR_PALLETES, PIE_CHART_CHUNK, LINE_CHART_CHUNK } from "../../constants/statisticsConstants";
 
 function StatisticsPage(props) {
-    const COLOR_PALLETES = [
-        //https://learnui.design/tools/data-color-picker.html#divergent
-        //https://color.adobe.com/explore
-        [
-            "#020540",
-            "#3b2a62",
-            "#6b5187",
-            "#9c7cad",
-            "#cdaad5",
-            "#ffdbff",
-            "#ffb7e8",
-            "#ff90c3",
-            "#ff6591",
-            "#ff3855",
-            "#f20505",
-        ],
-        [
-            "#52188c",
-            "#902888",
-            "#bb4986",
-            "#d9708a",
-            "#ef9997",
-            "#ffc2b0",
-            "#ffbb93",
-            "#f5b875",
-            "#e2b957",
-            "#c6bb3b",
-            "#9ebf26",
-        ],
-        [
-            "#8bc3d9",
-            "#a4cae7",
-            "#bdd1f1",
-            "#d6d9f8",
-            "#ece1fc",
-            "#ffeaff",
-            "#fcc6e8",
-            "#fd9fc5",
-            '#fa7798',
-            "#ef4e62",
-            "#d92525",
-        ],
-        [
-            "#0ed2e9",
-            "#26dbdb",
-            "#50e2c8",
-            "#77e8b4",
-            "#9eeba0",
-            "#c4ed8f",
-            "#cbce60",
-            "#d2ae37",
-            "#d8891a",
-            "#db6016",
-            "#d92525",
-        ],
-
-    ]
-
     const [setHasError] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -147,6 +90,7 @@ function StatisticsPage(props) {
             [chart.data.chart]: [
                 ...result[chart.data.chart],
                 {
+                    index: result[chart.data.chart].length,
                     label: chart.label,
                     data: chart.data.data
                 }
@@ -155,6 +99,8 @@ function StatisticsPage(props) {
             "pie": [],
             "line": []
         })
+
+        console.log(parsedCharts)
 
         setChartsStorage(JSON.stringify(parsedCharts))
     }
@@ -321,16 +267,16 @@ function StatisticsPage(props) {
                                         charts && Object.keys(charts).map((chartType => {
                                             switch (chartType) {
                                                 case "pie":
-                                                    return _.chunk(charts[chartType], 3)
-                                                        .map((chartChunk, index) => (
-                                                            <Grid.Row columns={chartChunk.length} key={index}>
+                                                    return _.chunk(charts[chartType], PIE_CHART_CHUNK)
+                                                        .map((chartChunk, chunkIndex) => (
+                                                            <Grid.Row columns={chartChunk.length} key={chunkIndex}>
                                                                 {
                                                                     chartChunk.map((chart, index) => (
-                                                                        <Grid.Column key={index}>
+                                                                        <Grid.Column key={chart.index}>
                                                                             <Header as='h2' textAlign='center'>{chart.label}</Header>
                                                                             <Container textAlign='center'>
                                                                                 {
-                                                                                    renderPieChart(chart.data, false, COLOR_PALLETES[index % COLOR_PALLETES.length])
+                                                                                    renderPieChart(chart.data, 0, COLOR_PALLETES[chart.index % COLOR_PALLETES.length])
                                                                                 }
                                                                             </Container>
                                                                         </Grid.Column>
@@ -339,12 +285,12 @@ function StatisticsPage(props) {
                                                             </Grid.Row>
                                                         ))
                                                 case "line":
-                                                    return _.chunk(charts[chartType], 1)
+                                                    return _.chunk(charts[chartType], LINE_CHART_CHUNK)
                                                         .map((chartChunk, index) => (
                                                             <Grid.Row columns={chartChunk.length} key={index}>
                                                                 {
                                                                     chartChunk.map((chart, index) => (
-                                                                        <Grid.Column key={index}>
+                                                                        <Grid.Column key={chart.index}>
                                                                             <Header as='h2' textAlign='center'>{chart.label}</Header>
                                                                             {
                                                                                 renderLineChart(chart.data, "Keys Added")

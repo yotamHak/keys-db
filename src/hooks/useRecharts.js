@@ -1,13 +1,11 @@
 import React, { } from 'react';
 import { CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart, Tooltip, XAxis, YAxis } from 'recharts';
-import { Card } from 'semantic-ui-react';
 
+import { PIE_CHART_CHUNK } from '../constants/statisticsConstants';
 import useWindowDimensions from './useWindowDimensions';
 
 function useRecharts() {
     const { width } = useWindowDimensions();
-
-
 
     const RADIAN = Math.PI / 180;
 
@@ -23,18 +21,18 @@ function useRecharts() {
         );
     };
 
-    const CustomTooltip = ({ active, payload }) => active
-        ? (
-            <Card>
-                <Card.Content textAlign="left" header={`${payload[0].name}`} />
-                <Card.Content textAlign="left" description={`${payload[0].value}`} />
-            </Card>
-        )
-        : null
+    // const CustomTooltip = ({ active, payload }) => active
+    //     ? (
+    //         <Card>
+    //             <Card.Content textAlign="left" header={`${payload[0].name}`} />
+    //             <Card.Content textAlign="left" description={`${payload[0].value}`} />
+    //         </Card>
+    //     )
+    //     : null
 
     function renderPieChart(data, isDonut = false, colors = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042']) {
         return (
-            <PieChart width={(width / 3) - 28} height={500}>
+            <PieChart width={(width / PIE_CHART_CHUNK) - 28} height={500}>
                 <Pie
                     data={data}
                     dataKey={"value"}
@@ -45,14 +43,14 @@ function useRecharts() {
                     outerRadius={150}
                     labelLine={false}
                     label={renderCustomizedLabel}
-                // fill="#8884d8"
                 >
                     {
                         data.map((entry, index) => <Cell fill={colors[index % colors.length]} key={index} />)
                     }
                 </Pie>
 
-                <Tooltip content={CustomTooltip} />
+                <Tooltip />
+                {/* <Tooltip content={CustomTooltip} /> */}
             </PieChart>
         )
     }
@@ -70,7 +68,7 @@ function useRecharts() {
                 <CartesianGrid strokeDasharray="3 3" />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey={dataKey} stroke="#82ca9d" />
+                <Line type="monotone" dataKey={dataKey} stroke="#0088FE" />
             </LineChart>
         );
     }
