@@ -13,6 +13,7 @@ import ItadApi from "../../../../lib/itad/ItadApi";
 
 import useFormValidation from '../../../../hooks/useFormValidation';
 import validateNewKey from '../../../../hooks/formValidations/validateNewKey';
+import { resetStatisticsStorage } from "../../../../store/actions/StatisticsActions";
 
 function NewModal({ initialValue, isEdit, children }) {
     const headers = useSelector((state) => state.table.headers)
@@ -55,6 +56,7 @@ function NewModal({ initialValue, isEdit, children }) {
     function onResponse(response) {
         if (response.success) {
             reset()
+            dispatch(resetStatisticsStorage())
             dispatch(reloadTable(true))
         } else {
             console.error(response);

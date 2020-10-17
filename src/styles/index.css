@@ -101,7 +101,7 @@ body {
 }
 .gameinfo-with-background.ui.modal > .header,
 .gameinfo-with-background .ui.statistic > .label,
-.ui.statistics .statistic > .label,
+.gameinfo-with-background .ui.statistics .statistic > .label,
 .gameinfo-with-background .ui.vertical.segment,
 .gameinfo-with-background i.close.icon {
   color: white !important;

@@ -27,7 +27,6 @@ function OptionsCell({ rowIndex, title, header, onChange }) {
             const changedValue = selectedValue[0].text;
             setCurrentlySelected(selectedValue[0]);
             // onChange(header, changedValue);
-            debugger
             dispatch(setNewRowChange(rowIndex, {
                 ...gameData,
                 [getIndexById(header.id, headers)]: changedValue

@@ -11,6 +11,7 @@ import Spreadsheets from "../../../../lib/google/Spreadsheets";
 import ItadApi from "../../../../lib/itad/ItadApi";
 import SteamApi from "../../../../lib/steam/SteamApi";
 import CreateSteamgiftsGiveawayModal from "../../Modals/CreateSteamgiftsGiveawayModal";
+import { resetStatisticsStorage } from "../../../../store/actions/StatisticsActions";
 
 function ActionsCell({ index }) {
     const [prompt, setPrompt] = useState(false)
@@ -54,6 +55,7 @@ function ActionsCell({ index }) {
         Spreadsheets.Delete(spreadsheetId, sheetId, getValueById(gameData, headers["ID"].id))
             .then(response => {
                 if (response.success) {
+                    dispatch(resetStatisticsStorage())
                     dispatch(reloadTable(true))
                 }
             })

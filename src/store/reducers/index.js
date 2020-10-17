@@ -2,6 +2,7 @@ import { combineReducers } from 'redux';
 import authentication_reducer from './AuthenticationReducer';
 import filters_reducer from './FilterReducer';
 import import_reducer from './ImportReducer';
+import { statistics_reducer } from './StatisticsReducer/StatisticsReducer';
 import table_reducer from './TableReducer';
 import theme_reducer from './ThemeReducer';
 
@@ -11,6 +12,7 @@ const rootReducer = combineReducers({
     theme: theme_reducer,
     authentication: authentication_reducer,
     import: import_reducer,
+    statistics: statistics_reducer,
 });
 
 export default rootReducer;

@@ -60,9 +60,14 @@ function Header() {
 
                 {
                     spreadsheetId && (
-                        <NavLink to={`/id/${spreadsheetId}`}>
-                            <Menu.Item name='My Collection' />
-                        </NavLink>
+                        <>
+                            <NavLink to={`/id/${spreadsheetId}`}>
+                                <Menu.Item name='My Collection' />
+                            </NavLink>
+                            <NavLink to={`/id/${spreadsheetId}/statistics`}>
+                                <Menu.Item name='Statistics' />
+                            </NavLink>
+                        </>
                     )
                 }
 

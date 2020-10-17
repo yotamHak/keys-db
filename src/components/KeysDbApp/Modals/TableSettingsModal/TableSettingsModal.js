@@ -11,6 +11,7 @@ import FieldSettings from "../../FieldSettings";
 import useFormValidation from '../../../../hooks/useFormValidation';
 import validateTableSettings from '../../../../hooks/formValidations/validateTableSettings';
 import Spreadsheets from "../../../../lib/google/Spreadsheets";
+import { resetStatisticsStorage } from "../../../../store/actions/StatisticsActions";
 
 function TableSettingsModal() {
     const [modalOpen, setModalOpen] = useState(false)
@@ -115,6 +116,7 @@ function TableSettingsModal() {
                     .then(response => {
                         if (response.success) {
                             handleSetNewValue(response.data.updatedSettings)
+                            dispatch(resetStatisticsStorage())
                             dispatch(addHeaders(response.data.updatedSettings))
                             dispatch(setNewRowChange('headers', response.data.updatedSettings))
                             dispatch(reloadTable(true))
