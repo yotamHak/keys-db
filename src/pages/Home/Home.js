@@ -12,19 +12,19 @@ function Home() {
 
     const firstSegmentImages = [
         {
-            source: require('../../assets/images/Table 10-8-20.png')
+            source: require('../../assets/images/table.png')
         },
         {
-            source: require('../../assets/images/AddNew 10-8-20.png')
+            source: require('../../assets/images/addNew.png')
         },
         {
-            source: require('../../assets/images/FieldSettings 10-8-20.png')
+            source: require('../../assets/images/fieldSettings.png')
         },
         {
-            source: require('../../assets/images/GameInfo 1 - 10-8-20.png')
+            source: require('../../assets/images/gameInfo-1.png')
         },
         {
-            source: require('../../assets/images/GameInfo 2 - 10-8-20.png')
+            source: require('../../assets/images/gameInfo-2.png')
         },
     ]
 
@@ -33,13 +33,13 @@ function Home() {
             source: require('../../assets/images/statistics.png')
         },
         {
-            source: require('../../assets/images/Export 10-8-20.png')
+            source: require('../../assets/images/export.png')
         },
         {
-            source: require('../../assets/images/Import 1 - 10-8-20.png')
+            source: require('../../assets/images/import-1.png')
         },
         {
-            source: require('../../assets/images/Import 2 - 10-8-20.png')
+            source: require('../../assets/images/import-2.png')
         },
     ]
 
