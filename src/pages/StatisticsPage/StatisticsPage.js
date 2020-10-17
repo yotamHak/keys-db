@@ -7,7 +7,7 @@ import moment from 'moment';
 import Spreadsheets from "../../lib/google/Spreadsheets"
 import useRecharts from "../../hooks/useRecharts";
 import { getIndexById, isDropdownType, parseOptions } from "../../utils"
-import { loadStatisticsCharts, loadStatisticsSpreadsheet } from "../../store/actions/StatisticsActions";
+import { loadStatisticsCharts, loadStatisticsSpreadsheet, resetStatisticsStorage } from "../../store/actions/StatisticsActions";
 import useLocalStorage from "../../hooks/useLocalStorage";
 import { COLOR_PALLETES, PIE_CHART_CHUNK, LINE_CHART_CHUNK } from "../../constants/statisticsConstants";
 
@@ -19,7 +19,7 @@ function StatisticsPage(props) {
 
     const spreadsheetId = props.match.params.spreadsheetId;
 
-    const google = useSelector((state) => state.authentication.google)
+    const googleClientReady = useSelector((state) => state.authentication.google.googleClientReady)
 
     const spreadsheetData = useSelector((state) => state.statistics.spreadsheetData)
     const charts = useSelector((state) => state.statistics.charts)
@@ -28,8 +28,16 @@ function StatisticsPage(props) {
     const [chartsStorage, setChartsStorage] = useLocalStorage("statisticsCharts", null)
 
     useEffect(() => {
-        if (spreadsheetDataStorage === null && google.googleClientReady && spreadsheetId) {
-            loadSpreadsheetData(spreadsheetId);
+        if (!googleClientReady) return
+
+        if (spreadsheetDataStorage && spreadsheetId && JSON.parse(spreadsheetDataStorage).id !== spreadsheetId) {
+            setSpreadsheetDataStorage(null)
+            dispatch(resetStatisticsStorage())
+            return
+        }
+
+        if (spreadsheetId && spreadsheetDataStorage === null) {
+            loadSpreadsheetData(spreadsheetId)
         }
 
         if (spreadsheetDataStorage && spreadsheetData === null) {
@@ -43,7 +51,7 @@ function StatisticsPage(props) {
         if (chartsStorage && charts === null) {
             dispatch(loadStatisticsCharts(JSON.parse(chartsStorage)))
         }
-    }, [google.googleClientReady, spreadsheetDataStorage, spreadsheetData, chartsStorage])
+    }, [googleClientReady, spreadsheetId, spreadsheetDataStorage, spreadsheetData, chartsStorage])
 
     function loadSpreadsheetData(spreadsheetId) {
         setIsLoading(true)
@@ -60,6 +68,23 @@ function StatisticsPage(props) {
             .finally(() => {
                 setIsLoading(false)
             })
+    }
+
+    function handleSpreadsheetData(spreadsheetData) {
+        try {
+            const headers = JSON.parse(getMetadataValueByKey(spreadsheetData.developerMetadata, "headers"))
+            const sheetId = getMetadataValueByKey(spreadsheetData.developerMetadata, "sheetId")
+            const sheetData = getSheetData(spreadsheetData.sheets, parseInt(sheetId))
+
+            setSpreadsheetDataStorage(JSON.stringify({
+                id: spreadsheetData.spreadsheetId,
+                url: `${spreadsheetData.spreadsheetUrl}#gid=${sheetId}`,
+                headers: headers,
+                ...sheetData,
+            }))
+        } catch (error) {
+            setHasError(error)
+        }
     }
 
     function handleCharts(headers, rowsData) {
@@ -100,25 +125,7 @@ function StatisticsPage(props) {
             "line": []
         })
 
-        console.log(parsedCharts)
-
         setChartsStorage(JSON.stringify(parsedCharts))
-    }
-
-    function handleSpreadsheetData(spreadsheetData) {
-        try {
-            const headers = JSON.parse(getMetadataValueByKey(spreadsheetData.developerMetadata, "headers"))
-            const sheetId = getMetadataValueByKey(spreadsheetData.developerMetadata, "sheetId")
-            const sheetData = getSheetData(spreadsheetData.sheets, parseInt(sheetId))
-
-            setSpreadsheetDataStorage(JSON.stringify({
-                url: `${spreadsheetData.spreadsheetUrl}#gid=${sheetId}`,
-                headers: headers,
-                ...sheetData,
-            }))
-        } catch (error) {
-            setHasError(error)
-        }
     }
 
     function getMetadataValueByKey(spreadsheetMetadata, key) {
@@ -221,7 +228,7 @@ function StatisticsPage(props) {
     return (
         <>
             {
-                !google.googleClientReady || !spreadsheetId || isLoading
+                !googleClientReady || !spreadsheetId || isLoading
                     ? (
                         <Dimmer inverted active>
                             <Loader indeterminate />
