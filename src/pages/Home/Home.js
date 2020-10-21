@@ -176,23 +176,14 @@ function Home() {
             <Segment style={{ padding: '8em 3em' }} vertical>
                 <Grid stackable verticalAlign='middle' style={reverse ? { flexDirection: 'row-reverse' } : {}}>
                     <Grid.Column width={9}>
-                        {/* 
-                            <video id="background-video" loop autoPlay width="480">
-                                <source src={"https://a.pomf.cat/rehqdw.mp4"} type="video/mp4" />
-                                <source src={"https://a.pomf.cat/rehqdw.mp4"} type="video/ogg" />
-                                Your browser does not support the video tag.
-                            </video> 
-                        */}
-
                         <AutoplaySlider
-                            key={'firstSegmentImages'}
+                            key={features[0].header}
                             className={'img-contain'}
                             play={true}
                             cancelOnInteraction={true}
                             interval={imageTransitionInterval}
                             media={images}
                         />
-
                     </Grid.Column>
                     <Grid.Column width={7} style={{ padding: '0 3em' }}>
                         {
