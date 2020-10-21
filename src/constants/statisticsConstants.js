@@ -2,6 +2,36 @@ export const COLOR_PALLETES = [
     //https://learnui.design/tools/data-color-picker.html#divergent
     //https://color.adobe.com/explore
     [
+        "#4b5359",
+        "#545f6e",
+        "#656883",
+        "#7e7093",
+        "#9d769d",
+        "#be7b9f",
+        "#dd8299",
+        "#f58c8d",
+    ],
+    [
+        "#0788d9",
+        "#009ee2",
+        "#00b0d8",
+        "#00bfbd",
+        "#00cb98",
+        "#5cd46e",
+        "#acd749",
+        "#f2d338",
+    ],
+    [
+        "#ec2125",
+        "#f15105",
+        "#f07400",
+        "#eb9400",
+        "#e1b100",
+        "#d4cc00",
+        "#c2e61f",
+        "#aaff53",
+    ],
+    [
         "#8c116b",
         "#8258a8",
         "#6f8ad1",
@@ -106,5 +136,7 @@ export const COLOR_PALLETES = [
         "#8bc3d9",
     ],
 ]
-export const PIE_CHART_CHUNK = 3;
+export const PIE_CHART_CHUNK_MOBILE = 1;
+export const PIE_CHART_CHUNK_DESKTOP = 2;
+export const PIE_CHART_CHUNK_LARGER_DESKTOP = 3;
 export const LINE_CHART_CHUNK = 1;

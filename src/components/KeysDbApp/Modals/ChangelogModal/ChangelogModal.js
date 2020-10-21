@@ -3,6 +3,14 @@ import { Modal, Icon, List, Segment, Header, Container, } from "semantic-ui-reac
 
 export const changelog = [
     {
+        version: '0.7.1',
+        date: '21/10/2020',
+        list: [
+            'Statistics Page - Removed empty categories from charts, Added better labels to charts, charts are now responsive.',
+            'General - Bugs, stability, performance fixes, and other boring stuff.',
+        ]
+    },
+    {
         version: '0.7',
         date: '17/10/2020',
         list: [

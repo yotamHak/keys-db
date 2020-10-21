@@ -1,16 +1,16 @@
-import React, { } from "react"
-import { BrowserRouter, Switch, Route, } from 'react-router-dom'
+import React, { } from 'react';
+import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import firebase, { FirebaseContext } from '../firebase';
 
-import Settings from "./KeysDbApp/Settings/Settings"
-import Header from "./Header/Header";
-import ErrorPage from "../pages/ErrorPage/ErrorPage";
-import Home from "../pages/Home/Home";
-import KeysDBPage from "../pages/KeysDBPage/KeysDBPage";
-import SetupPage from "../pages/SetupPage/SetupPage";
-import PrivacyNoticePage from "../pages/PrivacyNoticePage/PrivacyNoticePage";
-import TermsAndContitionsPage from "../pages/TermsAndContitionsPage/TermsAndContitionsPage";
-import StatisticsPage from "../pages/StatisticsPage/StatisticsPage";
+import Settings from './KeysDbApp/Settings/Settings';
+import Header from './Header/Header';
+import ErrorPage from '../pages/ErrorPage/ErrorPage';
+import Home from '../pages/Home/Home';
+import KeysDBPage from '../pages/KeysDBPage/KeysDBPage';
+import SetupPage from '../pages/SetupPage/SetupPage';
+import PrivacyNoticePage from '../pages/PrivacyNoticePage/PrivacyNoticePage';
+import TermsAndContitionsPage from '../pages/TermsAndContitionsPage/TermsAndContitionsPage';
+import StatisticsPage from '../pages/StatisticsPage/StatisticsPage';
 
 function App() {
     return (
@@ -32,7 +32,7 @@ function App() {
                 </div>
             </FirebaseContext.Provider>
         </BrowserRouter>
-    )
+    );
 }
 
 export default App;

@@ -1,22 +1,25 @@
 import React, { } from 'react';
-import { CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart, Tooltip, XAxis, YAxis } from 'recharts';
+import { CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart, Tooltip, XAxis, YAxis, Label } from 'recharts';
 
 import { PIE_CHART_CHUNK } from '../constants/statisticsConstants';
 import useWindowDimensions from './useWindowDimensions';
 
 function useRecharts() {
-    const { width } = useWindowDimensions();
-
     const RADIAN = Math.PI / 180;
 
-    const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
-        const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name, value, fill }) => {
+        // const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+        // const x = cx + radius * Math.cos(-midAngle * RADIAN);
+        // const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+        const radius = outerRadius + 25;
         const x = cx + radius * Math.cos(-midAngle * RADIAN);
         const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
+
         return (
-            <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
-                {`${(percent * 100).toFixed(0)}%`}
+            <text fontSize='12' fill={fill} x={x} y={y} textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" >
+                {`${name}: ${value} (${(percent * 100).toFixed(0)}%)`}
             </text>
         );
     };
@@ -30,9 +33,11 @@ function useRecharts() {
     //     )
     //     : null
 
-    function renderPieChart(data, isDonut = false, colors = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042']) {
+    function renderPieChart(options) {
+        const { data, isDonut, colors, width } = options
+
         return (
-            <PieChart width={(width / PIE_CHART_CHUNK) - 28} height={500}>
+            <PieChart width={width} height={500}>
                 <Pie
                     data={data}
                     dataKey={"value"}
@@ -41,27 +46,28 @@ function useRecharts() {
                     cy={"50%"}
                     innerRadius={isDonut}
                     outerRadius={150}
-                    labelLine={false}
+                    labelLine={true}
                     label={renderCustomizedLabel}
                 >
                     {
                         data.map((entry, index) => <Cell fill={colors[index % colors.length]} key={index} />)
                     }
                 </Pie>
-
                 <Tooltip />
                 {/* <Tooltip content={CustomTooltip} /> */}
             </PieChart>
         )
     }
 
-    function renderLineChart(data, dataKey) {
+    function renderLineChart(options) {
+        const { data, dataKey, width } = options
+
         return (
             <LineChart
                 width={width * 0.9}
                 height={300}
                 data={data}
-                margin={{ left: width * 0.075 }}
+                margin={{ left: width * 0.05 }}
             >
                 <XAxis dataKey="name" />
                 <YAxis />
