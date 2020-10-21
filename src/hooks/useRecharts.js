@@ -1,21 +1,13 @@
-import React, { } from 'react';
-import { CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart, Tooltip, XAxis, YAxis, Label } from 'recharts';
-
-import { PIE_CHART_CHUNK } from '../constants/statisticsConstants';
-import useWindowDimensions from './useWindowDimensions';
+import React from 'react';
+import { CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart, Tooltip, XAxis, YAxis, } from 'recharts';
 
 function useRecharts() {
     const RADIAN = Math.PI / 180;
 
-    const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name, value, fill }) => {
-        // const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-        // const x = cx + radius * Math.cos(-midAngle * RADIAN);
-        // const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
+    const renderCustomizedLabel = ({ cx, cy, midAngle, outerRadius, percent, name, value, fill }) => {
         const radius = outerRadius + 25;
         const x = cx + radius * Math.cos(-midAngle * RADIAN);
         const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
 
         return (
             <text fontSize='12' fill={fill} x={x} y={y} textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" >
@@ -23,15 +15,6 @@ function useRecharts() {
             </text>
         );
     };
-
-    // const CustomTooltip = ({ active, payload }) => active
-    //     ? (
-    //         <Card>
-    //             <Card.Content textAlign="left" header={`${payload[0].name}`} />
-    //             <Card.Content textAlign="left" description={`${payload[0].value}`} />
-    //         </Card>
-    //     )
-    //     : null
 
     function renderPieChart(options) {
         const { data, isDonut, colors, width } = options
