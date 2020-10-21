@@ -114,20 +114,6 @@ function StatisticsPage(props) {
         // const headersToParse = Object.keys(headers).reduce((result, headerKey) => { },[])
 
         function parseData(headers, headerKey, rowsData) {
-            if (isDropdownType(headers[headerKey].type)) {
-                return {
-                    chart: "pie",
-                    data: parseDropdownType()
-                }
-            } else if (headers[headerKey].type === "created_on") {
-                return {
-                    chart: "line",
-                    data: parseDateType("Keys Added")
-                }
-            } else {
-                return null
-            }
-
             function parseDateType(dataKey) {
                 const results = rowsData.reduce((result, row) => {
                     const date = row[getIndexById(headers[headerKey].id)];
@@ -175,23 +161,40 @@ function StatisticsPage(props) {
                         : result; // data unfilled
                 }, startingOptions);
 
-                const resultsWithoutEmptyValues = Object.keys(results)
+                return Object.keys(results)
+                    .sort((a, b) => results[a] > results[b] ? -1 : 1)
                     .filter(key => results[key])
-                    .reduce((result, key) => ({
-                        ...result,
-                        [key]: results[key]
-                    }), {})
+                    .reduce((result, key, index) => {
+                        return index > 12
+                            ? [
+                                ...result.slice(0, 11),
+                                {
+                                    name: "Other...",
+                                    value: result[11].value + results[key]
+                                }
+                            ]
+                            : [
+                                ...result,
+                                {
+                                    name: key,
+                                    value: results[key]
+                                }
+                            ]
+                    }, [])
+            }
 
-                return _.zip(Object.keys(resultsWithoutEmptyValues), Object.values(resultsWithoutEmptyValues))
-                    .reduce((result, item) => {
-                        return [
-                            ...result,
-                            {
-                                "name": item[0],
-                                "value": item[1] ? item[1] : 0
-                            }
-                        ];
-                    }, []);
+            if (isDropdownType(headers[headerKey].type)) {
+                return {
+                    chart: "pie",
+                    data: parseDropdownType()
+                }
+            } else if (headers[headerKey].type === "created_on") {
+                return {
+                    chart: "line",
+                    data: parseDateType("Keys Added")
+                }
+            } else {
+                return null
             }
         }
 
