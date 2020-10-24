@@ -123,7 +123,7 @@ function KeysTable() {
             row: { height: '100%', alignItems: 'center', display: 'flex' }
         },
         table: {
-            stickyHeader: { position: "sticky", top: "0", zIndex: "99" }
+            stickyHeader: { position: "sticky", top: "0", zIndex: "10" }
         }
     }
 
