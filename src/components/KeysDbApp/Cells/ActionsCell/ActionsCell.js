@@ -2,7 +2,7 @@ import React, { useState, useEffect, } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Table, Dropdown, Confirm, Icon, } from "semantic-ui-react";
 
-import { parseSpreadsheetDate, hasWritePermission, getValueByType, getValueById, getLabelByType, fillValueIfFieldExist, } from "../../../../utils";
+import { parseSpreadsheetDate, hasWritePermission, getValueByType, getValueById, getLabelByType, fillValueIfFieldExist, isDateType, } from "../../../../utils";
 import { reloadTable, setNewRowChange } from "../../../../store/actions/TableActions";
 import GameInfoModal from "../../Modals/GameInfoModal";
 import NewModal from "../../Modals/NewModal";
@@ -32,7 +32,7 @@ function ActionsCell({ index }) {
 
     const initialValues = Object.keys(headers).reduce((acc, header) => ({
         ...acc,
-        [header]: headers[header].type === "date"
+        [header]: isDateType(headers[header].type)
             ? parseSpreadsheetDate(getValueById(gameData, headers[header].id))
             : getValueById(gameData, headers[header].id)
     }), {})

@@ -32,15 +32,24 @@ function TableSettingsModal() {
     const { handleSubmit, handleChange, handleSetNewValue, reset, values, errors } = useFormValidation(INITIAL_STATE, validateTableSettings, onSubmit);
 
     useEffect(() => {
-        isSaving && Spreadsheets.SaveSettings(spreadsheetId, sheetId, tableHeadersChanges)
-            .then(response => {
-                if (response.success) {
-                    dispatch(addHeaders(response.data.updatedSettings))
-                    dispatch(reloadTable(true))
-                    setIsSaving(false)
-                    handleClose()
+        if (isSaving) {
+            const updatedTableHeaders = Object.keys(tableHeadersChanges).reduce((result, key) => {
+                return {
+                    ...result,
+                    [tableHeadersChanges[key].id]: tableHeadersChanges[key]
                 }
-            })
+            }, {})
+
+            Spreadsheets.SaveSettings(spreadsheetId, sheetId, updatedTableHeaders)
+                .then(response => {
+                    if (response.success) {
+                        dispatch(addHeaders(response.data.updatedSettings))
+                        dispatch(reloadTable(true))
+                        setIsSaving(false)
+                        handleClose()
+                    }
+                })
+        }
     }, [tableHeadersChanges,])
 
     function handleOpen() {

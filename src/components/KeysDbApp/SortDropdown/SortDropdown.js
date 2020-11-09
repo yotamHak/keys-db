@@ -29,7 +29,7 @@ function SortDropdown() {
                                     >
                                         <Grid>
                                             <Grid.Column width={5} floated='left' verticalAlign='middle' textAlign='left'>
-                                                {key}
+                                                {headers[key].label}
                                             </Grid.Column>
                                             <Grid.Column width={11} floated='right' verticalAlign='middle' textAlign='right'>
                                                 <Button.Group basic size='small'>

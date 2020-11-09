@@ -4,7 +4,7 @@ import { Modal, Search, Segment, Header, Item, Icon, Container, Form, Label, But
 import _ from 'lodash';
 
 import { reloadTable } from "../../../../store/actions/TableActions";
-import { parseSpreadsheetDate, parseOptions, genericSort, isDropdownType, getLabelByType, fillValueIfFieldExist } from "../../../../utils";
+import { parseSpreadsheetDate, parseOptions, genericSort, isDropdownType, getLabelByType, fillValueIfFieldExist, isDateType } from "../../../../utils";
 import ErrorBox from "../../../ErrorBox";
 
 import Spreadsheets from "../../../../lib/google/Spreadsheets";
@@ -213,7 +213,7 @@ function NewModal({ initialValue, isEdit, children }) {
                     />
                 </Form.Field>
             )
-        } else if (header.type === 'date') {
+        } else if (isDateType(header.type)) {
             return <Form.Input
                 name={headerKey}
                 label={label}

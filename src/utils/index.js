@@ -81,7 +81,7 @@ const _isDateInputSupportDate = date => /\d{4}-\d{2}-\d{2}/.test(date)
 
 export const parseSpreadsheetDate = (date, isForDisplay) => {
   if (date) {
-    let parsedDate
+    let parsedDate;
 
     if (!moment.isDate(date)) {
       parsedDate = _isDateInputSupportDate(date)

@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { Table, Dimmer, Icon, Segment, Loader, Placeholder, Menu, Pagination, Dropdown, Header, Input, Grid, } from 'semantic-ui-react';
 import _ from 'lodash';
 
-import { hasWritePermission, shouldAddField, } from "../../../utils";
+import { getKeyById, hasWritePermission, shouldAddField, } from "../../../utils";
 import KeyRow from "../KeyRow";
 import NewModal from "../Modals/NewModal";
 import SortDropdown from "../SortDropdown";
@@ -68,7 +68,7 @@ function KeysTable() {
 
     function loadGames(spreadsheetId, titleQuery, offset, limit, orderBy, filters) {
         const convertedOrderBy = {
-            sort: headers[orderBy.sort].id,
+            sort: getKeyById(headers, "A"),
             asc: orderBy.asc
         }
 
