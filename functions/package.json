@@ -15,7 +15,7 @@
     "cheerio": "^1.0.0-rc.3",
     "firebase-admin": "^8.13.0",
     "firebase-functions": "^3.3.0",
-    "got": "^10.4.0"
+    "got": "^11.8.5"
   },
   "devDependencies": {
     "firebase-functions-test": "^0.1.6"
